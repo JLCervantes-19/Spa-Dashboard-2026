@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testimonios — Serenità Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <style>
+    .testimonios-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .testimonio-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: grab;
+      position: relative;
+      transition: box-shadow 0.2s, opacity 0.2s;
+      user-select: none;
+    }
+    .testimonio-card:hover { box-shadow: var(--shadow-card); }
+    .testimonio-card.dragging { opacity: 0.4; box-shadow: none; cursor: grabbing; }
+    .testimonio-card.drag-over { border-color: var(--lilac); background: var(--lilac-light); }
+    .drag-handle {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: var(--text-muted);
+      cursor: grab;
+      opacity: 0.4;
+    }
+    .testimonio-card:hover .drag-handle { opacity: 1; }
+    .testimonio-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-left: 22px;
+    }
+    .testimonio-nombre {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .testimonio-servicio {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .stars {
+      color: #D4A84B;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+      padding-left: 22px;
+    }
+    .testimonio-texto {
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      line-height: 1.5;
+      font-style: italic;
+      margin-bottom: 12px;
+      padding-left: 22px;
+    }
+    .testimonio-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 22px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      margin-top: 4px;
+    }
+    .estado-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.73rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .estado-pill.pendiente  { background:#FFF8E6;color:#B07D1A; }
+    .estado-pill.publicado  { background:#E8F5E9;color:#2E7D32; }
+    .estado-pill.oculto     { background:#FAFAFA;color:#999; }
+    .column-section { margin-bottom: 32px; }
+    .column-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .column-title .count-badge {
+      background: var(--hover-bg);
+      border-radius: 12px;
+      padding: 1px 7px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .save-order-bar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--sidebar-bg);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.83rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      transition: transform 0.3s ease;
+      z-index: 50;
+    }
+    .save-order-bar.visible { transform: translateX(-50%) translateY(0); }
+    .save-order-bar button { font-size: 0.8rem; padding: 6px 14px; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Testimonios</h1>
+        <p class="page-subtitle">Aprueba, oculta y ordena reseñas</p>
+      </div>
+      <div class="page-header-right">
+        <button class="btn btn-primary btn-sm" id="btn-nuevo-testimonio">+ Agregar manual</button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="filters-bar" style="margin-bottom:20px">
+        <select id="filtro-estado-test" class="filter-select">
+          <option value="">Todos</option>
+          <option value="pendiente">Pendientes</option>
+          <option value="publicado">Publicados</option>
+          <option value="oculto">Ocultos</option>
+        </select>
+        <span id="total-test" class="text-muted" style="font-size:0.78rem;margin-left:auto"></span>
+      </div>
+
+      <!-- PENDIENTES -->
+      <div class="column-section" id="section-pendiente">
+        <div class="column-title">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="#B07D1A"><circle cx="6" cy="6" r="6"/></svg>
+          Pendientes
+          <span class="count-badge" id="count-pendiente">0</span>
+        </div>
+        <div class="testimonios-board" id="board-pendiente"></div>
+      </div>
+
+      <!-- PUBLICADOS -->
+      <div class="column-section" id="section-publicado">
+        <div class="column-title">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="#2E7D32"><circle cx="6" cy="6" r="6"/></svg>
+          Publicados <span style="font-weight:300;font-size:0.75rem;text-transform:none;letter-spacing:0">(arrastra para reordenar)</span>
+          <span class="count-badge" id="count-publicado">0</span>
+        </div>
+        <div class="testimonios-board" id="board-publicado"></div>
+      </div>
+
+      <!-- OCULTOS -->
+      <div class="column-section" id="section-oculto">
+        <div class="column-title">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="#999"><circle cx="6" cy="6" r="6"/></svg>
+          Ocultos
+          <span class="count-badge" id="count-oculto">0</span>
+        </div>
+        <div class="testimonios-board" id="board-oculto"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BARRA GUARDAR ORDEN -->
+<div class="save-order-bar" id="save-order-bar">
+  <span>Orden modificado</span>
+  <button class="btn btn-primary btn-sm" id="btn-guardar-orden">Guardar orden</button>
+  <button class="btn btn-ghost btn-sm" id="btn-cancelar-orden" style="color:#fff;border-color:rgba(255,255,255,0.3)">Cancelar</button>
+</div>
+
+<!-- MODAL TESTIMONIO -->
+<div class="modal-overlay" id="modal-testimonio">
+  <div class="modal">
+    <div class="modal-header">
+      <p class="modal-title" id="modal-test-titulo">Nuevo testimonio</p>
+      <button class="modal-close" id="modal-test-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="test-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre *</label>
+          <input type="text" id="test-nombre" class="form-input" maxlength="100" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Servicio</label>
+          <select id="test-servicio" class="form-input">
+            <option value="">Sin especificar</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Calificación</label>
+        <div style="display:flex;gap:6px;margin-top:4px" id="star-picker">
+          <button type="button" class="star-btn" data-val="1" style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#D4A84B">★</button>
+          <button type="button" class="star-btn" data-val="2" style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#D4A84B">★</button>
+          <button type="button" class="star-btn" data-val="3" style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#D4A84B">★</button>
+          <button type="button" class="star-btn" data-val="4" style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#D4A84B">★</button>
+          <button type="button" class="star-btn" data-val="5" style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#D4A84B">★</button>
+        </div>
+        <input type="hidden" id="test-rating" value="5" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reseña *</label>
+        <textarea id="test-texto" class="form-textarea" rows="4" maxlength="600" placeholder="Texto del testimonio…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <select id="test-estado" class="form-input">
+          <option value="pendiente">Pendiente</option>
+          <option value="publicado">Publicado</option>
+          <option value="oculto">Oculto</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-test-close2">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="btn-eliminar-test" style="display:none;margin-right:auto">Eliminar</button>
+      <button class="btn btn-primary" id="btn-guardar-test">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdmin }  from '/js/auth.js'
+  import { supabase }      from '/js/supabase-client.js'
+  import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
+  import {
+    avatarHTML, toast, openModal, closeModal, renderSidebarUser, confirmAction
+  } from '/js/utils.js'
+
+  const auth = await requireAdmin()
+  if (!auth) throw new Error()
+  document.getElementById('sidebar').innerHTML = getSidebarHTML('/testimonios.html')
+  initSidebar(auth.admin)
+  renderSidebarUser(auth.admin)
+
+  let testimonios = []
+  let ordenModificado = false
+  let filtroEstado = ''
+
+  // ─── STAR PICKER ──────────────────────────────────────────
+  let ratingActual = 5
+  document.querySelectorAll('.star-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      ratingActual = parseInt(btn.dataset.val)
+      document.getElementById('test-rating').value = ratingActual
+      updateStars()
+    })
+  })
+  function updateStars() {
+    document.querySelectorAll('.star-btn').forEach(btn => {
+      btn.style.opacity = parseInt(btn.dataset.val) <= ratingActual ? '1' : '0.25'
+    })
+  }
+  updateStars()
+
+  // ─── FILTRO ───────────────────────────────────────────────
+  document.getElementById('filtro-estado-test').addEventListener('change', e => {
+    filtroEstado = e.target.value
+    renderBoards()
+  })
+
+  // ─── CARGAR ───────────────────────────────────────────────
+  async function cargarTestimonios() {
+    const { data } = await supabase.from('testimonios')
+      .select('*,servicios(nombre)')
+      .order('orden', { ascending: true })
+      .order('created_at', { ascending: false })
+    // Normalizar filas legacy: si estado es null o DEFAULT 'pendiente' pero activo=true → publicado
+    testimonios = (data || []).map(t => ({
+      ...t,
+      estado: t.estado && t.estado !== 'pendiente'
+        ? t.estado
+        : (t.activo === true ? 'publicado' : (t.activo === false ? 'oculto' : (t.estado || 'pendiente')))
+    }))
+
+    const { data: servs } = await supabase.from('servicios').select('id,nombre').eq('activo', true).order('nombre')
+    const sel = document.getElementById('test-servicio')
+    ;(servs || []).forEach(s => sel.insertAdjacentHTML('beforeend', `<option value="${s.id}">${s.nombre}</option>`))
+
+    renderBoards()
+  }
+
+  function renderBoards() {
+    const estados = ['pendiente', 'publicado', 'oculto']
+    let total = 0
+    estados.forEach(estado => {
+      const arr = testimonios.filter(t => t.estado === estado && (!filtroEstado || t.estado === filtroEstado))
+      document.getElementById('count-' + estado).textContent = arr.length
+      document.getElementById('section-' + estado).style.display = filtroEstado && filtroEstado !== estado ? 'none' : ''
+      total += arr.length
+      renderBoard(estado, arr)
+    })
+    document.getElementById('total-test').textContent = `${total} testimonios`
+  }
+
+  function starsHTML(n) {
+    return '★'.repeat(n || 5) + '☆'.repeat(5 - (n || 5))
+  }
+
+  function estadoPill(estado) {
+    const labels = { pendiente: 'Pendiente', publicado: 'Publicado', oculto: 'Oculto' }
+    return `<span class="estado-pill ${estado}">${labels[estado] || estado}</span>`
+  }
+
+  function renderBoard(estado, arr) {
+    const board = document.getElementById('board-' + estado)
+    if (!arr.length) {
+      board.innerHTML = `<p style="font-size:0.8rem;color:var(--text-muted);padding:12px 0">Sin testimonios</p>`
+      return
+    }
+    board.innerHTML = arr.map(t => `
+      <div class="testimonio-card" draggable="${estado === 'publicado'}" data-id="${t.id}" data-estado="${estado}">
+        <div class="drag-handle">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </div>
+        <div class="testimonio-header">
+          ${avatarHTML(t.nombre, '', null, 28)}
+          <div>
+            <div class="testimonio-nombre">${t.nombre}</div>
+            <div class="testimonio-servicio">${t.servicios?.nombre || t.servicio_nombre || '—'}</div>
+          </div>
+        </div>
+        <div class="stars">${starsHTML(t.rating)}</div>
+        <div class="testimonio-texto">"${t.texto}"</div>
+        <div class="testimonio-actions">
+          <div style="display:flex;gap:6px">
+            ${estado !== 'publicado' ? `<button class="btn btn-primary btn-sm" onclick="cambiarEstado('${t.id}', 'publicado')">Publicar</button>` : ''}
+            ${estado !== 'oculto'    ? `<button class="btn btn-ghost btn-sm" onclick="cambiarEstado('${t.id}', 'oculto')">Ocultar</button>` : ''}
+            ${estado !== 'pendiente' ? `<button class="btn btn-ghost btn-sm" onclick="cambiarEstado('${t.id}', 'pendiente')">Pendiente</button>` : ''}
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="editarTestimonio('${t.id}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+        </div>
+      </div>
+    `).join('')
+
+    if (estado === 'publicado') initDragDrop(board)
+  }
+
+  // ─── DRAG & DROP ──────────────────────────────────────────
+  let dragSrcEl = null
+
+  function initDragDrop(board) {
+    board.querySelectorAll('.testimonio-card').forEach(card => {
+      card.addEventListener('dragstart', e => {
+        dragSrcEl = card
+        card.classList.add('dragging')
+        e.dataTransfer.effectAllowed = 'move'
+      })
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging')
+        board.querySelectorAll('.testimonio-card').forEach(c => c.classList.remove('drag-over'))
+      })
+      card.addEventListener('dragover', e => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+        board.querySelectorAll('.testimonio-card').forEach(c => c.classList.remove('drag-over'))
+        if (card !== dragSrcEl) card.classList.add('drag-over')
+      })
+      card.addEventListener('drop', e => {
+        e.preventDefault()
+        if (dragSrcEl && dragSrcEl !== card) {
+          const cards = [...board.querySelectorAll('.testimonio-card')]
+          const srcIdx = cards.indexOf(dragSrcEl)
+          const dstIdx = cards.indexOf(card)
+          if (srcIdx < dstIdx) {
+            board.insertBefore(dragSrcEl, card.nextSibling)
+          } else {
+            board.insertBefore(dragSrcEl, card)
+          }
+          ordenModificado = true
+          document.getElementById('save-order-bar').classList.add('visible')
+        }
+        card.classList.remove('drag-over')
+      })
+    })
+  }
+
+  document.getElementById('btn-guardar-orden').addEventListener('click', async () => {
+    const board = document.getElementById('board-publicado')
+    const ids = [...board.querySelectorAll('.testimonio-card')].map(c => c.dataset.id)
+    const updates = ids.map((id, i) => supabase.from('testimonios').update({ orden: i }).eq('id', id))
+    await Promise.all(updates)
+    toast('Orden guardado', 'success')
+    ordenModificado = false
+    document.getElementById('save-order-bar').classList.remove('visible')
+    testimonios.forEach(t => {
+      const idx = ids.indexOf(t.id)
+      if (idx !== -1) t.orden = idx
+    })
+    testimonios.sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999))
+  })
+
+  document.getElementById('btn-cancelar-orden').addEventListener('click', () => {
+    ordenModificado = false
+    document.getElementById('save-order-bar').classList.remove('visible')
+    renderBoards()
+  })
+
+  // ─── CAMBIAR ESTADO ───────────────────────────────────────
+  window.cambiarEstado = async (id, nuevoEstado) => {
+    const { error } = await supabase.from('testimonios').update({ estado: nuevoEstado }).eq('id', id)
+    if (error) { toast('Error al cambiar estado', 'error'); return }
+    const t = testimonios.find(x => x.id === id)
+    if (t) t.estado = nuevoEstado
+    toast(`Testimonio ${nuevoEstado === 'publicado' ? 'publicado' : nuevoEstado === 'oculto' ? 'ocultado' : 'marcado como pendiente'}`, 'success')
+    renderBoards()
+  }
+
+  // ─── EDITAR TESTIMONIO ────────────────────────────────────
+  window.editarTestimonio = (id) => {
+    const t = testimonios.find(x => x.id === id)
+    if (!t) return
+    document.getElementById('test-id').value = t.id
+    document.getElementById('modal-test-titulo').textContent = 'Editar testimonio'
+    document.getElementById('test-nombre').value = t.nombre
+    document.getElementById('test-servicio').value = t.servicio_id || ''
+    document.getElementById('test-texto').value = t.texto
+    document.getElementById('test-estado').value = t.estado || 'pendiente'
+    ratingActual = t.rating || 5
+    document.getElementById('test-rating').value = ratingActual
+    updateStars()
+    document.getElementById('btn-eliminar-test').style.display = 'inline-flex'
+    openModal('modal-testimonio')
+  }
+
+  document.getElementById('btn-nuevo-testimonio').addEventListener('click', () => {
+    document.getElementById('test-id').value = ''
+    document.getElementById('modal-test-titulo').textContent = 'Nuevo testimonio'
+    document.getElementById('test-nombre').value = ''
+    document.getElementById('test-servicio').value = ''
+    document.getElementById('test-texto').value = ''
+    document.getElementById('test-estado').value = 'publicado'
+    ratingActual = 5
+    document.getElementById('test-rating').value = 5
+    updateStars()
+    document.getElementById('btn-eliminar-test').style.display = 'none'
+    openModal('modal-testimonio')
+  })
+
+  document.getElementById('btn-guardar-test').addEventListener('click', async () => {
+    const id       = document.getElementById('test-id').value
+    const nombre   = document.getElementById('test-nombre').value.trim()
+    const texto    = document.getElementById('test-texto').value.trim()
+    const estado   = document.getElementById('test-estado').value
+    const rating   = parseInt(document.getElementById('test-rating').value)
+    const servId   = document.getElementById('test-servicio').value || null
+
+    if (!nombre || !texto) { toast('Nombre y reseña son requeridos', 'error'); return }
+
+    const payload = { nombre, texto, estado, rating, servicio_id: servId }
+    let error
+    if (id) {
+      ({ error } = await supabase.from('testimonios').update(payload).eq('id', id))
+    } else {
+      const maxOrden = testimonios.filter(t => t.estado === 'publicado').length
+      ;({ error } = await supabase.from('testimonios').insert({ ...payload, orden: maxOrden }))
+    }
+    if (error) { toast('Error al guardar', 'error'); return }
+    toast(id ? 'Testimonio actualizado' : 'Testimonio creado', 'success')
+    closeModal('modal-testimonio')
+    await recargar()
+  })
+
+  document.getElementById('btn-eliminar-test').addEventListener('click', () => {
+    const id = document.getElementById('test-id').value
+    confirmAction({
+      title: 'Eliminar testimonio',
+      text: 'Se eliminará permanentemente. ¿Continuar?',
+      btnLabel: 'Eliminar',
+      onConfirm: async () => {
+        const { error } = await supabase.from('testimonios').delete().eq('id', id)
+        if (error) { toast('Error al eliminar', 'error'); return }
+        toast('Testimonio eliminado', 'success')
+        closeModal('modal-testimonio')
+        await recargar()
+      }
+    })
+  })
+
+  async function recargar() {
+    const { data } = await supabase.from('testimonios')
+      .select('*,servicios(nombre)')
+      .order('orden', { ascending: true })
+      .order('created_at', { ascending: false })
+    testimonios = (data || []).map(t => ({
+      ...t,
+      estado: t.estado && t.estado !== 'pendiente'
+        ? t.estado
+        : (t.activo === true ? 'publicado' : (t.activo === false ? 'oculto' : (t.estado || 'pendiente')))
+    }))
+    renderBoards()
+  }
+
+  ;['modal-test-close','modal-test-close2'].forEach(id => document.getElementById(id).addEventListener('click', () => closeModal('modal-testimonio')))
+  document.getElementById('modal-testimonio').addEventListener('click', e => { if (e.target.id === 'modal-testimonio') closeModal('modal-testimonio') })
+
+  await cargarTestimonios()
+</script>
+</body>
+</html>

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disponibilidad — Serenità Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <style>
+    .horario-grid {
+      display: grid;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .horario-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 1fr 80px;
+      align-items: center;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      background: var(--card-bg);
+      transition: background 0.15s;
+    }
+    .horario-row:last-child { border-bottom: none; }
+    .horario-row:hover { background: var(--hover-bg); }
+    .horario-row.inactive { opacity: 0.45; }
+    .horario-row.inactive .horario-times { pointer-events: none; }
+    .dia-label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .horario-times {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .horario-times input[type="time"] {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.82rem;
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background: var(--input-bg);
+    }
+    .horario-times span {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .slot-config {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      padding-left: 16px;
+    }
+    .bloqueos-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .bloqueo-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card-bg);
+      font-size: 0.83rem;
+    }
+    .bloqueo-item .bloqueo-fecha {
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .bloqueo-item .bloqueo-desc {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    .tab-group {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      font-size: 0.83rem;
+      font-family: var(--font-body);
+      font-weight: 500;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: -1px;
+    }
+    .tab-btn.active {
+      color: var(--lilac);
+      border-bottom-color: var(--lilac);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Disponibilidad</h1>
+        <p class="page-subtitle">Horarios, slots y bloqueos del spa</p>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <div class="tab-group">
+        <button class="tab-btn active" data-tab="horarios">Horario semanal</button>
+        <button class="tab-btn" data-tab="bloqueos">Bloqueos y festivos</button>
+        <button class="tab-btn" data-tab="empleadas-bloq">Bloqueos por empleada</button>
+      </div>
+
+      <!-- TAB: HORARIO SEMANAL -->
+      <div class="tab-panel active" id="tab-horarios">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div>
+              <p class="card-title">Horario de atención</p>
+              <p class="card-subtitle">Define los días y horas de apertura del spa</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-guardar-horario">Guardar cambios</button>
+          </div>
+
+          <div style="margin-bottom:20px;padding:14px 16px;background:var(--lilac-light);border-radius:var(--radius);display:flex;align-items:center;gap:10px">
+            <div>
+              <p style="font-size:0.82rem;font-weight:500;color:var(--text-secondary);margin-bottom:4px">Duración de slots</p>
+              <div style="display:flex;align-items:center;gap:10px">
+                <select id="slot-duracion" class="filter-select" style="width:auto">
+                  <option value="30">30 minutos</option>
+                  <option value="45">45 minutos</option>
+                  <option value="60" selected>60 minutos</option>
+                  <option value="90">90 minutos</option>
+                </select>
+                <span style="font-size:0.78rem;color:var(--text-muted)">Duración base por defecto cuando un servicio no especifica duración</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="horario-grid" id="horario-grid">
+            <div style="display:grid;grid-template-columns:130px 1fr 1fr 80px;padding:8px 16px;background:var(--hover-bg);font-size:0.75rem;font-weight:600;color:var(--text-muted);letter-spacing:0.04em;text-transform:uppercase">
+              <span>Día</span><span>Apertura — Cierre</span><span></span><span style="text-align:center">Abierto</span>
+            </div>
+            <!-- Rows rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: BLOQUEOS -->
+      <div class="tab-panel" id="tab-bloqueos">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <p class="card-title">Bloqueos del spa</p>
+              <p class="card-subtitle">Días cerrados, festivos o mantenimiento</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-nuevo-bloqueo">+ Agregar bloqueo</button>
+          </div>
+
+          <div class="bloqueos-grid" id="bloqueos-list">
+            <div style="text-align:center;padding:40px;color:var(--text-muted)">Cargando…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: BLOQUEOS POR EMPLEADA -->
+      <div class="tab-panel" id="tab-empleadas-bloq">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <p class="card-title">Bloqueos por empleada</p>
+              <p class="card-subtitle">Vacaciones, licencias, ausencias parciales</p>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-nuevo-bloq-emp">+ Agregar bloqueo</button>
+          </div>
+
+          <div style="margin-bottom:16px">
+            <select id="filtro-empleada-bloq" class="filter-select">
+              <option value="">Todas las empleadas</option>
+            </select>
+          </div>
+
+          <div class="bloqueos-grid" id="emp-bloqueos-list">
+            <div style="text-align:center;padding:40px;color:var(--text-muted)">Cargando…</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BLOQUEO SPA -->
+<div class="modal-overlay" id="modal-bloqueo">
+  <div class="modal">
+    <div class="modal-header">
+      <p class="modal-title" id="modal-bloq-titulo">Nuevo bloqueo</p>
+      <button class="modal-close" id="modal-bloq-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="bloq-id" />
+      <div class="form-group">
+        <label class="form-label">Fecha inicio *</label>
+        <input type="date" id="bloq-fecha-inicio" class="form-input" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha fin</label>
+        <input type="date" id="bloq-fecha-fin" class="form-input" />
+        <p class="form-hint">Dejar vacío para bloquear solo un día</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Motivo</label>
+        <input type="text" id="bloq-motivo" class="form-input" placeholder="Festivo, mantenimiento, evento…" maxlength="200" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-bloq-close2">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="btn-eliminar-bloqueo" style="display:none;margin-right:auto">Eliminar</button>
+      <button class="btn btn-primary" id="btn-guardar-bloqueo">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BLOQUEO EMPLEADA -->
+<div class="modal-overlay" id="modal-bloq-emp">
+  <div class="modal">
+    <div class="modal-header">
+      <p class="modal-title" id="modal-emp-bloq-titulo">Nuevo bloqueo de empleada</p>
+      <button class="modal-close" id="modal-emp-bloq-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="emp-bloq-id" />
+      <div class="form-group">
+        <label class="form-label">Empleada *</label>
+        <select id="emp-bloq-empleada" class="form-input" required>
+          <option value="">Seleccionar…</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha inicio *</label>
+        <input type="date" id="emp-bloq-fecha-inicio" class="form-input" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha fin</label>
+        <input type="date" id="emp-bloq-fecha-fin" class="form-input" />
+        <p class="form-hint">Dejar vacío para bloquear solo un día</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hora inicio</label>
+        <input type="time" id="emp-bloq-hora-inicio" class="form-input" />
+        <p class="form-hint">Dejar vacío para bloquear todo el día</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hora fin</label>
+        <input type="time" id="emp-bloq-hora-fin" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Motivo</label>
+        <input type="text" id="emp-bloq-motivo" class="form-input" placeholder="Vacaciones, cita médica, licencia…" maxlength="200" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-emp-bloq-close2">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="btn-eliminar-emp-bloqueo" style="display:none;margin-right:auto">Eliminar</button>
+      <button class="btn btn-primary" id="btn-guardar-emp-bloqueo">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdmin }  from '/js/auth.js'
+  import { supabase }      from '/js/supabase-client.js'
+  import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
+  import {
+    toast, openModal, closeModal, renderSidebarUser, confirmAction, formatFechaCorta
+  } from '/js/utils.js'
+
+  const auth = await requireAdmin()
+  if (!auth) throw new Error()
+  document.getElementById('sidebar').innerHTML = getSidebarHTML('/disponibilidad.html')
+  initSidebar(auth.admin)
+  renderSidebarUser(auth.admin)
+
+  const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
+  const DIAS_KEYS = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
+
+  // ─── TABS ─────────────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'))
+      btn.classList.add('active')
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active')
+    })
+  })
+
+  // ─── HORARIO SEMANAL ──────────────────────────────────────
+  let configRow = null
+
+  async function cargarHorario() {
+    const { data } = await supabase.from('configuracion').select('*').limit(1).single()
+    configRow = data || {}
+
+    const horario = configRow.horario_semana || {
+      lunes:     { open:'09:00', close:'19:00', activo:true },
+      martes:    { open:'09:00', close:'19:00', activo:true },
+      miercoles: { open:'09:00', close:'19:00', activo:true },
+      jueves:    { open:'09:00', close:'19:00', activo:true },
+      viernes:   { open:'09:00', close:'19:00', activo:true },
+      sabado:    { open:'10:00', close:'17:00', activo:true },
+      domingo:   { open:'10:00', close:'15:00', activo:false },
+    }
+
+    const slotDur = configRow.slot_duracion_min || 60
+    document.getElementById('slot-duracion').value = slotDur
+
+    const grid = document.getElementById('horario-grid')
+    const headerRow = grid.querySelector('div')
+    grid.innerHTML = ''
+    grid.appendChild(headerRow)
+
+    DIAS.forEach((dia, i) => {
+      const key = DIAS_KEYS[i]
+      const d = horario[key] || { open:'09:00', close:'18:00', activo:false }
+      const row = document.createElement('div')
+      row.className = 'horario-row' + (!d.activo ? ' inactive' : '')
+      row.dataset.key = key
+      row.innerHTML = `
+        <span class="dia-label">${dia}</span>
+        <div class="horario-times">
+          <input type="time" class="open-time" value="${d.open || '09:00'}" />
+          <span>—</span>
+          <input type="time" class="close-time" value="${d.close || '18:00'}" />
+        </div>
+        <div class="slot-config"></div>
+        <div style="display:flex;justify-content:center">
+          <label class="toggle-switch">
+            <input type="checkbox" class="dia-toggle" ${d.activo ? 'checked' : ''} />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      `
+      grid.appendChild(row)
+
+      row.querySelector('.dia-toggle').addEventListener('change', e => {
+        row.classList.toggle('inactive', !e.target.checked)
+      })
+    })
+  }
+
+  document.getElementById('btn-guardar-horario').addEventListener('click', async () => {
+    const horario = {}
+    document.querySelectorAll('.horario-row[data-key]').forEach(row => {
+      const key = row.dataset.key
+      horario[key] = {
+        open:   row.querySelector('.open-time').value,
+        close:  row.querySelector('.close-time').value,
+        activo: row.querySelector('.dia-toggle').checked,
+      }
+    })
+    const slotDur = parseInt(document.getElementById('slot-duracion').value)
+
+    const updates = { horario_semana: horario, slot_duracion_min: slotDur }
+    let error
+    if (configRow?.id) {
+      ({ error } = await supabase.from('configuracion').update(updates).eq('id', configRow.id))
+    } else {
+      ({ error } = await supabase.from('configuracion').insert(updates))
+    }
+    if (error) { toast('Error al guardar horario', 'error'); return }
+    toast('Horario guardado', 'success')
+    await cargarHorario()
+  })
+
+  // ─── BLOQUEOS SPA ─────────────────────────────────────────
+  let bloqueosSpa = []
+
+  async function cargarBloqueos() {
+    const { data } = await supabase.from('bloqueos')
+      .select('*')
+      .is('empleado_id', null)
+      .order('fecha_inicio', { ascending: true })
+    bloqueosSpa = data || []
+    renderBloqueos()
+  }
+
+  function renderBloqueos() {
+    const list = document.getElementById('bloqueos-list')
+    if (!bloqueosSpa.length) {
+      list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">Sin bloqueos registrados</div>`
+      return
+    }
+    list.innerHTML = bloqueosSpa.map(b => `
+      <div class="bloqueo-item">
+        <div>
+          <div class="bloqueo-fecha">${formatFechaCorta(b.fecha_inicio)}${b.fecha_fin && b.fecha_fin !== b.fecha_inicio ? ' → ' + formatFechaCorta(b.fecha_fin) : ''}</div>
+        </div>
+        <div class="bloqueo-desc">${b.motivo || '—'}</div>
+        <div></div>
+        <div></div>
+        <button class="btn btn-ghost btn-sm" onclick="editarBloqueo('${b.id}')">Editar</button>
+      </div>
+    `).join('')
+  }
+
+  window.editarBloqueo = (id) => {
+    const b = bloqueosSpa.find(x => x.id === id)
+    if (!b) return
+    document.getElementById('bloq-id').value = b.id
+    document.getElementById('modal-bloq-titulo').textContent = 'Editar bloqueo'
+    document.getElementById('bloq-fecha-inicio').value = b.fecha_inicio
+    document.getElementById('bloq-fecha-fin').value = b.fecha_fin || ''
+    document.getElementById('bloq-motivo').value = b.motivo || ''
+    document.getElementById('btn-eliminar-bloqueo').style.display = 'inline-flex'
+    openModal('modal-bloqueo')
+  }
+
+  document.getElementById('btn-nuevo-bloqueo').addEventListener('click', () => {
+    document.getElementById('bloq-id').value = ''
+    document.getElementById('modal-bloq-titulo').textContent = 'Nuevo bloqueo'
+    document.getElementById('bloq-fecha-inicio').value = ''
+    document.getElementById('bloq-fecha-fin').value = ''
+    document.getElementById('bloq-motivo').value = ''
+    document.getElementById('btn-eliminar-bloqueo').style.display = 'none'
+    openModal('modal-bloqueo')
+  })
+
+  document.getElementById('btn-guardar-bloqueo').addEventListener('click', async () => {
+    const id = document.getElementById('bloq-id').value
+    const fechaInicio = document.getElementById('bloq-fecha-inicio').value
+    const fechaFin    = document.getElementById('bloq-fecha-fin').value || fechaInicio
+    const motivo      = document.getElementById('bloq-motivo').value.trim()
+    if (!fechaInicio) { toast('Fecha de inicio requerida', 'error'); return }
+
+    const payload = { fecha_inicio: fechaInicio, fecha_fin: fechaFin, motivo: motivo || null, empleado_id: null }
+    let error
+    if (id) {
+      ({ error } = await supabase.from('bloqueos').update(payload).eq('id', id))
+    } else {
+      ({ error } = await supabase.from('bloqueos').insert(payload))
+    }
+    if (error) { toast('Error al guardar bloqueo', 'error'); return }
+    toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')
+    closeModal('modal-bloqueo')
+    await cargarBloqueos()
+  })
+
+  document.getElementById('btn-eliminar-bloqueo').addEventListener('click', () => {
+    const id = document.getElementById('bloq-id').value
+    confirmAction({
+      title: 'Eliminar bloqueo',
+      text: '¿Segura que deseas eliminar este bloqueo?',
+      btnLabel: 'Eliminar',
+      onConfirm: async () => {
+        const { error } = await supabase.from('bloqueos').delete().eq('id', id)
+        if (error) { toast('Error al eliminar', 'error'); return }
+        toast('Bloqueo eliminado', 'success')
+        closeModal('modal-bloqueo')
+        await cargarBloqueos()
+      }
+    })
+  })
+
+  ;['modal-bloq-close','modal-bloq-close2'].forEach(id => document.getElementById(id).addEventListener('click', () => closeModal('modal-bloqueo')))
+
+  // ─── BLOQUEOS EMPLEADAS ────────────────────────────────────
+  let bloqueosEmp = []
+  let empleadas = []
+
+  async function cargarEmpleadas() {
+    const { data } = await supabase.from('empleados').select('id,nombre,apellido').eq('activo', true).order('nombre')
+    empleadas = data || []
+    const sel1 = document.getElementById('filtro-empleada-bloq')
+    const sel2 = document.getElementById('emp-bloq-empleada')
+    empleadas.forEach(e => {
+      const nombre = [e.nombre, e.apellido].filter(Boolean).join(' ')
+      sel1.insertAdjacentHTML('beforeend', `<option value="${e.id}">${nombre}</option>`)
+      sel2.insertAdjacentHTML('beforeend', `<option value="${e.id}">${nombre}</option>`)
+    })
+  }
+
+  async function cargarBloqueosEmp() {
+    const filtro = document.getElementById('filtro-empleada-bloq').value
+    let query = supabase.from('bloqueos').select('*,empleados(nombre,apellido)').not('empleado_id', 'is', null).order('fecha_inicio', { ascending: true })
+    if (filtro) query = query.eq('empleado_id', filtro)
+    const { data } = await query
+    bloqueosEmp = data || []
+    renderBloqueosEmp()
+  }
+
+  function renderBloqueosEmp() {
+    const list = document.getElementById('emp-bloqueos-list')
+    if (!bloqueosEmp.length) {
+      list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">Sin bloqueos registrados</div>`
+      return
+    }
+    list.innerHTML = bloqueosEmp.map(b => {
+      const nombre = b.empleados ? [b.empleados.nombre, b.empleados.apellido].filter(Boolean).join(' ') : '—'
+      const horas = b.hora_inicio ? ` · ${b.hora_inicio.slice(0,5)}–${(b.hora_fin || '').slice(0,5)}` : ' (todo el día)'
+      return `
+        <div class="bloqueo-item">
+          <div style="font-weight:500;color:var(--text-secondary)">${nombre}</div>
+          <div>${formatFechaCorta(b.fecha_inicio)}${b.fecha_fin && b.fecha_fin !== b.fecha_inicio ? ' → ' + formatFechaCorta(b.fecha_fin) : ''}</div>
+          <div class="bloqueo-desc">${horas}</div>
+          <div class="bloqueo-desc">${b.motivo || '—'}</div>
+          <button class="btn btn-ghost btn-sm" onclick="editarBloqEmp('${b.id}')">Editar</button>
+        </div>
+      `
+    }).join('')
+  }
+
+  window.editarBloqEmp = (id) => {
+    const b = bloqueosEmp.find(x => x.id === id)
+    if (!b) return
+    document.getElementById('emp-bloq-id').value = b.id
+    document.getElementById('modal-emp-bloq-titulo').textContent = 'Editar bloqueo de empleada'
+    document.getElementById('emp-bloq-empleada').value = b.empleado_id
+    document.getElementById('emp-bloq-fecha-inicio').value = b.fecha_inicio
+    document.getElementById('emp-bloq-fecha-fin').value = b.fecha_fin || ''
+    document.getElementById('emp-bloq-hora-inicio').value = b.hora_inicio ? b.hora_inicio.slice(0,5) : ''
+    document.getElementById('emp-bloq-hora-fin').value = b.hora_fin ? b.hora_fin.slice(0,5) : ''
+    document.getElementById('emp-bloq-motivo').value = b.motivo || ''
+    document.getElementById('btn-eliminar-emp-bloqueo').style.display = 'inline-flex'
+    openModal('modal-bloq-emp')
+  }
+
+  document.getElementById('btn-nuevo-bloq-emp').addEventListener('click', () => {
+    document.getElementById('emp-bloq-id').value = ''
+    document.getElementById('modal-emp-bloq-titulo').textContent = 'Nuevo bloqueo de empleada'
+    document.getElementById('emp-bloq-empleada').value = ''
+    document.getElementById('emp-bloq-fecha-inicio').value = ''
+    document.getElementById('emp-bloq-fecha-fin').value = ''
+    document.getElementById('emp-bloq-hora-inicio').value = ''
+    document.getElementById('emp-bloq-hora-fin').value = ''
+    document.getElementById('emp-bloq-motivo').value = ''
+    document.getElementById('btn-eliminar-emp-bloqueo').style.display = 'none'
+    openModal('modal-bloq-emp')
+  })
+
+  document.getElementById('btn-guardar-emp-bloqueo').addEventListener('click', async () => {
+    const id           = document.getElementById('emp-bloq-id').value
+    const empleadaId   = document.getElementById('emp-bloq-empleada').value
+    const fechaInicio  = document.getElementById('emp-bloq-fecha-inicio').value
+    const fechaFin     = document.getElementById('emp-bloq-fecha-fin').value || fechaInicio
+    const horaInicio   = document.getElementById('emp-bloq-hora-inicio').value || null
+    const horaFin      = document.getElementById('emp-bloq-hora-fin').value || null
+    const motivo       = document.getElementById('emp-bloq-motivo').value.trim()
+
+    if (!empleadaId || !fechaInicio) { toast('Empleada y fecha de inicio son requeridas', 'error'); return }
+
+    const payload = { empleado_id: empleadaId, fecha_inicio: fechaInicio, fecha_fin: fechaFin, hora_inicio: horaInicio, hora_fin: horaFin, motivo: motivo || null }
+    let error
+    if (id) {
+      ({ error } = await supabase.from('bloqueos').update(payload).eq('id', id))
+    } else {
+      ({ error } = await supabase.from('bloqueos').insert(payload))
+    }
+    if (error) { toast('Error al guardar', 'error'); return }
+    toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')
+    closeModal('modal-bloq-emp')
+    await cargarBloqueosEmp()
+  })
+
+  document.getElementById('btn-eliminar-emp-bloqueo').addEventListener('click', () => {
+    const id = document.getElementById('emp-bloq-id').value
+    confirmAction({
+      title: 'Eliminar bloqueo',
+      text: '¿Segura que deseas eliminar este bloqueo?',
+      btnLabel: 'Eliminar',
+      onConfirm: async () => {
+        const { error } = await supabase.from('bloqueos').delete().eq('id', id)
+        if (error) { toast('Error al eliminar', 'error'); return }
+        toast('Bloqueo eliminado', 'success')
+        closeModal('modal-bloq-emp')
+        await cargarBloqueosEmp()
+      }
+    })
+  })
+
+  ;['modal-emp-bloq-close','modal-emp-bloq-close2'].forEach(id => document.getElementById(id).addEventListener('click', () => closeModal('modal-bloq-emp')))
+
+  document.getElementById('filtro-empleada-bloq').addEventListener('change', cargarBloqueosEmp)
+
+  // ─── INIT ──────────────────────────────────────────────────
+  await Promise.all([cargarHorario(), cargarBloqueos(), cargarEmpleadas()])
+  await cargarBloqueosEmp()
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# Variables de entorno — NUNCA commitear
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Dependencias
+node_modules/
+
+# Sistema operativo
+.DS_Store
+**/.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editores
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vercel
+.vercel/
+
+# Graphify (análisis local, no va al repo)
+graphify-out/

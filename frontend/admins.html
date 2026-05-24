@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admins — Serenità Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <style>
+    .admin-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      transition: var(--transition);
+    }
+    .admin-card:hover { border-color: var(--lilac); }
+    .admin-card.me   { border-color: var(--purple-medium); background: rgba(82,37,102,0.04); }
+    .admin-avatar {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.2rem; font-weight: 300;
+      color: #fff; flex-shrink: 0;
+    }
+    .admin-info { flex: 1; min-width: 0; }
+    .admin-name  { font-size: 0.92rem; font-weight: 500; color: var(--text-secondary); }
+    .admin-email { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    .admin-meta  { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+    .badge-yo {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px;
+      background: var(--lilac-pale); color: var(--purple-dark);
+      font-size: 0.7rem; font-weight: 500; white-space: nowrap;
+    }
+    .admin-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .btn-danger-sm {
+      padding: 5px 12px; font-size: 0.75rem; border-radius: var(--radius-sm);
+      background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;
+      cursor: pointer; transition: var(--transition); font-family: var(--font-body);
+    }
+    .btn-danger-sm:hover { background: #fca5a5; }
+    .required-star { color: #e05353; margin-left: 2px; }
+    .admin-grid { display: flex; flex-direction: column; gap: 12px; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Administradores</h1>
+        <p class="page-subtitle">Gestión de acceso al panel administrativo</p>
+      </div>
+      <div class="page-header-right">
+        <button class="btn btn-primary" id="btn-nuevo-admin">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nuevo admin
+        </button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="card mb-24">
+        <div class="card-header">
+          <h2 class="card-title">Administradores activos</h2>
+          <p class="card-subtitle" id="admins-count">Cargando…</p>
+        </div>
+        <div id="admins-grid" class="admin-grid mt-16">
+          <!-- skeletons -->
+          <div class="skeleton" style="height:78px;border-radius:10px"></div>
+          <div class="skeleton" style="height:78px;border-radius:10px"></div>
+        </div>
+      </div>
+
+      <!-- Instrucciones -->
+      <div class="card" style="border-left: 3px solid var(--lilac)">
+        <div class="card-header">
+          <h2 class="card-title">¿Cómo funciona?</h2>
+        </div>
+        <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.8;margin-top:8px">
+          <p>• Un <strong style="color:var(--text-secondary)">administrador</strong> tiene acceso completo a este panel: empleadas, reservas, servicios, clientes, configuración y testimonios.</p>
+          <p>• Al crear un admin se genera una cuenta en Supabase Auth y se registra en la tabla <code style="background:var(--lilac-pale);padding:1px 6px;border-radius:4px">admin_users</code>.</p>
+          <p>• <strong style="color:#991b1b">No puedes eliminarte a ti mismo</strong> para evitar quedar sin acceso.</p>
+          <p>• Para agregar admins manualmente desde Supabase revisa el archivo <code style="background:var(--lilac-pale);padding:1px 6px;border-radius:4px">INSTRUCCIONES-AGREGAR-ADMIN.md</code> en la carpeta del proyecto.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL NUEVO ADMIN -->
+<div class="modal-overlay" id="modal-admin">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <p class="modal-title">Nuevo administrador</p>
+        <p class="modal-subtitle">Se creará una cuenta con acceso completo al panel</p>
+      </div>
+      <button class="modal-close" id="modal-admin-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre completo <span class="required-star">*</span></label>
+        <input type="text" id="adm-nombre" class="form-input" placeholder="Ej: Laura Martínez" />
+        <p class="form-error hidden" id="err-adm-nombre">El nombre es requerido.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo electrónico <span class="required-star">*</span></label>
+        <input type="email" id="adm-email" class="form-input" placeholder="admin@ejemplo.com" autocomplete="off" />
+        <p class="form-error hidden" id="err-adm-email">Ingresa un correo válido.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña <span class="required-star">*</span></label>
+        <div style="position:relative">
+          <input type="password" id="adm-password" class="form-input"
+            placeholder="Mínimo 8 caracteres" autocomplete="new-password"
+            style="padding-right:42px" />
+          <button type="button" id="adm-pass-toggle" tabindex="-1"
+            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0;line-height:0">
+            <svg id="adm-eye-show" xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="adm-eye-hide" xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+        <p class="form-hint mt-4">El admin usará estas credenciales para ingresar al panel.</p>
+        <p class="form-error hidden" id="err-adm-password">Contraseña requerida (mínimo 8 caracteres).</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modal-admin-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="modal-admin-save">
+        <span id="adm-btn-txt">Crear admin</span>
+        <svg id="adm-btn-spin" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="hidden spinning"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdmin }    from '/js/auth.js'
+  import { supabase }        from '/js/supabase-client.js'
+  import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
+  import { toast, openModal, closeModal } from '/js/utils.js'
+
+  const EDGE_FN = 'https://whouejjrpjcvoueyajbu.supabase.co/functions/v1/smooth-function'
+
+  // ——— Auth guard ———————————————————————————————————————————
+  const sidebarEl = document.getElementById('sidebar')
+  sidebarEl.innerHTML = getSidebarHTML('/admins.html')
+
+  const auth = await requireAdmin()
+  if (!auth) throw new Error('No autorizado')
+  const miUid = auth.session.user.id
+
+  await initSidebar(auth.admin)
+
+  // ——— Cargar admins ————————————————————————————————————————
+  let adminsAll = []
+
+  async function cargarAdmins() {
+    const { data, error } = await supabase
+      .from('admin_users')
+      .select('id, user_id, nombre, email, created_at')
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      document.getElementById('admins-grid').innerHTML =
+        `<p style="color:#991b1b;font-size:0.85rem">Error al cargar: ${error.message}</p>`
+      return
+    }
+
+    adminsAll = data || []
+    renderAdmins()
+  }
+
+  function renderAdmins() {
+    const grid = document.getElementById('admins-grid')
+    const count = document.getElementById('admins-count')
+    count.textContent = `${adminsAll.length} administrador${adminsAll.length !== 1 ? 'es' : ''}`
+
+    if (!adminsAll.length) {
+      grid.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;padding:16px 0">No hay administradores registrados.</p>`
+      return
+    }
+
+    grid.innerHTML = adminsAll.map(a => {
+      const esYo    = a.user_id === miUid
+      const inicial = (a.nombre || a.email || 'A')[0].toUpperCase()
+      const fecha   = a.created_at ? new Date(a.created_at).toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }) : '—'
+
+      return `
+        <div class="admin-card${esYo ? ' me' : ''}">
+          <div class="admin-avatar">${inicial}</div>
+          <div class="admin-info">
+            <div class="admin-name">${a.nombre || '—'}</div>
+            <div class="admin-email">${a.email || '—'}</div>
+            <div class="admin-meta">Desde ${fecha}</div>
+          </div>
+          <div class="admin-actions">
+            ${esYo
+              ? `<span class="badge-yo">
+                  <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Tú
+                </span>`
+              : `<button class="btn-danger-sm" onclick="eliminarAdmin('${a.id}','${a.nombre || a.email}')">Eliminar</button>`
+            }
+          </div>
+        </div>
+      `
+    }).join('')
+  }
+
+  // ——— Eliminar admin ——————————————————————————————————————
+  window.eliminarAdmin = async (id, nombre) => {
+    if (!confirm(`¿Eliminar el acceso de admin a "${nombre}"?\n\nEsto revoca su acceso al panel pero NO elimina su cuenta de Supabase Auth.`)) return
+
+    const { error } = await supabase.from('admin_users').delete().eq('id', id)
+    if (error) { toast(error.message, 'error'); return }
+
+    toast(`Acceso de "${nombre}" revocado`, 'success')
+    await cargarAdmins()
+  }
+
+  // ——— Edge Function ————————————————————————————————————————
+  async function llamarEdgeFn(body) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) throw new Error('Sesión expirada. Recarga la página.')
+    const res = await fetch(EDGE_FN, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(body),
+    })
+    let result = {}
+    try { result = await res.json() } catch { /* no-JSON */ }
+    if (!res.ok) throw new Error(result.error || result.msg || result.message || `Error HTTP ${res.status}`)
+    if (!result.uuid) throw new Error('La función no devolvió el UUID. Verifica el código en Supabase.')
+    return result
+  }
+
+  // ——— Modal nuevo admin ————————————————————————————————————
+  function abrirModal() {
+    ;['adm-nombre','adm-email','adm-password'].forEach(id => {
+      const el = document.getElementById(id)
+      if (el) { el.value = ''; el.classList.remove('error') }
+    })
+    ;['err-adm-nombre','err-adm-email','err-adm-password'].forEach(id =>
+      document.getElementById(id)?.classList.add('hidden')
+    )
+    openModal('modal-admin')
+  }
+
+  document.getElementById('btn-nuevo-admin').addEventListener('click', abrirModal)
+  document.getElementById('modal-admin-close').addEventListener('click',  () => closeModal('modal-admin'))
+  document.getElementById('modal-admin-cancel').addEventListener('click', () => closeModal('modal-admin'))
+
+  // Toggle contraseña
+  document.getElementById('adm-pass-toggle').addEventListener('click', () => {
+    const inp  = document.getElementById('adm-password')
+    const show = document.getElementById('adm-eye-show')
+    const hide = document.getElementById('adm-eye-hide')
+    if (inp.type === 'password') { inp.type = 'text';     show.style.display = 'none'; hide.style.display = '' }
+    else                         { inp.type = 'password'; show.style.display = '';     hide.style.display = 'none' }
+  })
+
+  // ——— Guardar nuevo admin —————————————————————————————————
+  document.getElementById('modal-admin-save').addEventListener('click', async () => {
+    const nombre   = document.getElementById('adm-nombre').value.trim()
+    const email    = document.getElementById('adm-email').value.trim().toLowerCase()
+    const password = document.getElementById('adm-password').value
+
+    let valid = true
+    if (!nombre) {
+      document.getElementById('err-adm-nombre').classList.remove('hidden')
+      document.getElementById('adm-nombre').classList.add('error')
+      valid = false
+    } else {
+      document.getElementById('err-adm-nombre').classList.add('hidden')
+      document.getElementById('adm-nombre').classList.remove('error')
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      document.getElementById('err-adm-email').classList.remove('hidden')
+      document.getElementById('adm-email').classList.add('error')
+      valid = false
+    } else {
+      document.getElementById('err-adm-email').classList.add('hidden')
+      document.getElementById('adm-email').classList.remove('error')
+    }
+    if (!password || password.length < 8) {
+      document.getElementById('err-adm-password').classList.remove('hidden')
+      document.getElementById('adm-password').classList.add('error')
+      valid = false
+    } else {
+      document.getElementById('err-adm-password').classList.add('hidden')
+      document.getElementById('adm-password').classList.remove('error')
+    }
+    if (!valid) return
+
+    const btnTxt  = document.getElementById('adm-btn-txt')
+    const btnSpin = document.getElementById('adm-btn-spin')
+    btnTxt.textContent = 'Creando…'
+    btnSpin.classList.remove('hidden')
+    document.getElementById('modal-admin-save').disabled = true
+
+    try {
+      // 1. Crear usuario Auth
+      const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
+
+      // 2. Registrar en admin_users
+      const { error } = await supabase
+        .from('admin_users')
+        .insert({ user_id: uuid, nombre, email })
+
+      if (error) throw error
+
+      toast(`Admin "${nombre}" creado exitosamente`, 'success')
+      closeModal('modal-admin')
+      await cargarAdmins()
+
+    } catch (err) {
+      toast(err.message || 'Error al crear admin', 'error')
+    } finally {
+      btnTxt.textContent = 'Crear admin'
+      btnSpin.classList.add('hidden')
+      document.getElementById('modal-admin-save').disabled = false
+    }
+  })
+
+  // ——— Init ————————————————————————————————————————————————
+  await cargarAdmins()
+</script>
+</body>
+</html>

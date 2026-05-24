@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Servicios — Serenità Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Servicios</h1>
+        <p class="page-subtitle">Catálogo de tratamientos y servicios</p>
+      </div>
+      <div class="page-header-right">
+        <button class="btn btn-primary" id="btn-nuevo-servicio">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nuevo servicio
+        </button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="card">
+        <div class="filters-bar">
+          <div class="search-input-wrapper">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="buscar-servicio" class="form-input" placeholder="Buscar servicio…" />
+          </div>
+          <select id="filtro-estado-svc" class="filter-select">
+            <option value="">Todos</option>
+            <option value="true">Activos</option>
+            <option value="false">Inactivos</option>
+          </select>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Servicio</th>
+                <th>Duración</th>
+                <th>Buffer</th>
+                <th>Precio</th>
+                <th>Empleadas asignadas</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="servicios-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR SERVICIO -->
+<div class="modal-overlay" id="modal-servicio">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <p class="modal-title" id="modal-svc-titulo">Nuevo servicio</p>
+      </div>
+      <button class="modal-close" id="modal-svc-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="svc-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre <span class="required">*</span></label>
+          <input type="text" id="svc-nombre" class="form-input" placeholder="Ritual Cuerpo Completo" />
+          <span class="form-error hidden" id="err-svc-nombre">Requerido</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <input type="text" id="svc-categoria" class="form-input" placeholder="Masajes, Rituales…" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción</label>
+        <textarea id="svc-descripcion" class="form-textarea" rows="3" maxlength="1000"></textarea>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">Duración (min) <span class="required">*</span></label>
+          <input type="number" id="svc-duracion" class="form-input" min="15" step="15" placeholder="60" />
+          <span class="form-error hidden" id="err-svc-duracion">Requerido</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Buffer (min)</label>
+          <input type="number" id="svc-buffer" class="form-input" min="0" step="5" placeholder="10" />
+          <p class="form-hint">Tiempo de preparación</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Precio</label>
+          <input type="number" id="svc-precio" class="form-input" min="0" step="1000" placeholder="150000" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Imagen (URL opcional)</label>
+        <input type="url" id="svc-imagen" class="form-input" placeholder="https://… (opcional)" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Empleadas que realizan este servicio</label>
+        <div id="emp-ms-wrapper" style="position:relative">
+          <div class="multiselect-wrapper" id="emp-ms-display"></div>
+          <div class="ms-dropdown" id="emp-ms-dropdown"></div>
+        </div>
+        <p class="form-hint mt-8">La asignación es bidireccional: también aparece en el perfil de la empleada.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <div class="toggle-wrapper" id="svc-activo-toggle">
+          <div class="toggle on" id="svc-activo-switch"></div>
+          <span class="toggle-label" id="svc-activo-label">Activo</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modal-svc-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="modal-svc-save">
+        <span id="svc-btn-txt">Guardar servicio</span>
+        <svg id="svc-btn-spin" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="hidden spinning"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdmin }  from '/js/auth.js'
+  import { supabase }      from '/js/supabase-client.js'
+  import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
+  import {
+    avatarHTML, badgeActivo, formatPrecio, toast, openModal, closeModal,
+    confirmAction, renderSidebarUser, debounce, truncate
+  } from '/js/utils.js'
+
+  const auth = await requireAdmin()
+  if (!auth) throw new Error()
+  document.getElementById('sidebar').innerHTML = getSidebarHTML('/servicios.html')
+  initSidebar(auth.admin)
+  renderSidebarUser(auth.admin)
+
+  let serviciosAll = []
+  let empleadasAll = []
+  let asignacionesAll = []
+  let empSeleccionados = []
+  let svcActivoState = true
+  let editingId = null
+
+  async function cargarDatos() {
+    const [{ data: svcs }, { data: emps }, { data: asigs }] = await Promise.all([
+      supabase.from('servicios').select('*').order('nombre'),
+      supabase.from('empleados').select('id,nombre,apellido,foto_url').eq('activo', true).order('nombre'),
+      supabase.from('empleado_servicios').select('empleado_id,servicio_id,empleados(nombre,apellido,foto_url)'),
+    ])
+    serviciosAll = svcs || []
+    empleadasAll = emps || []
+    asignacionesAll = asigs || []
+    renderTabla()
+  }
+
+  let busqueda = '', filtroEstado = ''
+
+  function renderTabla() {
+    const tbody = document.getElementById('servicios-tbody')
+    let arr = serviciosAll.filter(s => {
+      if (busqueda && !s.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false
+      if (filtroEstado !== '' && String(s.activo) !== filtroEstado) return false
+      return true
+    })
+
+    if (!arr.length) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon"><svg width="28" height="28" fill="none" stroke="var(--lilac)" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><p class="empty-state-title">Sin servicios</p><p class="empty-state-text">Crea tu primer servicio con el botón superior</p></div></td></tr>`
+      return
+    }
+
+    tbody.innerHTML = arr.map(s => {
+      const asigs = asignacionesAll.filter(a => a.servicio_id === s.id)
+      const avatarStack = asigs.slice(0,4).map(a =>
+        avatarHTML(a.empleados?.nombre, a.empleados?.apellido, a.empleados?.foto_url, 28)
+      ).join('')
+      const masEmps = asigs.length > 4 ? `<span style="width:28px;height:28px;border-radius:50%;background:var(--lilac-pale);display:flex;align-items:center;justify-content:center;font-size:0.65rem;color:var(--purple-dark);margin-left:-8px;border:2px solid #fff">+${asigs.length-4}</span>` : ''
+
+      return `
+        <tr>
+          <td>
+            <div>
+              <div style="font-weight:500">${s.nombre}</div>
+              ${s.categoria ? `<div class="td-muted" style="font-size:0.72rem">${s.categoria}</div>` : ''}
+            </div>
+          </td>
+          <td>${s.duracion_min ? s.duracion_min + ' min' : '—'}</td>
+          <td class="td-muted">${s.buffer_min != null ? s.buffer_min + ' min' : '—'}</td>
+          <td style="font-weight:500">${formatPrecio(s.precio)}</td>
+          <td>
+            ${asigs.length > 0
+              ? `<div class="avatar-stack" style="margin-left:8px">${avatarStack}${masEmps}</div>`
+              : '<span class="text-muted" style="font-size:0.78rem">Sin asignar</span>'
+            }
+          </td>
+          <td>${badgeActivo(s.activo)}</td>
+          <td>
+            <div class="table-actions">
+              <button class="action-btn" data-tooltip="Editar" onclick="editarServicio('${s.id}')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="action-btn danger" data-tooltip="Eliminar" onclick="eliminarServicio('${s.id}','${s.nombre.replace(/'/g,'&#39;')}')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `
+    }).join('')
+  }
+
+  document.getElementById('buscar-servicio').addEventListener('input', debounce(e => { busqueda = e.target.value; renderTabla() }))
+  document.getElementById('filtro-estado-svc').addEventListener('change', e => { filtroEstado = e.target.value; renderTabla() })
+
+  // ——— Multiselect empleadas ————————————————————————
+  function renderEmpMultiselect() {
+    const display  = document.getElementById('emp-ms-display')
+    const dropdown = document.getElementById('emp-ms-dropdown')
+    display.innerHTML = empSeleccionados.map(e => {
+      const n = [e.nombre, e.apellido].filter(Boolean).join(' ')
+      return `<span class="ms-chip">${n}<button type="button" onclick="removeEmp('${e.id}')">×</button></span>`
+    }).join('') + '<span style="width:4px;display:inline-block"></span>'
+
+    dropdown.innerHTML = empleadasAll.map(e => {
+      const n = [e.nombre, e.apellido].filter(Boolean).join(' ')
+      const sel = empSeleccionados.some(x => x.id === e.id)
+      return `<div class="ms-option ${sel ? 'selected' : ''}" onclick="toggleEmp('${e.id}','${e.nombre}','${e.apellido || ''}')">${n}${sel ? ' ✓' : ''}</div>`
+    }).join('')
+  }
+
+  window.toggleEmp = (id, nombre, apellido) => {
+    const idx = empSeleccionados.findIndex(e => e.id === id)
+    if (idx === -1) empSeleccionados.push({ id, nombre, apellido })
+    else empSeleccionados.splice(idx, 1)
+    renderEmpMultiselect()
+  }
+  window.removeEmp = id => {
+    empSeleccionados = empSeleccionados.filter(e => e.id !== id)
+    renderEmpMultiselect()
+  }
+  document.getElementById('emp-ms-display').addEventListener('click', () => {
+    document.getElementById('emp-ms-dropdown').classList.toggle('open')
+  })
+  document.addEventListener('click', e => {
+    if (!document.getElementById('emp-ms-wrapper').contains(e.target)) {
+      document.getElementById('emp-ms-dropdown').classList.remove('open')
+    }
+  })
+
+  // Toggle
+  const toggleSwitch = document.getElementById('svc-activo-switch')
+  const toggleLabel  = document.getElementById('svc-activo-label')
+  document.getElementById('svc-activo-toggle').addEventListener('click', () => {
+    svcActivoState = !svcActivoState
+    toggleSwitch.classList.toggle('on', svcActivoState)
+    toggleLabel.textContent = svcActivoState ? 'Activo' : 'Inactivo'
+  })
+
+  // ——— Nueva / Editar ————————————————————————————————
+  document.getElementById('btn-nuevo-servicio').addEventListener('click', () => {
+    editingId = null
+    document.getElementById('modal-svc-titulo').textContent = 'Nuevo servicio'
+    ;['svc-id','svc-nombre','svc-categoria','svc-descripcion','svc-duracion','svc-buffer','svc-precio','svc-imagen'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = ''
+    })
+    empSeleccionados = []
+    svcActivoState = true
+    toggleSwitch.classList.add('on')
+    toggleLabel.textContent = 'Activo'
+    renderEmpMultiselect()
+    openModal('modal-servicio')
+  })
+
+  window.editarServicio = (id) => {
+    const s = serviciosAll.find(x => x.id === id)
+    if (!s) return
+    editingId = id
+    document.getElementById('modal-svc-titulo').textContent = 'Editar servicio'
+    document.getElementById('svc-id').value          = id
+    document.getElementById('svc-nombre').value      = s.nombre || ''
+    document.getElementById('svc-categoria').value   = s.categoria || ''
+    document.getElementById('svc-descripcion').value = s.descripcion || ''
+    document.getElementById('svc-duracion').value    = s.duracion_min || ''
+    document.getElementById('svc-buffer').value      = s.buffer_min ?? ''
+    document.getElementById('svc-precio').value      = s.precio || ''
+    document.getElementById('svc-imagen').value      = s.imagen_url || ''
+    const asigs = asignacionesAll.filter(a => a.servicio_id === id)
+    empSeleccionados = asigs.map(a => ({
+      id: a.empleado_id,
+      nombre: a.empleados?.nombre,
+      apellido: a.empleados?.apellido
+    }))
+    svcActivoState = s.activo !== false
+    toggleSwitch.classList.toggle('on', svcActivoState)
+    toggleLabel.textContent = svcActivoState ? 'Activo' : 'Inactivo'
+    renderEmpMultiselect()
+    openModal('modal-servicio')
+  }
+
+  document.getElementById('modal-svc-save').addEventListener('click', async () => {
+    const nombre    = document.getElementById('svc-nombre').value.trim()
+    const duracion  = parseInt(document.getElementById('svc-duracion').value)
+
+    if (!nombre) { document.getElementById('err-svc-nombre').classList.remove('hidden'); document.getElementById('svc-nombre').classList.add('error'); return }
+    document.getElementById('err-svc-nombre').classList.add('hidden'); document.getElementById('svc-nombre').classList.remove('error')
+    if (!duracion || duracion < 1) { document.getElementById('err-svc-duracion').classList.remove('hidden'); document.getElementById('svc-duracion').classList.add('error'); return }
+    document.getElementById('err-svc-duracion').classList.add('hidden'); document.getElementById('svc-duracion').classList.remove('error')
+
+    const btnTxt  = document.getElementById('svc-btn-txt')
+    const btnSpin = document.getElementById('svc-btn-spin')
+    btnTxt.textContent = 'Guardando…'; btnSpin.classList.remove('hidden')
+    document.getElementById('modal-svc-save').disabled = true
+
+    try {
+      const payload = {
+        nombre,
+        categoria:   document.getElementById('svc-categoria').value.trim() || null,
+        descripcion: document.getElementById('svc-descripcion').value.trim() || null,
+        duracion_min: duracion,
+        buffer_min:  parseInt(document.getElementById('svc-buffer').value) || 10,
+        precio:      parseFloat(document.getElementById('svc-precio').value) || null,
+        imagen_url:  document.getElementById('svc-imagen').value.trim() || null,
+        activo:      svcActivoState,
+      }
+
+      let targetId = editingId
+      if (editingId) {
+        const { error } = await supabase.from('servicios').update(payload).eq('id', editingId)
+        if (error) throw error
+      } else {
+        const { data: nuevo, error } = await supabase.from('servicios').insert(payload).select().single()
+        if (error) throw error
+        targetId = nuevo.id
+      }
+
+      // Actualizar asignaciones empleadas
+      await supabase.from('empleado_servicios').delete().eq('servicio_id', targetId)
+      if (empSeleccionados.length) {
+        await supabase.from('empleado_servicios').insert(empSeleccionados.map(e => ({ servicio_id: targetId, empleado_id: e.id })))
+      }
+
+      toast(editingId ? 'Servicio actualizado' : 'Servicio creado', 'success')
+      closeModal('modal-servicio')
+      await cargarDatos()
+    } catch (err) {
+      toast(err.message || 'Error al guardar', 'error')
+    } finally {
+      btnTxt.textContent = 'Guardar servicio'; btnSpin.classList.add('hidden')
+      document.getElementById('modal-svc-save').disabled = false
+    }
+  })
+
+  window.eliminarServicio = (id, nombre) => {
+    confirmAction({
+      title: `¿Eliminar "${nombre}"?`,
+      text: 'Se verificará que no haya reservas futuras antes de eliminar.',
+      btnLabel: 'Eliminar',
+      onConfirm: async () => {
+        const hoy = new Date().toISOString().split('T')[0]
+        const { data: futuras } = await supabase.from('citas').select('id').eq('servicio_id', id).gte('fecha', hoy).neq('estado','cancelada').limit(1)
+        if (futuras?.length) {
+          toast('No se puede eliminar: hay reservas futuras para este servicio', 'error'); return
+        }
+        const { error } = await supabase.from('servicios').delete().eq('id', id)
+        if (error) { toast('Error: ' + error.message, 'error'); return }
+        toast('Servicio eliminado', 'success')
+        await cargarDatos()
+      }
+    })
+  }
+
+  ;['modal-svc-close','modal-svc-cancel'].forEach(id => document.getElementById(id).addEventListener('click', () => closeModal('modal-servicio')))
+  document.getElementById('modal-servicio').addEventListener('click', e => { if (e.target.id === 'modal-servicio') closeModal('modal-servicio') })
+
+  await cargarDatos()
+</script>
+</body>
+</html>

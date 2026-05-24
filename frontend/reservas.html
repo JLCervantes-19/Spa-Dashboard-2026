@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservas — Serenità Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Reservas</h1>
+        <p class="page-subtitle">Gestión completa de citas</p>
+      </div>
+      <div class="page-header-right">
+        <button class="btn btn-primary" id="btn-nueva-reserva">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva reserva
+        </button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="card">
+        <div class="filters-bar">
+          <input type="date" id="filtro-fecha" class="form-input" style="width:160px;font-size:0.8rem" />
+          <select id="filtro-empleada" class="filter-select"><option value="">Todas las empleadas</option></select>
+          <select id="filtro-servicio" class="filter-select"><option value="">Todos los servicios</option></select>
+          <select id="filtro-estado" class="filter-select">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="confirmada">Confirmada</option>
+            <option value="realizada">Realizada</option>
+            <option value="atrasada">Atrasada</option>
+            <option value="no_asistio">No asistió</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+          <div class="search-input-wrapper">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="buscar-reserva" class="form-input" placeholder="Buscar cliente…" />
+          </div>
+          <button class="btn btn-ghost btn-sm" id="limpiar-filtros">Limpiar</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha / Hora</th>
+                <th>Cliente</th>
+                <th>Teléfono</th>
+                <th>Servicio</th>
+                <th>Empleada</th>
+                <th>Estado</th>
+                <th>Nota</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="reservas-tbody">
+              <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="reservas-pag" class="pagination">
+          <span id="pag-info" class="text-muted"></span>
+          <div class="pagination-controls" id="pag-controls"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DETALLE / EDITAR RESERVA -->
+<div class="modal-overlay" id="modal-reserva">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <p class="modal-title" id="modal-res-titulo">Detalle de reserva</p>
+        <p class="modal-subtitle" id="modal-res-subtitulo"></p>
+      </div>
+      <button class="modal-close" id="modal-res-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid mb-16" id="res-detail-grid">
+        <div class="detail-item"><div class="detail-label">Cliente</div><div class="detail-value" id="res-cliente"></div></div>
+        <div class="detail-item"><div class="detail-label">Teléfono</div><div class="detail-value" id="res-tel"></div></div>
+        <div class="detail-item"><div class="detail-label">Servicio</div><div class="detail-value" id="res-servicio"></div></div>
+        <div class="detail-item"><div class="detail-label">Empleada</div><div class="detail-value" id="res-empleada"></div></div>
+        <div class="detail-item"><div class="detail-label">Fecha</div><div class="detail-value" id="res-fecha"></div></div>
+        <div class="detail-item"><div class="detail-label">Hora</div><div class="detail-value" id="res-hora"></div></div>
+        <div class="detail-item"><div class="detail-label">Duración</div><div class="detail-value" id="res-duracion"></div></div>
+        <div class="detail-item"><div class="detail-label">Origen</div><div class="detail-value" id="res-origen"></div></div>
+        <div class="detail-item" style="grid-column:span 2"><div class="detail-label">Notas</div><div class="detail-value" id="res-notas" style="font-weight:400"></div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-row mt-16">
+        <div class="form-group">
+          <label class="form-label">Cambiar estado</label>
+          <select id="res-nuevo-estado" class="form-select">
+            <option value="pendiente">Pendiente</option>
+            <option value="confirmada">Confirmada</option>
+            <option value="realizada">Realizada</option>
+            <option value="atrasada">Atrasada</option>
+            <option value="no_asistio">No asistió</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reasignar empleada</label>
+          <select id="res-nueva-empleada" class="form-select"><option value="">— Sin cambio —</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nota (opcional)</label>
+        <textarea id="res-nota-update" class="form-textarea" rows="2" placeholder="Agrega una nota sobre este cambio…" maxlength="500"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="res-modal-cancel">Cerrar</button>
+      <button class="btn btn-primary" id="res-modal-save">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA RESERVA -->
+<div class="modal-overlay" id="modal-nueva-reserva">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div><p class="modal-title">Nueva reserva manual</p></div>
+      <button class="modal-close" id="modal-nres-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre cliente <span class="required">*</span></label>
+          <input type="text" id="nres-nombre" class="form-input" placeholder="María Pérez" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono <span class="required">*</span></label>
+          <input type="tel" id="nres-telefono" class="form-input" placeholder="3001234567" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="nres-email" class="form-input" placeholder="cliente@email.com" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Servicio <span class="required">*</span></label>
+          <select id="nres-servicio" class="form-select"><option value="">Seleccionar servicio…</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Empleada</label>
+          <select id="nres-empleada" class="form-select"><option value="">Auto-asignar</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha <span class="required">*</span></label>
+          <input type="date" id="nres-fecha" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora <span class="required">*</span></label>
+          <input type="time" id="nres-hora" class="form-input" step="1800" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas</label>
+        <textarea id="nres-notas" class="form-textarea" rows="2" placeholder="Notas adicionales…" maxlength="500"></textarea>
+      </div>
+      <div id="nres-sugerencia" style="display:none;padding:10px 12px;background:var(--lilac-pale);border-radius:var(--radius-sm);font-size:0.82rem;color:var(--text-secondary);margin-top:8px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modal-nres-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="modal-nres-save">Crear reserva</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdmin }  from '/js/auth.js'
+  import { supabase }      from '/js/supabase-client.js'
+  import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
+  import {
+    formatFecha, formatFechaCorta, formatHora, badgeCita, avatarHTML,
+    toast, openModal, closeModal, confirmAction, renderSidebarUser,
+    debounce, autoAsignarEmpleada, truncate
+  } from '/js/utils.js'
+
+  const auth = await requireAdmin()
+  if (!auth) throw new Error()
+  document.getElementById('sidebar').innerHTML = getSidebarHTML('/reservas.html')
+  initSidebar(auth.admin)
+  renderSidebarUser(auth.admin)
+
+  let reservasAll = []
+  let empleadasAll = []
+  let serviciosAll = []
+  let currentPage = 1
+  const PAGE_SIZE = 20
+  let citaActualId = null
+
+  // ——— Cargar datos ————————————————————————————————————
+  async function cargarDatos() {
+    const [{ data: res }, { data: emps }, { data: svcs }] = await Promise.all([
+      supabase.from('citas')
+        .select('id,fecha,hora_inicio,hora_fin,duracion_total,estado,notas,origen,clientes(id,nombre,telefono,email),servicios(id,nombre,precio,duracion_min),empleados(id,nombre,apellido,foto_url)')
+        .order('fecha', { ascending: false })
+        .order('hora_inicio', { ascending: false })
+        .limit(500),
+      supabase.from('empleados').select('id,nombre,apellido').eq('activo', true).order('nombre'),
+      supabase.from('servicios').select('id,nombre,duracion_min,buffer_min').eq('activo', true).order('nombre'),
+    ])
+    reservasAll = res || []
+    empleadasAll = emps || []
+    serviciosAll = svcs || []
+    poblarSelectores()
+    aplicarFiltros()
+  }
+
+  function poblarSelectores() {
+    const selEmp = document.getElementById('filtro-empleada')
+    const selSvc = document.getElementById('filtro-servicio')
+    const nresEmp = document.getElementById('nres-empleada')
+    const nresSvc = document.getElementById('nres-servicio')
+    const resEmp  = document.getElementById('res-nueva-empleada')
+    empleadasAll.forEach(e => {
+      const n = [e.nombre, e.apellido].filter(Boolean).join(' ')
+      ;[selEmp, nresEmp, resEmp].forEach(sel => {
+        const opt = document.createElement('option'); opt.value = e.id; opt.textContent = n; sel.appendChild(opt)
+      })
+    })
+    serviciosAll.forEach(s => {
+      ;[selSvc, nresSvc].forEach(sel => {
+        const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.nombre; sel.appendChild(opt)
+      })
+    })
+  }
+
+  // ——— Filtros ————————————————————————————————————————
+  let fFecha = '', fEmp = '', fSvc = '', fEst = '', fBuscar = ''
+
+  function aplicarFiltros() {
+    let arr = reservasAll.filter(r => {
+      if (fFecha  && r.fecha !== fFecha) return false
+      if (fEmp    && r.empleados?.id !== fEmp) return false
+      if (fSvc    && r.servicios?.id !== fSvc) return false
+      if (fEst    && r.estado !== fEst) return false
+      if (fBuscar && !(r.clientes?.nombre || '').toLowerCase().includes(fBuscar.toLowerCase())) return false
+      return true
+    })
+    currentPage = 1
+    renderTabla(arr)
+  }
+
+  document.getElementById('filtro-fecha').addEventListener('change', e => { fFecha = e.target.value; aplicarFiltros() })
+  document.getElementById('filtro-empleada').addEventListener('change', e => { fEmp = e.target.value; aplicarFiltros() })
+  document.getElementById('filtro-servicio').addEventListener('change', e => { fSvc = e.target.value; aplicarFiltros() })
+  document.getElementById('filtro-estado').addEventListener('change', e => { fEst = e.target.value; aplicarFiltros() })
+  document.getElementById('buscar-reserva').addEventListener('input', debounce(e => { fBuscar = e.target.value; aplicarFiltros() }))
+  document.getElementById('limpiar-filtros').addEventListener('click', () => {
+    fFecha = fEmp = fSvc = fEst = fBuscar = ''
+    ;['filtro-fecha','filtro-empleada','filtro-servicio','filtro-estado','buscar-reserva'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = ''
+    })
+    aplicarFiltros()
+  })
+
+  // ——— Render tabla ————————————————————————————————————
+  function renderTabla(arr) {
+    const total = arr.length
+    const start = (currentPage - 1) * PAGE_SIZE
+    const page  = arr.slice(start, start + PAGE_SIZE)
+    const tbody = document.getElementById('reservas-tbody')
+    document.getElementById('pag-info').textContent = `${total} reservas`
+
+    if (!page.length) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon"><svg width="28" height="28" fill="none" stroke="var(--lilac)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><p class="empty-state-title">Sin reservas</p><p class="empty-state-text">No se encontraron reservas con los filtros seleccionados</p></div></td></tr>`
+      document.getElementById('pag-controls').innerHTML = ''
+      return
+    }
+
+    tbody.innerHTML = page.map(r => `
+      <tr>
+        <td style="white-space:nowrap">
+          <div style="font-weight:500">${formatFechaCorta(r.fecha)}</div>
+          <div class="td-muted">${formatHora(r.hora_inicio)}</div>
+        </td>
+        <td>
+          <div style="font-weight:500">${r.clientes?.nombre || '—'}</div>
+        </td>
+        <td class="td-muted">${r.clientes?.telefono || '—'}</td>
+        <td>${r.servicios?.nombre || '—'}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:7px">
+            ${avatarHTML(r.empleados?.nombre, r.empleados?.apellido, r.empleados?.foto_url, 24)}
+            <span style="font-size:0.78rem">${r.empleados ? [r.empleados.nombre, r.empleados.apellido].filter(Boolean).join(' ') : '<span class="text-muted">Sin asignar</span>'}</span>
+          </div>
+        </td>
+        <td>${badgeCita(r.estado)}</td>
+        <td class="td-muted" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notas ? truncate(r.notas, 40) : '—'}</td>
+        <td>
+          <div class="table-actions">
+            <button class="action-btn" data-tooltip="Ver detalle" onclick="verDetalle('${r.id}')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="action-btn danger" data-tooltip="Eliminar" onclick="eliminarReserva('${r.id}')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('')
+
+    // Paginación
+    const totalPages = Math.ceil(total / PAGE_SIZE)
+    const pag = document.getElementById('pag-controls')
+    let pagHtml = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">‹</button>`
+    for (let i = 1; i <= totalPages; i++) {
+      if (totalPages <= 7 || Math.abs(i - currentPage) <= 2 || i === 1 || i === totalPages) {
+        pagHtml += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`
+      } else if (Math.abs(i - currentPage) === 3) {
+        pagHtml += `<span style="padding:0 4px;color:var(--text-muted)">…</span>`
+      }
+    }
+    pagHtml += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">›</button>`
+    pag.innerHTML = pagHtml
+  }
+
+  window.changePage = (p) => {
+    currentPage = p
+    const filtered = reservasAll.filter(r => {
+      if (fFecha  && r.fecha !== fFecha) return false
+      if (fEmp    && r.empleados?.id !== fEmp) return false
+      if (fSvc    && r.servicios?.id !== fSvc) return false
+      if (fEst    && r.estado !== fEst) return false
+      if (fBuscar && !(r.clientes?.nombre || '').toLowerCase().includes(fBuscar.toLowerCase())) return false
+      return true
+    })
+    renderTabla(filtered)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // ——— Ver detalle ————————————————————————————————————
+  window.verDetalle = (id) => {
+    const r = reservasAll.find(x => x.id === id)
+    if (!r) return
+    citaActualId = id
+    document.getElementById('modal-res-titulo').textContent = r.clientes?.nombre || 'Reserva'
+    document.getElementById('modal-res-subtitulo').textContent = `${formatFechaCorta(r.fecha)} · ${formatHora(r.hora_inicio)}`
+    document.getElementById('res-cliente').textContent   = r.clientes?.nombre || '—'
+    document.getElementById('res-tel').textContent       = r.clientes?.telefono || '—'
+    document.getElementById('res-servicio').textContent  = r.servicios?.nombre || '—'
+    document.getElementById('res-empleada').textContent  = r.empleados ? [r.empleados.nombre, r.empleados.apellido].filter(Boolean).join(' ') : '—'
+    document.getElementById('res-fecha').textContent     = formatFecha(r.fecha)
+    document.getElementById('res-hora').textContent      = `${formatHora(r.hora_inicio)} — ${formatHora(r.hora_fin)}`
+    document.getElementById('res-duracion').textContent  = r.duracion_total ? `${r.duracion_total} min` : '—'
+    document.getElementById('res-origen').textContent    = r.origen || '—'
+    document.getElementById('res-notas').textContent     = r.notas || 'Sin notas'
+    document.getElementById('res-nuevo-estado').value    = r.estado || 'pendiente'
+    document.getElementById('res-nueva-empleada').value  = ''
+    document.getElementById('res-nota-update').value     = ''
+    openModal('modal-reserva')
+  }
+
+  document.getElementById('res-modal-save').addEventListener('click', async () => {
+    const estado   = document.getElementById('res-nuevo-estado').value
+    const empId    = document.getElementById('res-nueva-empleada').value
+    const nota     = document.getElementById('res-nota-update').value.trim()
+    const upd      = { estado }
+    if (empId) upd.empleado_id = empId
+    if (nota)  upd.notas = nota
+    const { error } = await supabase.from('citas').update(upd).eq('id', citaActualId)
+    if (error) { toast('Error: ' + error.message, 'error'); return }
+    toast('Reserva actualizada', 'success')
+    closeModal('modal-reserva')
+    await cargarDatos()
+  })
+
+  // ——— Eliminar reserva ————————————————————————————————
+  window.eliminarReserva = (id) => {
+    confirmAction({
+      title: '¿Eliminar esta reserva?',
+      text: 'La reserva se eliminará permanentemente.',
+      btnLabel: 'Eliminar',
+      onConfirm: async () => {
+        const { error } = await supabase.from('citas').delete().eq('id', id)
+        if (error) { toast('Error: ' + error.message, 'error'); return }
+        toast('Reserva eliminada', 'success')
+        await cargarDatos()
+      }
+    })
+  }
+
+  // ——— Nueva reserva ————————————————————————————————————
+  document.getElementById('btn-nueva-reserva').addEventListener('click', () => {
+    const hoy = new Date().toISOString().split('T')[0]
+    document.getElementById('nres-fecha').value = hoy
+    openModal('modal-nueva-reserva')
+  })
+
+  // Auto-sugerir empleada cuando cambia servicio
+  document.getElementById('nres-servicio').addEventListener('change', async () => {
+    const svcId  = document.getElementById('nres-servicio').value
+    const fecha  = document.getElementById('nres-fecha').value
+    const sug    = document.getElementById('nres-sugerencia')
+    if (!svcId || !fecha) { sug.style.display = 'none'; return }
+    const empId = await autoAsignarEmpleada(supabase, svcId, fecha)
+    if (empId) {
+      const emp = empleadasAll.find(e => e.id === empId)
+      if (emp) {
+        sug.style.display = 'block'
+        sug.textContent = `✦ Se asignará automáticamente a ${[emp.nombre, emp.apellido].filter(Boolean).join(' ')} (menor carga del día)`
+        document.getElementById('nres-empleada').value = ''
+      }
+    } else {
+      sug.style.display = 'block'
+      sug.textContent = '⚠ No hay empleadas asignadas a este servicio. Se creará sin empleada asignada.'
+    }
+  })
+
+  document.getElementById('nres-fecha').addEventListener('change', () => {
+    const svcId = document.getElementById('nres-servicio').value
+    if (svcId) document.getElementById('nres-servicio').dispatchEvent(new Event('change'))
+  })
+
+  document.getElementById('modal-nres-save').addEventListener('click', async () => {
+    const nombre   = document.getElementById('nres-nombre').value.trim()
+    const telefono = document.getElementById('nres-telefono').value.trim()
+    const email    = document.getElementById('nres-email').value.trim().toLowerCase()
+    const svcId    = document.getElementById('nres-servicio').value
+    const fecha    = document.getElementById('nres-fecha').value
+    const hora     = document.getElementById('nres-hora').value
+    const notas    = document.getElementById('nres-notas').value.trim()
+
+    if (!nombre || !telefono || !svcId || !fecha || !hora) {
+      toast('Completa los campos requeridos', 'warning'); return
+    }
+
+    const svc = serviciosAll.find(s => s.id === svcId)
+    if (!svc) return
+
+    const btn = document.getElementById('modal-nres-save')
+    btn.disabled = true; btn.textContent = 'Creando…'
+
+    try {
+      // Buscar/crear cliente
+      let cliente_id = null
+      const { data: cliEx } = await supabase.from('clientes').select('id').eq('telefono', telefono).single()
+      if (cliEx) {
+        cliente_id = cliEx.id
+      } else {
+        const { data: nuevoC, error: cErr } = await supabase.from('clientes').insert({ nombre, telefono, email, origen: 'admin' }).select().single()
+        if (cErr) throw cErr
+        cliente_id = nuevoC.id
+      }
+
+      // Auto-asignar o usar selección manual
+      let empleado_id = document.getElementById('nres-empleada').value || null
+      if (!empleado_id) {
+        empleado_id = await autoAsignarEmpleada(supabase, svcId, fecha)
+      }
+
+      const totalMin  = (svc.duracion_min || 60) + (svc.buffer_min || 10)
+      const [h, m]    = hora.split(':').map(Number)
+      const finMin    = h * 60 + m + totalMin
+      const hora_fin  = `${String(Math.floor(finMin/60)).padStart(2,'0')}:${String(finMin%60).padStart(2,'0')}`
+
+      const { error } = await supabase.from('citas').insert({
+        cliente_id, servicio_id: svcId, empleado_id,
+        fecha, hora_inicio: hora, hora_fin, duracion_total: totalMin,
+        estado: 'pendiente', origen: 'admin', notas
+      })
+      if (error) throw error
+
+      toast('Reserva creada exitosamente', 'success')
+      closeModal('modal-nueva-reserva')
+      await cargarDatos()
+    } catch (err) {
+      toast(err.message || 'Error al crear la reserva', 'error')
+    } finally {
+      btn.disabled = false; btn.textContent = 'Crear reserva'
+    }
+  })
+
+  // Cerrar modales
+  ;['modal-res-close','res-modal-cancel'].forEach(id => document.getElementById(id).addEventListener('click', () => closeModal('modal-reserva')))
+  ;['modal-nres-close','modal-nres-cancel'].forEach(id => document.getElementById(id).addEventListener('click', () => closeModal('modal-nueva-reserva')))
+  document.getElementById('modal-reserva').addEventListener('click', e => { if (e.target.id === 'modal-reserva') closeModal('modal-reserva') })
+  document.getElementById('modal-nueva-reserva').addEventListener('click', e => { if (e.target.id === 'modal-nueva-reserva') closeModal('modal-nueva-reserva') })
+
+  await cargarDatos()
+</script>
+</body>
+</html>

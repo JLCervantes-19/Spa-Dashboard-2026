@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Empleadas — Serenità Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <style>
+    .chip-toggle {
+      cursor: pointer;
+      border: 1px dashed var(--lilac);
+      background: transparent;
+      color: var(--purple-medium);
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-family: var(--font-body);
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .chip-toggle:hover {
+      background: var(--lilac-light);
+      color: var(--purple-dark);
+    }
+    .required-star { color: #e05353; margin-left: 2px; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Empleadas</h1>
+        <p class="page-subtitle">Gestión del equipo de trabajo</p>
+      </div>
+      <div class="page-header-right">
+        <button class="btn btn-primary" id="btn-nueva-empleada">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva empleada
+        </button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="card">
+        <!-- Filtros -->
+        <div class="filters-bar">
+          <div class="search-input-wrapper">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="buscar-empleada" class="form-input" placeholder="Buscar por nombre…" />
+          </div>
+          <select id="filtro-estado-emp" class="filter-select">
+            <option value="">Todos los estados</option>
+            <option value="true">Activas</option>
+            <option value="false">Inactivas</option>
+          </select>
+          <select id="filtro-servicio-emp" class="filter-select">
+            <option value="">Todos los servicios</option>
+          </select>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Empleada</th>
+                <th>Email</th>
+                <th>Servicios asignados</th>
+                <th>Citas hoy</th>
+                <th>Citas semana</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="empleadas-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="empleadas-pagination" class="pagination"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR EMPLEADA -->
+<div class="modal-overlay" id="modal-empleada">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <p class="modal-title" id="modal-emp-titulo">Nueva empleada</p>
+        <p class="modal-subtitle" id="modal-emp-subtitulo">Completa los datos de la empleada</p>
+      </div>
+      <button class="modal-close" id="modal-emp-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="emp-id" />
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre <span class="required">*</span></label>
+          <input type="text" id="emp-nombre" class="form-input" placeholder="María" required />
+          <span class="form-error hidden" id="err-emp-nombre">Requerido</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apellido <span class="required">*</span></label>
+          <input type="text" id="emp-apellido" class="form-input" placeholder="García" required />
+          <span class="form-error hidden" id="err-emp-apellido">Requerido</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email <span class="required">*</span></label>
+          <input type="email" id="emp-email" class="form-input" placeholder="empleada@serenitta.com" />
+          <span class="form-error hidden" id="err-emp-email">Email inválido</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input type="tel" id="emp-telefono" class="form-input" placeholder="3001234567" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción / Bio corta</label>
+        <textarea id="emp-descripcion" class="form-textarea" rows="3" placeholder="Especialista en masajes relajantes con 5 años de experiencia…" maxlength="500"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Foto de perfil (URL opcional)</label>
+        <input type="url" id="emp-foto" class="form-input" placeholder="https://… (opcional)" />
+        <p class="form-hint">Si no se agrega foto, se mostrará un avatar con la inicial del nombre.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Servicios que realiza</label>
+        <div id="servicios-ms-wrapper" style="position:relative">
+          <div class="multiselect-wrapper" id="servicios-ms-display"></div>
+          <div class="ms-dropdown" id="servicios-ms-dropdown"></div>
+        </div>
+        <p class="form-hint mt-8">Puedes asignar uno o varios servicios.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="emp-pass-label">
+          Contraseña de acceso <span class="required-star">*</span>
+        </label>
+        <div style="position:relative">
+          <input type="password" id="emp-password" class="form-input"
+            placeholder="Mínimo 8 caracteres" autocomplete="new-password"
+            style="padding-right:42px" />
+          <button type="button" id="emp-pass-toggle" tabindex="-1"
+            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0;line-height:0">
+            <svg id="emp-eye-show" xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="emp-eye-hide" xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+        <p class="form-hint mt-4" id="emp-pass-hint">La empleada usará estas credenciales para ingresar a la staff app.</p>
+        <p class="form-error hidden" id="err-emp-password">Contraseña requerida (mínimo 8 caracteres).</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <div class="toggle-wrapper" id="emp-activo-toggle">
+          <div class="toggle on" id="emp-activo-switch"></div>
+          <span class="toggle-label" id="emp-activo-label">Activa</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modal-emp-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="modal-emp-save">
+        <span id="emp-btn-txt">Guardar empleada</span>
+        <svg id="emp-btn-spin" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="hidden spinning"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE EMPLEADA -->
+<div class="modal-overlay" id="modal-det-empleada">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <p class="modal-title" id="det-emp-titulo">Perfil de empleada</p>
+      </div>
+      <button class="modal-close" id="modal-det-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+        <div id="det-avatar" style="flex-shrink:0"></div>
+        <div>
+          <h2 id="det-nombre" style="font-family:var(--font-display);font-size:1.4rem;font-weight:300;color:var(--text-secondary)"></h2>
+          <p id="det-email" style="font-size:0.82rem;color:var(--text-muted)"></p>
+          <div id="det-estado-badge" style="margin-top:6px"></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="info">Información</button>
+        <button class="tab-btn" data-tab="historial">Historial de citas</button>
+        <button class="tab-btn" data-tab="stats">Estadísticas</button>
+      </div>
+
+      <div class="tab-content active" data-tab="info">
+        <div class="detail-grid mt-12">
+          <div class="detail-item"><div class="detail-label">Teléfono</div><div class="detail-value" id="det-tel">—</div></div>
+          <div class="detail-item"><div class="detail-label">Creada</div><div class="detail-value" id="det-created">—</div></div>
+          <div class="detail-item" style="grid-column:span 2">
+            <div class="detail-label">Bio</div>
+            <div class="detail-value" id="det-bio" style="font-weight:400;line-height:1.6">—</div>
+          </div>
+        </div>
+        <div class="mt-16">
+          <div class="detail-label mb-8">Servicios asignados</div>
+          <div class="chips-row" id="det-servicios"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" data-tab="historial">
+        <div class="table-wrapper mt-12">
+          <table class="data-table">
+            <thead><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Servicio</th><th>Estado</th></tr></thead>
+            <tbody id="det-historial-tbody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted)">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-content" data-tab="stats">
+        <div class="detail-grid mt-12" id="det-stats-grid">
+          <div class="detail-item"><div class="detail-label">Citas este mes</div><div class="detail-value" id="det-citas-mes">—</div></div>
+          <div class="detail-item"><div class="detail-label">Tasa asistencia</div><div class="detail-value" id="det-tasa">—</div></div>
+          <div class="detail-item"><div class="detail-label">Citas totales</div><div class="detail-value" id="det-citas-total">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modal-det-edit">Editar</button>
+      <button class="btn btn-ghost" id="modal-det-close2">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdmin }    from '/js/auth.js'
+  import { supabase }        from '/js/supabase-client.js'
+  import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
+  import {
+    avatarHTML, badgeActivo, badgeCita, formatFechaCorta, formatHora,
+    formatDateTime, toast, openModal, closeModal, confirmAction,
+    renderSidebarUser, debounce, truncate
+  } from '/js/utils.js'
+
+  const auth = await requireAdmin()
+  if (!auth) throw new Error()
+  document.getElementById('sidebar').innerHTML = getSidebarHTML('/empleadas.html')
+  initSidebar(auth.admin)
+  renderSidebarUser(auth.admin)
+
+  let empleadasAll = []
+  let serviciosAll = []
+  let serviciosSeleccionados = []
+  let empActivoState = true
+  let editingId = null
+
+  // ——— Cargar datos ————————————————————————————————————
+  async function cargarDatos() {
+    const [{ data: emps }, { data: svcs }, { data: asigs }] = await Promise.all([
+      supabase.from('empleados').select('*').order('nombre'),
+      supabase.from('servicios').select('id,nombre').eq('activo', true).order('nombre'),
+      supabase.from('empleado_servicios').select('empleado_id,servicio_id,servicios(nombre)'),
+    ])
+    serviciosAll = svcs || []
+    empleadasAll = (emps || []).map(e => ({
+      ...e,
+      _servicios: (asigs || []).filter(a => a.empleado_id === e.id).map(a => ({ id: a.servicio_id, nombre: a.servicios?.nombre }))
+    }))
+    poblarFiltroServicio()
+    renderTabla()
+  }
+
+  function poblarFiltroServicio() {
+    const sel = document.getElementById('filtro-servicio-emp')
+    serviciosAll.forEach(s => {
+      const opt = document.createElement('option')
+      opt.value = s.id
+      opt.textContent = s.nombre
+      sel.appendChild(opt)
+    })
+  }
+
+  // ——— Render tabla ————————————————————————————————————
+  let busqueda = ''
+  let filtroEstado = ''
+  let filtroServicio = ''
+
+  function renderTabla() {
+    const tbody = document.getElementById('empleadas-tbody')
+    const hoy = new Date().toISOString().split('T')[0]
+    const iniSem = (() => { const d = new Date(); d.setDate(d.getDate() - d.getDay()); return d.toISOString().split('T')[0] })()
+
+    let arr = empleadasAll.filter(e => {
+      const nombre = [e.nombre, e.apellido].filter(Boolean).join(' ').toLowerCase()
+      if (busqueda && !nombre.includes(busqueda.toLowerCase())) return false
+      if (filtroEstado !== '' && String(e.activo) !== filtroEstado) return false
+      if (filtroServicio && !e._servicios.some(s => s.id === filtroServicio)) return false
+      return true
+    })
+
+    if (!arr.length) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon"><svg width="28" height="28" fill="none" stroke="var(--lilac)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><p class="empty-state-title">Sin empleadas</p><p class="empty-state-text">No se encontraron empleadas con los filtros actuales</p></div></td></tr>`
+      return
+    }
+
+    tbody.innerHTML = arr.map(e => {
+      const nombre = [e.nombre, e.apellido].filter(Boolean).join(' ')
+      const svcs = e._servicios
+      let chipsHTML
+      if (!svcs.length) {
+        chipsHTML = '<span style="font-size:0.78rem;color:var(--text-muted)">Sin servicios</span>'
+      } else if (svcs.length <= 3) {
+        chipsHTML = svcs.map(s => `<span class="service-chip">${truncate(s.nombre, 20)}</span>`).join('')
+      } else {
+        const visible = svcs.slice(0, 3).map(s => `<span class="service-chip">${truncate(s.nombre, 20)}</span>`).join('')
+        const hidden  = svcs.slice(3).map(s => `<span class="service-chip" style="display:none">${truncate(s.nombre, 20)}</span>`).join('')
+        chipsHTML = `${visible}${hidden}<button class="service-chip chip-toggle" data-emp="${e.id}" data-extra="${svcs.length - 3}" onclick="toggleChips(this)">+${svcs.length - 3} más</button>`
+      }
+      return `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              ${avatarHTML(e.nombre, e.apellido, e.foto_url, 34)}
+              <div>
+                <div style="font-weight:500">${nombre}</div>
+                <div class="td-muted">${e.telefono || ''}</div>
+              </div>
+            </div>
+          </td>
+          <td class="td-muted truncate" style="max-width:160px">${e.email || '—'}</td>
+          <td><div class="chips-row" id="chips-row-${e.id}">${chipsHTML}</div></td>
+          <td class="td-muted">—</td>
+          <td class="td-muted">—</td>
+          <td>${badgeActivo(e.activo)}</td>
+          <td>
+            <div class="table-actions">
+              <button class="action-btn" data-tooltip="Ver detalle" onclick="verDetalle('${e.id}')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <button class="action-btn" data-tooltip="Editar" onclick="editarEmpleada('${e.id}')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="action-btn danger" data-tooltip="Eliminar" onclick="eliminarEmpleada('${e.id}','${nombre}')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `
+    }).join('')
+  }
+
+  // ——— Toggle servicios en tabla ————————————————————————
+  window.toggleChips = (btn) => {
+    const row        = btn.closest('.chips-row')
+    const expanded   = btn.dataset.expanded === 'true'
+    const extraCount = parseInt(btn.dataset.extra)
+    // Chips de servicio en la fila, excluyendo el propio botón
+    const chips = [...row.querySelectorAll('.service-chip')].filter(c => c !== btn)
+
+    chips.forEach((c, i) => {
+      if (i >= 3) c.style.display = expanded ? 'none' : ''
+    })
+
+    btn.textContent      = expanded ? `+${extraCount} más` : 'Ver menos ▲'
+    btn.dataset.expanded = String(!expanded)
+    btn.style.background = expanded ? '' : 'var(--lilac-light)'
+    btn.style.color      = expanded ? '' : 'var(--purple-dark)'
+  }
+
+  // Filtros
+  document.getElementById('buscar-empleada').addEventListener('input', debounce(e => { busqueda = e.target.value; renderTabla() }))
+  document.getElementById('filtro-estado-emp').addEventListener('change', e => { filtroEstado = e.target.value; renderTabla() })
+  document.getElementById('filtro-servicio-emp').addEventListener('change', e => { filtroServicio = e.target.value; renderTabla() })
+
+  // ——— Multiselect servicios ————————————————————————
+  function renderMultiselect() {
+    const display  = document.getElementById('servicios-ms-display')
+    const dropdown = document.getElementById('servicios-ms-dropdown')
+
+    if (serviciosSeleccionados.length === 0) {
+      display.innerHTML = '<span class="ms-placeholder">Haz clic para seleccionar servicios…</span>'
+    } else {
+      display.innerHTML = serviciosSeleccionados.map(s =>
+        `<span class="ms-chip">${s.nombre}<button type="button" onclick="removeServicio('${s.id}')">×</button></span>`
+      ).join('')
+    }
+
+    dropdown.innerHTML = serviciosAll.map(s => {
+      const sel = serviciosSeleccionados.some(x => x.id === s.id)
+      return `<div class="ms-option ${sel ? 'selected' : ''}" onclick="toggleServicio('${s.id}','${s.nombre.replace(/'/g,'&#39;')}')">${sel ? '✓ ' : ''}${s.nombre}</div>`
+    }).join('')
+  }
+
+  function msClose() {
+    document.getElementById('servicios-ms-dropdown').classList.remove('open')
+    document.getElementById('servicios-ms-display').classList.remove('ms-open')
+  }
+  function msOpen() {
+    document.getElementById('servicios-ms-dropdown').classList.add('open')
+    document.getElementById('servicios-ms-display').classList.add('ms-open')
+  }
+  function msToggle() {
+    const dd = document.getElementById('servicios-ms-dropdown')
+    dd.classList.contains('open') ? msClose() : msOpen()
+  }
+
+  window.toggleServicio = (id, nombre) => {
+    const idx = serviciosSeleccionados.findIndex(s => s.id === id)
+    if (idx === -1) serviciosSeleccionados.push({ id, nombre })
+    else serviciosSeleccionados.splice(idx, 1)
+    renderMultiselect()
+    // Mantener dropdown abierto tras seleccionar
+    msOpen()
+  }
+  window.removeServicio = id => {
+    serviciosSeleccionados = serviciosSeleccionados.filter(s => s.id !== id)
+    renderMultiselect()
+  }
+
+  document.getElementById('servicios-ms-display').addEventListener('click', (e) => {
+    // No cerrar si se hizo clic en el botón × de un chip
+    if (e.target.closest('.ms-chip')) return
+    msToggle()
+  })
+  document.addEventListener('click', e => {
+    if (!document.getElementById('servicios-ms-wrapper').contains(e.target)) {
+      msClose()
+    }
+  })
+
+  // Toggle contraseña visible/oculta
+  document.getElementById('emp-pass-toggle').addEventListener('click', () => {
+    const inp  = document.getElementById('emp-password')
+    const show = document.getElementById('emp-eye-show')
+    const hide = document.getElementById('emp-eye-hide')
+    if (inp.type === 'password') {
+      inp.type = 'text'
+      show.style.display = 'none'
+      hide.style.display = ''
+    } else {
+      inp.type = 'password'
+      show.style.display = ''
+      hide.style.display = 'none'
+    }
+  })
+
+  // Toggle activo
+  const toggleSwitch = document.getElementById('emp-activo-switch')
+  const toggleLabel  = document.getElementById('emp-activo-label')
+  document.getElementById('emp-activo-toggle').addEventListener('click', () => {
+    empActivoState = !empActivoState
+    toggleSwitch.classList.toggle('on', empActivoState)
+    toggleLabel.textContent = empActivoState ? 'Activa' : 'Inactiva'
+  })
+
+  // ——— Abrir modal nueva ————————————————————————————
+  function abrirModalNueva() {
+    editingId = null
+    document.getElementById('modal-emp-titulo').textContent = 'Nueva empleada'
+    document.getElementById('modal-emp-subtitulo').textContent = 'Completa los datos'
+    ;['emp-id','emp-nombre','emp-apellido','emp-email','emp-telefono','emp-descripcion','emp-foto','emp-password'].forEach(id => {
+      const el = document.getElementById(id)
+      if (el) el.value = ''
+    })
+    document.getElementById('emp-pass-label').innerHTML = 'Contraseña de acceso <span class="required-star">*</span>'
+    document.getElementById('emp-pass-hint').textContent = 'La empleada usará estas credenciales para ingresar a la staff app.'
+    document.getElementById('err-emp-password').classList.add('hidden')
+    serviciosSeleccionados = []
+    empActivoState = true
+    toggleSwitch.classList.add('on')
+    toggleLabel.textContent = 'Activa'
+    renderMultiselect()
+    openModal('modal-empleada')
+  }
+  document.getElementById('btn-nueva-empleada').addEventListener('click', abrirModalNueva)
+
+  // ——— Editar empleada ————————————————————————————————
+  window.editarEmpleada = (id) => {
+    const e = empleadasAll.find(x => x.id === id)
+    if (!e) return
+    editingId = id
+    document.getElementById('modal-emp-titulo').textContent = 'Editar empleada'
+    document.getElementById('modal-emp-subtitulo').textContent = [e.nombre, e.apellido].filter(Boolean).join(' ')
+    document.getElementById('emp-id').value = id
+    document.getElementById('emp-nombre').value = e.nombre || ''
+    document.getElementById('emp-apellido').value = e.apellido || ''
+    document.getElementById('emp-email').value = e.email || ''
+    document.getElementById('emp-telefono').value = e.telefono || ''
+    document.getElementById('emp-descripcion').value = e.descripcion || ''
+    document.getElementById('emp-foto').value = e.foto_url || ''
+    document.getElementById('emp-password').value = ''
+    // Si ya tiene acceso: contraseña es opcional (cambio). Si no: es requerida para crear acceso.
+    if (e.auth_user_id) {
+      document.getElementById('emp-pass-label').innerHTML = 'Nueva contraseña'
+      document.getElementById('emp-pass-hint').textContent = 'Dejar en blanco para mantener la contraseña actual.'
+    } else {
+      document.getElementById('emp-pass-label').innerHTML = 'Contraseña de acceso <span class="required-star">*</span>'
+      document.getElementById('emp-pass-hint').textContent = 'Crea las credenciales de acceso a la staff app.'
+    }
+    document.getElementById('err-emp-password').classList.add('hidden')
+    serviciosSeleccionados = [...(e._servicios || [])]
+    empActivoState = e.activo !== false
+    toggleSwitch.classList.toggle('on', empActivoState)
+    toggleLabel.textContent = empActivoState ? 'Activa' : 'Inactiva'
+    renderMultiselect()
+    openModal('modal-empleada')
+  }
+
+  // ——— Guardar empleada ————————————————————————————————
+  const EDGE_FN = 'https://whouejjrpjcvoueyajbu.supabase.co/functions/v1/smooth-function'
+
+  async function llamarEdgeFn(body) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) throw new Error('Sesión expirada. Recarga la página e inicia sesión de nuevo.')
+    const res = await fetch(EDGE_FN, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(body),
+    })
+    let result = {}
+    try { result = await res.json() } catch { /* respuesta no-JSON */ }
+    if (!res.ok) {
+      const msg = result.error || result.msg || result.message || `Error HTTP ${res.status} — verifica el código de la función en Supabase`
+      throw new Error(msg)
+    }
+    if (!result.uuid) throw new Error('La función no devolvió el UUID. Verifica que el código de "smooth-function" en Supabase sea el correcto.')
+    return result
+  }
+
+  document.getElementById('modal-emp-save').addEventListener('click', async () => {
+    const nombre      = document.getElementById('emp-nombre').value.trim()
+    const apellido    = document.getElementById('emp-apellido').value.trim()
+    const email       = document.getElementById('emp-email').value.trim().toLowerCase()
+    const telefono    = document.getElementById('emp-telefono').value.trim()
+    const descripcion = document.getElementById('emp-descripcion').value.trim()
+    const foto_url    = document.getElementById('emp-foto').value.trim() || null
+    const password    = document.getElementById('emp-password').value
+
+    const existingAuthId = editingId ? empleadasAll.find(x => x.id === editingId)?.auth_user_id : null
+
+    // Validaciones
+    let valid = true
+    if (!nombre) { document.getElementById('err-emp-nombre').classList.remove('hidden'); document.getElementById('emp-nombre').classList.add('error'); valid = false }
+    else         { document.getElementById('err-emp-nombre').classList.add('hidden');    document.getElementById('emp-nombre').classList.remove('error') }
+    if (!apellido){ document.getElementById('err-emp-apellido').classList.remove('hidden'); document.getElementById('emp-apellido').classList.add('error'); valid = false }
+    else          { document.getElementById('err-emp-apellido').classList.add('hidden');    document.getElementById('emp-apellido').classList.remove('error') }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      document.getElementById('err-emp-email').classList.remove('hidden'); document.getElementById('emp-email').classList.add('error'); valid = false
+    } else { document.getElementById('err-emp-email').classList.add('hidden'); document.getElementById('emp-email').classList.remove('error') }
+    // Contraseña: requerida si es nueva empleada o si edita sin auth_user_id
+    const passRequerida = !editingId || !existingAuthId
+    if (passRequerida && !password) {
+      document.getElementById('err-emp-password').textContent = 'La contraseña es requerida para crear el acceso (mínimo 8 caracteres).'
+      document.getElementById('err-emp-password').classList.remove('hidden')
+      document.getElementById('emp-password').classList.add('error')
+      valid = false
+    } else if (password && password.length < 8) {
+      document.getElementById('err-emp-password').textContent = 'La contraseña debe tener al menos 8 caracteres.'
+      document.getElementById('err-emp-password').classList.remove('hidden')
+      document.getElementById('emp-password').classList.add('error')
+      valid = false
+    } else {
+      document.getElementById('err-emp-password').classList.add('hidden')
+      document.getElementById('emp-password').classList.remove('error')
+    }
+    if (!valid) return
+
+    const btnTxt  = document.getElementById('emp-btn-txt')
+    const btnSpin = document.getElementById('emp-btn-spin')
+    btnTxt.textContent = 'Guardando…'
+    btnSpin.classList.remove('hidden')
+    document.getElementById('modal-emp-save').disabled = true
+
+    try {
+      const payload = { nombre, apellido, email, telefono, descripcion, foto_url, activo: empActivoState }
+
+      if (editingId) {
+        // ——— Editar ———
+        const { error } = await supabase.from('empleados').update(payload).eq('id', editingId)
+        if (error) throw error
+
+        await supabase.from('empleado_servicios').delete().eq('empleado_id', editingId)
+        if (serviciosSeleccionados.length) {
+          await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: editingId, servicio_id: s.id })))
+        }
+
+        // Manejo de credenciales Auth
+        if (password) {
+          if (existingAuthId) {
+            // Actualizar contraseña
+            await llamarEdgeFn({ action: 'update_password', user_id: existingAuthId, password })
+            toast('Empleada actualizada y contraseña cambiada', 'success')
+          } else {
+            // Crear acceso por primera vez
+            const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
+            await supabase.from('empleados').update({ auth_user_id: uuid }).eq('id', editingId)
+            toast('Empleada actualizada y acceso creado', 'success')
+          }
+        } else {
+          toast('Empleada actualizada', 'success')
+        }
+
+      } else {
+        // ——— Nueva empleada ———
+        // Crear acceso Auth primero
+        const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
+        payload.auth_user_id = uuid
+
+        const { data: nueva, error } = await supabase.from('empleados').insert(payload).select().single()
+        if (error) throw error
+
+        if (serviciosSeleccionados.length) {
+          await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: nueva.id, servicio_id: s.id })))
+        }
+        toast(`Empleada creada. Credenciales: ${email} / contraseña asignada`, 'success')
+      }
+
+      closeModal('modal-empleada')
+      await cargarDatos()
+    } catch (err) {
+      toast(err.message || 'Error al guardar', 'error')
+    } finally {
+      btnTxt.textContent = 'Guardar empleada'
+      btnSpin.classList.add('hidden')
+      document.getElementById('modal-emp-save').disabled = false
+    }
+  })
+
+  // ——— Ver detalle ————————————————————————————————————
+  window.verDetalle = async (id) => {
+    const e = empleadasAll.find(x => x.id === id)
+    if (!e) return
+    const nombre = [e.nombre, e.apellido].filter(Boolean).join(' ')
+    document.getElementById('det-emp-titulo').textContent = nombre
+    document.getElementById('det-avatar').innerHTML = avatarHTML(e.nombre, e.apellido, e.foto_url, 56)
+    document.getElementById('det-nombre').textContent = nombre
+    document.getElementById('det-email').textContent  = e.email || '—'
+    document.getElementById('det-estado-badge').innerHTML = badgeActivo(e.activo)
+    document.getElementById('det-tel').textContent    = e.telefono || '—'
+    document.getElementById('det-created').textContent = e.created_at ? new Date(e.created_at).toLocaleDateString('es-CO') : '—'
+    document.getElementById('det-bio').textContent    = e.descripcion || 'Sin descripción'
+    document.getElementById('det-servicios').innerHTML = e._servicios.map(s => `<span class="service-chip">${s.nombre}</span>`).join('') || '<span class="text-muted">Sin servicios asignados</span>'
+
+    openModal('modal-det-empleada')
+
+    // Historial
+    const { data: historial } = await supabase
+      .from('citas')
+      .select('id,fecha,hora_inicio,estado,clientes(nombre),servicios(nombre)')
+      .eq('empleado_id', id)
+      .order('fecha', { ascending: false })
+      .limit(20)
+
+    const hoy = new Date().toISOString().split('T')[0]
+    const iniMes = hoy.slice(0,7) + '-01'
+    const citasMes = (historial || []).filter(c => c.fecha >= iniMes)
+    const realizadas = (historial || []).filter(c => c.estado === 'realizada').length
+    const total = (historial || []).length
+    const tasa = total > 0 ? Math.round((realizadas / total) * 100) : 0
+
+    document.getElementById('det-citas-mes').textContent  = citasMes.length
+    document.getElementById('det-citas-total').textContent = total
+    document.getElementById('det-tasa').textContent       = tasa + '%'
+
+    const tbody = document.getElementById('det-historial-tbody')
+    if (!historial?.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted)">Sin citas registradas</td></tr>`
+    } else {
+      tbody.innerHTML = historial.map(c => `
+        <tr>
+          <td>${formatFechaCorta(c.fecha)}</td>
+          <td>${formatHora(c.hora_inicio)}</td>
+          <td>${c.clientes?.nombre || '—'}</td>
+          <td>${c.servicios?.nombre || '—'}</td>
+          <td>${badgeCita(c.estado)}</td>
+        </tr>
+      `).join('')
+    }
+  }
+
+  // Tabs detalle
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'))
+      btn.classList.add('active')
+      document.querySelector(`.tab-content[data-tab="${tab}"]`).classList.add('active')
+    })
+  })
+
+  document.getElementById('modal-det-edit').addEventListener('click', () => {
+    const titulo = document.getElementById('det-emp-titulo').textContent
+    closeModal('modal-det-empleada')
+    const e = empleadasAll.find(x => [x.nombre, x.apellido].filter(Boolean).join(' ') === titulo)
+    if (e) window.editarEmpleada(e.id)
+  })
+
+  // ——— Eliminar empleada ————————————————————————————
+  window.eliminarEmpleada = (id, nombre) => {
+    confirmAction({
+      title: `¿Eliminar a ${nombre}?`,
+      text: 'Esta acción no se puede deshacer. Se eliminará la empleada y sus asignaciones de servicio.',
+      btnLabel: 'Eliminar',
+      onConfirm: async () => {
+        const { error } = await supabase.from('empleados').delete().eq('id', id)
+        if (error) { toast('Error al eliminar: ' + error.message, 'error'); return }
+        toast('Empleada eliminada', 'success')
+        await cargarDatos()
+      }
+    })
+  }
+
+  // Cerrar modales
+  document.getElementById('modal-emp-close').addEventListener('click',   () => closeModal('modal-empleada'))
+  document.getElementById('modal-emp-cancel').addEventListener('click',  () => closeModal('modal-empleada'))
+  document.getElementById('modal-det-close').addEventListener('click',   () => closeModal('modal-det-empleada'))
+  document.getElementById('modal-det-close2').addEventListener('click',  () => closeModal('modal-det-empleada'))
+  document.getElementById('modal-empleada').addEventListener('click',    e => { if (e.target.id === 'modal-empleada') closeModal('modal-empleada') })
+  document.getElementById('modal-det-empleada').addEventListener('click',e => { if (e.target.id === 'modal-det-empleada') closeModal('modal-det-empleada') })
+
+  await cargarDatos()
+</script>
+</body>
+</html>

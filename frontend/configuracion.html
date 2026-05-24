@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuración — Serenità Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <style>
+    .config-section {
+      margin-bottom: 28px;
+      padding: 24px;
+    }
+    .config-section-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .tip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      font-size: 0.62rem;
+      border-radius: 50%;
+      background: var(--lilac-pale);
+      color: var(--purple-medium);
+      cursor: help;
+      margin-left: 4px;
+      vertical-align: middle;
+      border: 1px solid var(--lilac-light);
+    }
+    .color-preview {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      vertical-align: middle;
+      margin-left: 8px;
+      cursor: pointer;
+    }
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .upload-zone:hover { border-color: var(--lilac); }
+    .upload-zone img {
+      max-height: 80px;
+      max-width: 200px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 8px;
+    }
+    .social-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .social-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .char-count {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 2px;
+    }
+    .preview-card {
+      background: var(--hover-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+    .preview-card strong { color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Configuración</h1>
+        <p class="page-subtitle">Datos del negocio, apariencia y parámetros del sitio</p>
+      </div>
+      <div class="page-header-right">
+        <button class="btn btn-primary" id="btn-guardar-config">Guardar cambios</button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+        <!-- COLUMNA IZQUIERDA -->
+        <div>
+
+          <!-- DATOS DEL NEGOCIO -->
+          <div class="card config-section">
+            <p class="config-section-title">Datos del negocio</p>
+            <div class="form-group">
+              <label class="form-label">Nombre del spa * <span class="tip" title="Aparece en el header, footer y meta title del sitio web">?</span></label>
+              <input type="text" id="conf-nombre" class="form-input" maxlength="100" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Slogan / subtítulo <span class="tip" title="Texto secundario bajo el nombre del spa">?</span></label>
+              <input type="text" id="conf-slogan" class="form-input" maxlength="150" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descripción breve <span class="tip" title="Aparece en la sección 'Sobre nosotros' del sitio">?</span></label>
+              <textarea id="conf-descripcion" class="form-textarea" rows="3" maxlength="400" placeholder="Descripción que aparece en el sitio web…"></textarea>
+              <div class="char-count" id="desc-count">0 / 400</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Dirección <span class="tip" title="Aparece en la sección de contacto del sitio web">?</span></label>
+              <input type="text" id="conf-direccion" class="form-input" maxlength="200" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Ciudad</label>
+                <input type="text" id="conf-ciudad" class="form-input" maxlength="80" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">País</label>
+                <input type="text" id="conf-pais" class="form-input" maxlength="60" value="Colombia" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Horario de atención <span class="tip" title="Texto del horario que aparece en el hero y sección de contacto. Ej: Lunes – Sábado: 9:00 AM – 7:00 PM">?</span></label>
+              <input type="text" id="conf-horario" class="form-input" maxlength="100" placeholder="Lunes – Sábado: 9:00 AM – 7:00 PM" />
+            </div>
+          </div>
+
+          <!-- CONTACTO -->
+          <div class="card config-section">
+            <p class="config-section-title">Contacto</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Teléfono principal <span class="tip" title="Número que aparece en la sección de contacto del sitio">?</span></label>
+                <input type="tel" id="conf-telefono" class="form-input" maxlength="20" placeholder="+57 300 000 0000" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">WhatsApp <span class="tip" title="Número para los botones de WhatsApp del sitio. Formato internacional sin + ni espacios: 573001234567">?</span></label>
+                <input type="tel" id="conf-whatsapp" class="form-input" maxlength="20" placeholder="573001234567" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email de contacto</label>
+              <input type="email" id="conf-email" class="form-input" maxlength="100" />
+            </div>
+          </div>
+
+          <!-- REDES SOCIALES -->
+          <div class="card config-section">
+            <p class="config-section-title">Redes sociales</p>
+            <div class="social-row">
+              <label class="social-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                Instagram
+              </label>
+              <input type="url" id="conf-instagram" class="form-input" placeholder="https://instagram.com/…" />
+            </div>
+            <div class="social-row">
+              <label class="social-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                Facebook
+              </label>
+              <input type="url" id="conf-facebook" class="form-input" placeholder="https://facebook.com/…" />
+            </div>
+            <div class="social-row">
+              <label class="social-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.67a8.16 8.16 0 0 0 4.77 1.52V6.73a4.84 4.84 0 0 1-1-.04z"/></svg>
+                TikTok
+              </label>
+              <input type="url" id="conf-tiktok" class="form-input" placeholder="https://tiktok.com/@…" />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- COLUMNA DERECHA -->
+        <div>
+
+          <!-- RESERVAS -->
+          <div class="card config-section">
+            <p class="config-section-title">Parámetros de reserva</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Anticipación mínima <span class="tip" title="Cuántas horas antes del servicio puede realizarse la reserva. 0 = sin límite">?</span></label>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input type="number" id="conf-anticip-min" class="form-input" min="0" max="1440" style="width:80px" />
+                  <span class="text-muted" style="font-size:0.82rem">horas</span>
+                </div>
+                <p class="form-hint">Mínimo de anticipación para hacer una reserva</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Reservas hasta <span class="tip" title="Cuántos días en el futuro puede agendar un cliente">?</span></label>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input type="number" id="conf-anticip-max" class="form-input" min="1" max="365" style="width:80px" />
+                  <span class="text-muted" style="font-size:0.82rem">días de anticipación</span>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Buffer entre citas <span class="tip" title="Tiempo de descanso/limpieza que se bloquea automáticamente después de cada servicio">?</span></label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="number" id="conf-buffer" class="form-input" min="0" max="120" style="width:80px" />
+                <span class="text-muted" style="font-size:0.82rem">minutos</span>
+              </div>
+              <p class="form-hint">Tiempo de limpieza / descanso entre cada cita</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Política de cancelación</label>
+              <textarea id="conf-politica" class="form-textarea" rows="3" maxlength="600" placeholder="Texto que aparece al cliente al momento de reservar…"></textarea>
+            </div>
+          </div>
+
+          <!-- APARIENCIA -->
+          <div class="card config-section">
+            <p class="config-section-title">Apariencia del sitio</p>
+
+            <div class="form-group">
+              <label class="form-label">Logo del spa</label>
+              <div class="upload-zone" id="logo-zone" onclick="document.getElementById('logo-input').click()">
+                <img id="logo-preview" src="" alt="logo" style="display:none" />
+                <p style="font-size:0.8rem;color:var(--text-muted)">Clic para subir logo (PNG, SVG, JPG — max 500KB)</p>
+              </div>
+              <input type="file" id="logo-input" accept="image/*" style="display:none" />
+              <p class="form-hint" id="logo-url-display"></p>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Color primario</label>
+                <div style="display:flex;align-items:center">
+                  <input type="text" id="conf-color-primary" class="form-input" maxlength="7" placeholder="#8A6EA8" style="width:100px" />
+                  <span class="color-preview" id="preview-primary" style="background:#8A6EA8"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Color acento</label>
+                <div style="display:flex;align-items:center">
+                  <input type="text" id="conf-color-accent" class="form-input" maxlength="7" placeholder="#D4A84B" style="width:100px" />
+                  <span class="color-preview" id="preview-accent" style="background:#D4A84B"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-card" id="config-preview">
+              <strong>Vista previa:</strong> los cambios se reflejarán en el sitio web al guardar.
+            </div>
+          </div>
+
+          <!-- META SEO -->
+          <div class="card config-section">
+            <p class="config-section-title">SEO y metadatos</p>
+            <div class="form-group">
+              <label class="form-label">Meta title</label>
+              <input type="text" id="conf-meta-title" class="form-input" maxlength="70" placeholder="Nombre del spa — Bienestar y relajación" />
+              <div class="char-count" id="meta-title-count">0 / 70</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Meta description</label>
+              <textarea id="conf-meta-desc" class="form-textarea" rows="2" maxlength="160" placeholder="Descripción para buscadores…"></textarea>
+              <div class="char-count" id="meta-desc-count">0 / 160</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdmin }  from '/js/auth.js'
+  import { supabase }      from '/js/supabase-client.js'
+  import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
+  import { toast, renderSidebarUser }    from '/js/utils.js'
+
+  const auth = await requireAdmin()
+  if (!auth) throw new Error()
+  document.getElementById('sidebar').innerHTML = getSidebarHTML('/configuracion.html')
+  initSidebar(auth.admin)
+  renderSidebarUser(auth.admin)
+
+  let configId = null
+
+  // ─── CONTADORES DE CARACTERES ─────────────────────────────
+  function addCharCounter(inputId, counterId, max) {
+    const el = document.getElementById(inputId)
+    const ct = document.getElementById(counterId)
+    const update = () => ct.textContent = `${el.value.length} / ${max}`
+    el.addEventListener('input', update)
+    update()
+  }
+  addCharCounter('conf-descripcion', 'desc-count', 400)
+  addCharCounter('conf-meta-title', 'meta-title-count', 70)
+  addCharCounter('conf-meta-desc', 'meta-desc-count', 160)
+
+  // ─── PREVIEW DE COLORES ───────────────────────────────────
+  function bindColorPreview(inputId, previewId) {
+    const input = document.getElementById(inputId)
+    const preview = document.getElementById(previewId)
+    input.addEventListener('input', () => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(input.value)) {
+        preview.style.background = input.value
+      }
+    })
+    preview.addEventListener('click', () => {
+      const picker = document.createElement('input')
+      picker.type = 'color'
+      picker.value = input.value || '#8A6EA8'
+      picker.addEventListener('input', () => {
+        input.value = picker.value
+        preview.style.background = picker.value
+      })
+      picker.click()
+    })
+  }
+  bindColorPreview('conf-color-primary', 'preview-primary')
+  bindColorPreview('conf-color-accent', 'preview-accent')
+
+  // ─── LOGO UPLOAD ──────────────────────────────────────────
+  let logoUrl = null
+  document.getElementById('logo-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (file.size > 512000) { toast('El archivo supera 500KB', 'error'); return }
+
+    const ext = file.name.split('.').pop()
+    const path = `logos/spa-logo-${Date.now()}.${ext}`
+    const { data, error } = await supabase.storage.from('assets').upload(path, file, { upsert: true })
+    if (error) { toast('Error al subir logo: ' + error.message, 'error'); return }
+
+    const { data: urlData } = supabase.storage.from('assets').getPublicUrl(path)
+    logoUrl = urlData.publicUrl
+    const img = document.getElementById('logo-preview')
+    img.src = logoUrl
+    img.style.display = 'block'
+    document.getElementById('logo-url-display').textContent = logoUrl
+    toast('Logo subido', 'success')
+  })
+
+  // ─── CARGAR CONFIGURACIÓN ─────────────────────────────────
+  async function cargarConfig() {
+    const { data } = await supabase.from('configuracion').select('*').limit(1).single()
+    if (!data) return
+    configId = data.id
+
+    document.getElementById('conf-nombre').value         = data.nombre_spa || ''
+    document.getElementById('conf-slogan').value         = data.slogan || ''
+    document.getElementById('conf-descripcion').value    = data.descripcion || ''
+    document.getElementById('conf-direccion').value      = data.direccion || ''
+    document.getElementById('conf-ciudad').value         = data.ciudad || ''
+    document.getElementById('conf-pais').value           = data.pais || 'Colombia'
+    document.getElementById('conf-horario').value        = data.horario_atencion || ''
+    document.getElementById('conf-telefono').value       = data.telefono || ''
+    document.getElementById('conf-whatsapp').value       = data.whatsapp || ''
+    document.getElementById('conf-email').value          = data.email_contacto || ''
+    document.getElementById('conf-instagram').value      = data.redes_sociales?.instagram || ''
+    document.getElementById('conf-facebook').value       = data.redes_sociales?.facebook || ''
+    document.getElementById('conf-tiktok').value         = data.redes_sociales?.tiktok || ''
+    document.getElementById('conf-anticip-min').value    = data.reserva_anticip_min_horas ?? 2
+    document.getElementById('conf-anticip-max').value    = data.reserva_anticip_max_dias ?? 60
+    document.getElementById('conf-buffer').value         = data.buffer_min ?? 15
+    document.getElementById('conf-politica').value       = data.politica_cancelacion || ''
+    document.getElementById('conf-color-primary').value  = data.color_primario || '#8A6EA8'
+    document.getElementById('conf-color-accent').value   = data.color_acento || '#D4A84B'
+    document.getElementById('conf-meta-title').value     = data.meta_title || ''
+    document.getElementById('conf-meta-desc').value      = data.meta_description || ''
+
+    if (data.color_primario) document.getElementById('preview-primary').style.background = data.color_primario
+    if (data.color_acento)   document.getElementById('preview-accent').style.background  = data.color_acento
+
+    if (data.logo_url) {
+      logoUrl = data.logo_url
+      const img = document.getElementById('logo-preview')
+      img.src = logoUrl
+      img.style.display = 'block'
+      document.getElementById('logo-url-display').textContent = logoUrl
+    }
+
+    ;['conf-descripcion','conf-meta-title','conf-meta-desc'].forEach(id => {
+      document.getElementById(id).dispatchEvent(new Event('input'))
+    })
+  }
+
+  // ─── GUARDAR ─────────────────────────────────────────────
+  document.getElementById('btn-guardar-config').addEventListener('click', async () => {
+    const payload = {
+      nombre_spa:               document.getElementById('conf-nombre').value.trim(),
+      slogan:                   document.getElementById('conf-slogan').value.trim() || null,
+      descripcion:              document.getElementById('conf-descripcion').value.trim() || null,
+      direccion:                document.getElementById('conf-direccion').value.trim() || null,
+      ciudad:                   document.getElementById('conf-ciudad').value.trim() || null,
+      pais:                     document.getElementById('conf-pais').value.trim() || null,
+      horario_atencion:         document.getElementById('conf-horario').value.trim() || null,
+      telefono:                 document.getElementById('conf-telefono').value.trim() || null,
+      whatsapp:                 document.getElementById('conf-whatsapp').value.trim() || null,
+      email_contacto:           document.getElementById('conf-email').value.trim() || null,
+      redes_sociales: {
+        instagram: document.getElementById('conf-instagram').value.trim() || null,
+        facebook:  document.getElementById('conf-facebook').value.trim() || null,
+        tiktok:    document.getElementById('conf-tiktok').value.trim() || null,
+      },
+      reserva_anticip_min_horas: parseInt(document.getElementById('conf-anticip-min').value) || 2,
+      reserva_anticip_max_dias:  parseInt(document.getElementById('conf-anticip-max').value) || 60,
+      buffer_min:               parseInt(document.getElementById('conf-buffer').value) || 15,
+      politica_cancelacion:     document.getElementById('conf-politica').value.trim() || null,
+      color_primario:           document.getElementById('conf-color-primary').value.trim() || null,
+      color_acento:             document.getElementById('conf-color-accent').value.trim() || null,
+      meta_title:               document.getElementById('conf-meta-title').value.trim() || null,
+      meta_description:         document.getElementById('conf-meta-desc').value.trim() || null,
+    }
+
+    if (logoUrl) payload.logo_url = logoUrl
+
+    if (!payload.nombre_spa) { toast('El nombre del spa es requerido', 'error'); return }
+
+    let error
+    if (configId) {
+      ({ error } = await supabase.from('configuracion').update(payload).eq('id', configId))
+    } else {
+      const { data, error: insErr } = await supabase.from('configuracion').insert(payload).select('id').single()
+      error = insErr
+      if (data) configId = data.id
+    }
+
+    if (error) { toast('Error al guardar configuración: ' + error.message, 'error'); return }
+    toast('Configuración guardada. Los cambios se reflejan en el sitio web.', 'success')
+  })
+
+  await cargarConfig()
+</script>
+</body>
+</html>

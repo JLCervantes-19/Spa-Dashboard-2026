@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Serenità Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main-content">
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle" id="fecha-hoy"></p>
+      </div>
+      <div class="page-header-right">
+        <a href="/reservas.html" class="btn btn-primary btn-sm">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva reserva
+        </a>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- KPI GRID -->
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi-card skeleton" style="height:110px"></div>
+        <div class="kpi-card skeleton" style="height:110px"></div>
+        <div class="kpi-card skeleton" style="height:110px"></div>
+        <div class="kpi-card skeleton" style="height:110px"></div>
+        <div class="kpi-card skeleton" style="height:110px"></div>
+        <div class="kpi-card skeleton" style="height:110px"></div>
+        <div class="kpi-card skeleton" style="height:110px"></div>
+        <div class="kpi-card skeleton" style="height:110px"></div>
+      </div>
+
+      <!-- PUNTUALIDAD -->
+      <div class="card mb-24" id="stats-puntualidad">
+        <div class="card-header"><span class="card-title">Puntualidad del mes</span></div>
+        <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">
+          <div class="skeleton" style="height:60px;border-radius:8px"></div>
+          <div class="skeleton" style="height:60px;border-radius:8px"></div>
+          <div class="skeleton" style="height:60px;border-radius:8px"></div>
+          <div class="skeleton" style="height:60px;border-radius:8px"></div>
+        </div>
+      </div>
+
+      <!-- GRÁFICOS FILA 1 -->
+      <div class="charts-row mb-24" id="charts-row-1">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Reservas últimos 30 días</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-container" style="height:220px">
+              <canvas id="chart-reservas-dias"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Distribución de estados</span>
+          </div>
+          <div class="card-body" style="display:flex;align-items:center;justify-content:center">
+            <div class="chart-container" style="height:220px;max-width:220px">
+              <canvas id="chart-estados"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRÁFICOS FILA 2 -->
+      <div class="charts-row mb-24">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Servicios más solicitados</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-container" style="height:200px">
+              <canvas id="chart-servicios"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Citas por empleada esta semana</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-container" style="height:200px">
+              <canvas id="chart-empleadas"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CITAS HOY -->
+      <div class="card mb-24">
+        <div class="card-header">
+          <span class="card-title">Citas de hoy</span>
+          <div style="display:flex;gap:8px">
+            <select id="filtro-empleada-hoy" class="filter-select">
+              <option value="">Todas las empleadas</option>
+            </select>
+            <select id="filtro-estado-hoy" class="filter-select">
+              <option value="">Todos los estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="realizada">Realizada</option>
+              <option value="atrasada">Atrasada</option>
+              <option value="no_asistio">No asistió</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Cliente</th>
+                <th>Servicio</th>
+                <th>Empleada</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="citas-hoy-tbody">
+              <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AGENDA SEMANA -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Agenda de la semana</span>
+          <a href="/reservas.html" class="btn btn-ghost btn-sm">Ver todas →</a>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Cliente</th>
+                <th>Servicio</th>
+                <th>Empleada</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="agenda-semana-tbody">
+              <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </div><!-- /main-content -->
+</div>
+
+<!-- MODAL CAMBIAR ESTADO -->
+<div class="modal-overlay" id="modal-estado">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div>
+        <p class="modal-title">Cambiar estado</p>
+        <p class="modal-subtitle" id="modal-estado-nombre"></p>
+      </div>
+      <button class="modal-close" id="modal-estado-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <select id="select-nuevo-estado" class="form-select">
+          <option value="pendiente">Pendiente</option>
+          <option value="confirmada">Confirmada</option>
+          <option value="realizada">Realizada</option>
+          <option value="atrasada">Atrasada</option>
+          <option value="no_asistio">No asistió</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nota (opcional)</label>
+        <textarea id="nota-estado" class="form-textarea" rows="2" placeholder="Agrega una nota…" maxlength="500"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="modal-estado-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="modal-estado-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdmin }    from '/js/auth.js'
+  import { supabase }        from '/js/supabase-client.js'
+  import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
+  import {
+    formatHora, formatFechaCorta, todayISO, startOfWeekISO,
+    badgeCita, avatarHTML, toast, openModal, closeModal, renderSidebarUser
+  } from '/js/utils.js'
+
+  // ——— Iconos — deben estar ANTES de cualquier uso ————————
+  const calIco   = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
+  const moneyIco = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`
+  const checkIco = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`
+  const userIco  = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>`
+
+  // ——— Auth guard ————————————————————————————————————————
+  const auth = await requireAdmin()
+  if (!auth) throw new Error()
+
+  document.getElementById('sidebar').innerHTML = getSidebarHTML('/dashboard.html')
+  initSidebar(auth.admin)
+  renderSidebarUser(auth.admin)
+
+  document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString('es-CO', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  })
+
+  const hoy    = todayISO()
+  const semIni = startOfWeekISO()
+  const iniMes = hoy.slice(0,7) + '-01'
+  const iniAno = hoy.slice(0,4) + '-01-01'
+
+  // ——— Cargar datos ————————————————————————————————————
+  let citasHoyArr = [], citasMesArr = [], citasSemArr = [], empleadas = [], citasDiasArr = []
+  let ingresosHoy = 0, ingresosMes = 0, ingresosAno = 0, clientesUnicos = 0
+  let loadError = null
+
+  try {
+    const [r1, r2, r3, r4, r5] = await Promise.all([
+      supabase.from('citas')
+        .select('id,fecha,hora_inicio,estado,notas,clientes(nombre,telefono),servicios(nombre,precio),empleados(id,nombre,apellido,foto_url,color)')
+        .eq('fecha', hoy).neq('estado','cancelada').order('hora_inicio'),
+      supabase.from('citas')
+        .select('id,estado,servicio_id,servicios(nombre,precio)')
+        .gte('fecha', iniMes).lte('fecha', hoy),
+      supabase.from('citas')
+        .select('id,fecha,hora_inicio,estado,clientes(nombre),servicios(nombre),empleados(nombre,apellido,foto_url,color)')
+        .gte('fecha', semIni).lte('fecha', hoy).order('fecha').order('hora_inicio'),
+      supabase.from('empleados').select('id,nombre,apellido').eq('activo', true),
+      supabase.from('citas').select('fecha,estado')
+        .gte('fecha', (() => { const d = new Date(); d.setDate(d.getDate()-30); return d.toISOString().split('T')[0] })())
+        .lte('fecha', hoy),
+    ])
+
+    citasHoyArr  = r1.data || []
+    citasMesArr  = r2.data || []
+    citasSemArr  = r3.data || []
+    empleadas    = r4.data || []
+    citasDiasArr = r5.data || []
+
+    ingresosHoy = citasHoyArr
+      .filter(c => c.estado === 'realizada')
+      .reduce((s, c) => s + (c.servicios?.precio || 0), 0)
+
+    ingresosMes = citasMesArr
+      .filter(c => c.estado === 'realizada')
+      .reduce((s, c) => s + (c.servicios?.precio || 0), 0)
+
+    const [rAno, rClientes] = await Promise.all([
+      supabase.from('citas').select('servicios(precio)').eq('estado','realizada').gte('fecha', iniAno).lte('fecha', hoy),
+      supabase.from('citas').select('cliente_id').gte('fecha', iniMes).lte('fecha', hoy),
+    ])
+    ingresosAno    = (rAno.data || []).reduce((s, c) => s + (c.servicios?.precio || 0), 0)
+    clientesUnicos = new Set((rClientes.data || []).map(c => c.cliente_id)).size
+
+  } catch (err) {
+    loadError = err
+    console.error('Dashboard — error al cargar:', err)
+  }
+
+  // ——— KPI helper ————————————————————————————————————
+  function kpiCard(label, val, icon, trend) {
+    return `
+      <div class="kpi-card">
+        <div class="kpi-label">${label}</div>
+        <div class="kpi-value">${val}</div>
+        ${trend ? `<div class="kpi-trend ${trend}">${trend==='up' ? '↑ En objetivo' : '↓ Por mejorar'}</div>` : '<div style="height:18px"></div>'}
+        <div class="kpi-icon">${icon}</div>
+      </div>
+    `
+  }
+
+  // ——— Render KPIs y puntualidad ———————————————————————
+  if (loadError) {
+    document.getElementById('kpi-grid').innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--danger)">
+        Error al cargar datos.
+        <button onclick="location.reload()" style="margin-left:8px;padding:6px 14px;border-radius:6px;background:var(--danger);color:#fff;border:none;cursor:pointer;font-size:0.78rem">Reintentar</button>
+      </div>
+    `
+    document.getElementById('stats-puntualidad').innerHTML = ''
+  } else {
+    const mesTotal      = citasMesArr.length
+    const hoyTotal      = citasHoyArr.length
+    const semTotal      = citasSemArr.length
+    const realizadas    = citasMesArr.filter(c => c.estado === 'realizada').length
+    const atrasadas     = citasMesArr.filter(c => c.estado === 'atrasada').length
+    const noAsistio     = citasMesArr.filter(c => c.estado === 'no_asistio').length
+    const confirmadas   = citasMesArr.filter(c => !['cancelada','no_asistio'].includes(c.estado)).length
+    const tasaAsist     = confirmadas > 0 ? Math.round((realizadas / confirmadas) * 100) : 0
+    const totalCerradas = realizadas + atrasadas + noAsistio
+    const pctCumpl      = totalCerradas > 0 ? Math.round((realizadas / totalCerradas) * 100) : 0
+
+    document.getElementById('kpi-grid').innerHTML = `
+      ${kpiCard('Citas hoy',           hoyTotal,                                    calIco,   '')}
+      ${kpiCard('Citas semana',        semTotal,                                    calIco,   '')}
+      ${kpiCard('Citas mes',           mesTotal,                                    calIco,   '')}
+      ${kpiCard('Ingresos hoy',        '$' + ingresosHoy.toLocaleString('es-CO'),  moneyIco, '')}
+      ${kpiCard('Ingresos mes',        '$' + ingresosMes.toLocaleString('es-CO'),  moneyIco, '')}
+      ${kpiCard('Ingresos año',        '$' + ingresosAno.toLocaleString('es-CO'),  moneyIco, '')}
+      ${kpiCard('Tasa asistencia',     tasaAsist + '%',                             checkIco, tasaAsist >= 70 ? 'up' : 'down')}
+      ${kpiCard('Clientes únicos mes', clientesUnicos,                              userIco,  '')}
+    `
+
+    document.getElementById('stats-puntualidad').innerHTML = `
+      <div class="card-header"><span class="card-title">Puntualidad del mes</span></div>
+      <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">
+        <div>
+          <div style="font-size:1.8rem;font-weight:600;color:var(--success)">${realizadas}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">Realizadas</div>
+        </div>
+        <div>
+          <div style="font-size:1.8rem;font-weight:600;color:var(--warning)">${atrasadas}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">Atrasadas</div>
+        </div>
+        <div>
+          <div style="font-size:1.8rem;font-weight:600;color:var(--danger)">${noAsistio}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">No asistieron</div>
+        </div>
+        <div>
+          <div style="font-size:1.8rem;font-weight:600;color:var(--purple-medium)">${pctCumpl}%</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">% cumplimiento</div>
+        </div>
+      </div>
+    `
+  }
+
+  // ——— Poblar filtro empleadas ————————————————————————
+  const filtroEmp = document.getElementById('filtro-empleada-hoy')
+  ;(empleadas || []).forEach(e => {
+    const opt = document.createElement('option')
+    opt.value = e.id
+    opt.textContent = [e.nombre, e.apellido].filter(Boolean).join(' ')
+    filtroEmp.appendChild(opt)
+  })
+
+  // ——— Render tabla citas hoy ————————————————————————
+  let citasHoyFiltradas = [...citasHoyArr]
+  function renderCitasHoy() {
+    const tbody = document.getElementById('citas-hoy-tbody')
+    const emp   = filtroEmp.value
+    const est   = document.getElementById('filtro-estado-hoy').value
+    const arr   = citasHoyFiltradas.filter(c =>
+      (!emp || c.empleados?.id === emp) &&
+      (!est || c.estado === est)
+    )
+    if (!arr.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:32px">No hay citas para los filtros seleccionados</td></tr>`
+      return
+    }
+    tbody.innerHTML = arr.map(c => `
+      <tr>
+        <td style="font-weight:500">${formatHora(c.hora_inicio)}</td>
+        <td>
+          <div style="font-weight:500">${c.clientes?.nombre || '—'}</div>
+          <div class="td-muted">${c.clientes?.telefono || ''}</div>
+        </td>
+        <td>${c.servicios?.nombre || '—'}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${avatarHTML(c.empleados?.nombre, c.empleados?.apellido, c.empleados?.foto_url, 26)}
+            <span style="font-size:0.82rem">${c.empleados ? [c.empleados.nombre, c.empleados.apellido].filter(Boolean).join(' ') : '—'}</span>
+          </div>
+        </td>
+        <td>${badgeCita(c.estado)}</td>
+        <td>
+          <div class="table-actions">
+            <button class="action-btn" data-tooltip="Cambiar estado" onclick="abrirModalEstado('${c.id}','${c.clientes?.nombre || ''}','${c.estado}')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('')
+  }
+  renderCitasHoy()
+  filtroEmp.addEventListener('change', renderCitasHoy)
+  document.getElementById('filtro-estado-hoy').addEventListener('change', renderCitasHoy)
+
+  // ——— Render agenda semana ———————————————————————————
+  const agendaTbody = document.getElementById('agenda-semana-tbody')
+  if (!citasSemArr.length) {
+    agendaTbody.innerHTML = `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:32px">No hay citas esta semana</td></tr>`
+  } else {
+    agendaTbody.innerHTML = citasSemArr.map(c => `
+      <tr>
+        <td style="white-space:nowrap">${formatFechaCorta(c.fecha)}</td>
+        <td style="font-weight:500">${formatHora(c.hora_inicio)}</td>
+        <td>${c.clientes?.nombre || '—'}</td>
+        <td>${c.servicios?.nombre || '—'}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:7px">
+            ${avatarHTML(c.empleados?.nombre, c.empleados?.apellido, c.empleados?.foto_url, 24)}
+            <span style="font-size:0.78rem">${c.empleados ? [c.empleados.nombre, c.empleados.apellido].filter(Boolean).join(' ') : '—'}</span>
+          </div>
+        </td>
+        <td>${badgeCita(c.estado)}</td>
+      </tr>
+    `).join('')
+  }
+
+  // ——— Gráficos ————————————————————————————————————————
+  if (!loadError) {
+    const fechaConteo = {}
+    citasDiasArr.forEach(c => { fechaConteo[c.fecha] = (fechaConteo[c.fecha] || 0) + 1 })
+    const labels30 = [], vals30 = []
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i)
+      const f = d.toISOString().split('T')[0]
+      labels30.push(d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }))
+      vals30.push(fechaConteo[f] || 0)
+    }
+
+    new Chart(document.getElementById('chart-reservas-dias'), {
+      type: 'line',
+      data: { labels: labels30, datasets: [{ label: 'Reservas', data: vals30, borderColor: '#7A3A8E', backgroundColor: 'rgba(122,58,142,0.08)', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8, font: { size: 10 } }, grid: { display: false } }, y: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(82,37,102,0.06)' }, beginAtZero: true, precision: 0 } } }
+    })
+
+    const estadosCont = {}
+    citasMesArr.forEach(c => { estadosCont[c.estado] = (estadosCont[c.estado] || 0) + 1 })
+    new Chart(document.getElementById('chart-estados'), {
+      type: 'doughnut',
+      data: { labels: Object.keys(estadosCont), datasets: [{ data: Object.values(estadosCont), backgroundColor: ['#AD74C3','#16a34a','#d97706','#dc2626','#64748b','#2563eb'], borderWidth: 2, borderColor: '#fff' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8 } } }, cutout: '65%' }
+    })
+
+    const servCont = {}
+    citasMesArr.forEach(c => {
+      const n = c.servicios?.nombre || 'Sin servicio'
+      servCont[n] = (servCont[n] || 0) + 1
+    })
+    const sorted = Object.entries(servCont).sort((a,b) => b[1]-a[1]).slice(0, 6)
+    new Chart(document.getElementById('chart-servicios'), {
+      type: 'bar',
+      data: { labels: sorted.map(s => s[0]), datasets: [{ data: sorted.map(s => s[1]), backgroundColor: 'rgba(122,58,142,0.7)', borderRadius: 4 }] },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(82,37,102,0.06)' }, precision: 0 }, y: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
+    })
+
+    const empCont = {}
+    citasSemArr.forEach(c => {
+      const n = c.empleados ? [c.empleados.nombre, c.empleados.apellido].filter(Boolean).join(' ') : 'Sin asignar'
+      empCont[n] = (empCont[n] || 0) + 1
+    })
+    new Chart(document.getElementById('chart-empleadas'), {
+      type: 'bar',
+      data: { labels: Object.keys(empCont), datasets: [{ data: Object.values(empCont), backgroundColor: 'rgba(82,37,102,0.65)', borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } }, grid: { display: false } }, y: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(82,37,102,0.06)' }, beginAtZero: true, precision: 0 } } }
+    })
+  }
+
+  // ——— Modal cambiar estado ——————————————————————————
+  let citaIdActual = null
+  window.abrirModalEstado = (id, nombre, estadoActual) => {
+    citaIdActual = id
+    document.getElementById('modal-estado-nombre').textContent = nombre
+    document.getElementById('select-nuevo-estado').value = estadoActual
+    document.getElementById('nota-estado').value = ''
+    openModal('modal-estado')
+  }
+  document.getElementById('modal-estado-close').addEventListener('click', () => closeModal('modal-estado'))
+  document.getElementById('modal-estado-cancel').addEventListener('click', () => closeModal('modal-estado'))
+  document.getElementById('modal-estado').addEventListener('click', e => {
+    if (e.target.id === 'modal-estado') closeModal('modal-estado')
+  })
+  document.getElementById('modal-estado-save').addEventListener('click', async () => {
+    const estado = document.getElementById('select-nuevo-estado').value
+    const notas  = document.getElementById('nota-estado').value.trim()
+    const upd    = { estado }
+    if (notas) upd.notas = notas
+    const { error } = await supabase.from('citas').update(upd).eq('id', citaIdActual)
+    if (error) { toast('Error al actualizar', 'error'); return }
+    closeModal('modal-estado')
+    toast('Estado actualizado', 'success')
+    const idx = citasHoyArr.findIndex(c => c.id === citaIdActual)
+    if (idx !== -1) citasHoyArr[idx].estado = estado
+    citasHoyFiltradas = [...citasHoyArr]
+    renderCitasHoy()
+  })
+</script>
+</body>
+</html>
