@@ -239,6 +239,7 @@
   // ——— Cargar datos ————————————————————————————————————
   let citasHoyArr = [], citasMesArr = [], citasSemArr = [], empleadas = [], citasDiasArr = []
   let ingresosHoy = 0, ingresosMes = 0, ingresosAno = 0, clientesUnicos = 0
+  let sinAsignarHoy = 0
   let loadError = null
 
   try {
@@ -263,6 +264,7 @@
     citasSemArr  = r3.data || []
     empleadas    = r4.data || []
     citasDiasArr = r5.data || []
+    sinAsignarHoy = citasHoyArr.filter(c => !c.empleados).length
 
     ingresosHoy = citasHoyArr
       .filter(c => c.estado === 'realizada')
@@ -326,6 +328,12 @@
       ${kpiCard('Ingresos año',        '$' + ingresosAno.toLocaleString('es-CO'),  moneyIco, '')}
       ${kpiCard('Tasa asistencia',     tasaAsist + '%',                             checkIco, tasaAsist >= 70 ? 'up' : 'down')}
       ${kpiCard('Clientes únicos mes', clientesUnicos,                              userIco,  '')}
+      ${sinAsignarHoy > 0 ? `
+      <div class="kpi-card" style="border:1px solid var(--danger);background:rgba(239,68,68,0.05)">
+        <div class="kpi-label" style="color:var(--danger)">⚠ Sin asignar hoy</div>
+        <div class="kpi-value" style="color:var(--danger)">${sinAsignarHoy}</div>
+        <div class="kpi-meta"><a href="/reservas.html" style="color:var(--danger);font-size:0.72rem;text-decoration:underline">Ver reservas →</a></div>
+      </div>` : ''}
     `
 
     document.getElementById('stats-puntualidad').innerHTML = `
