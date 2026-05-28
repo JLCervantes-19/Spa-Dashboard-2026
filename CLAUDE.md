@@ -30,26 +30,29 @@ Tienes acceso completo vía MCP de Supabase. Puedes hacer cambios directos a la 
 
 ## Vercel — Despliegue
 
-**Proyecto:** `jhan-cervantes-projects/spa-dashboard`  
+**Proyecto:** `jhan-cervantes-projects/dashboard`  
 **Scope/Team:** `jhan-cervantes-projects`  
 **GitHub:** `JLCervantes-19/Spa-Dashboard-2026`  
-**Último deployment prod:** https://spa-dashboard-4xs7p9dwl-jhan-cervantes-projects.vercel.app
+**URL Producción:** https://dashboard-mocha-tau-10.vercel.app  
+**URL por equipo:** https://dashboard-jhan-cervantes-projects.vercel.app
+
+> El proyecto fue renombrado de `spa-dashboard` → `dashboard`. Usar la URL de producción de arriba.
 
 ```bash
 # Ver deployments
 vercel ls --scope jhan-cervantes-projects
 
-# Ver logs de un deployment específico
-vercel logs https://spa-dashboard-4xs7p9dwl-jhan-cervantes-projects.vercel.app
+# Ver logs del último deployment
+vercel logs https://dashboard-jhan-cervantes-projects.vercel.app
 
 # Ver logs en tiempo real
-vercel logs --follow https://spa-dashboard-4xs7p9dwl-jhan-cervantes-projects.vercel.app
+vercel logs --follow https://dashboard-jhan-cervantes-projects.vercel.app
 
-# Inspeccionar un deployment
-vercel inspect https://spa-dashboard-4xs7p9dwl-jhan-cervantes-projects.vercel.app
+# Inspeccionar producción
+vercel inspect https://dashboard-mocha-tau-10.vercel.app
 
 # Nuevo deploy
-cd "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard" && vercel --prod
+cd "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard" && vercel --prod --scope jhan-cervantes-projects
 ```
 
 ## Render — Infraestructura
