@@ -31,3 +31,4 @@ yarn-error.log*
 
 # Graphify (análisis local, no va al repo)
 graphify-out/
+.vercel

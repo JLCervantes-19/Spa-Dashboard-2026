@@ -1,0 +1,94 @@
+{
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/server.js": {
+    "mtime": 1779922493.4476047,
+    "hash": "61ed57c8c5cf9111ab68a8739212057f"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/database/schema_admin.sql": {
+    "mtime": 1779593136.563164,
+    "hash": "bff050e2a5af1995fc19522ed92e1487"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/database/migration_2.sql": {
+    "mtime": 1779608225.8139856,
+    "hash": "d79e24350693be21acc94f35ac33ad67"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/database/setup_completo.sql": {
+    "mtime": 1779596621.1232452,
+    "hash": "60192748fbae8c8d6f7bd3c23d4c5bdc"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/js/auth.js": {
+    "mtime": 1779594035.949032,
+    "hash": "d2e403099143dc4d89b6076b6663dd85"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/js/sidebar.js": {
+    "mtime": 1779641987.98927,
+    "hash": "ff0eb4c0d7e43f7a52d13ebbcaeac2a3"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/js/utils.js": {
+    "mtime": 1779594195.729003,
+    "hash": "fb66d8517e91abc2b805714838b7d03e"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/js/supabase-client.js": {
+    "mtime": 1779593405.398083,
+    "hash": "10b44a6bee497899496ad43a3bc19b82"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/config/supabase.js": {
+    "mtime": 1779922489.772054,
+    "hash": "263937aff7f140c58520db63e0586075"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/api/index.js": {
+    "mtime": 1779922495.8001297,
+    "hash": "eddfaea284b73950c95fbc712051822b"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/README.md": {
+    "mtime": 1779656455.9256935,
+    "hash": "607d8190652739fc3f6d50799bd2e9e1"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/INSTRUCCIONES-AGREGAR-ADMIN.md": {
+    "mtime": 1779642091.5499256,
+    "hash": "33b1b37e0eaafdb2f5834a6af422ffe1"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/CLAUDE.md": {
+    "mtime": 1779921494.9955814,
+    "hash": "1663760ccf5bd11b3f0955d8f2ddc33c"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/index.html": {
+    "mtime": 1779594320.914109,
+    "hash": "f403cd99159167e083c65a8f9b2a4221"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/empleadas.html": {
+    "mtime": 1779610548.5466306,
+    "hash": "650e29d5d0626efec9df51fa2b1ae5ff"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/configuracion.html": {
+    "mtime": 1779606098.402665,
+    "hash": "b7b2f080f8524af920ee1af10d26d6fa"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/reservas.html": {
+    "mtime": 1779594756.8701818,
+    "hash": "08176d8f36ca8beeee17a54b52d45d09"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/dashboard.html": {
+    "mtime": 1779665216.9635282,
+    "hash": "00fbebbd0ad51d5e289003cf0a9e1a89"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/servicios.html": {
+    "mtime": 1779594916.0423212,
+    "hash": "6d11e1cae9d6142df268c7ea2a8f1197"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/admins.html": {
+    "mtime": 1779642067.0250044,
+    "hash": "b44a66246a9329bcd75a5b0c60d678fb"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/disponibilidad.html": {
+    "mtime": 1779595223.209289,
+    "hash": "2fe3595c4c78f4105559dbb0a2b1a950"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/clientes.html": {
+    "mtime": 1779594990.3320553,
+    "hash": "5fa4b8cd21122c6935ddc91eb010c916"
+  },
+  "/Users/macuser/Desktop/LANDING PROYECTS/Spa_OhDiosas/SISTEMA WEB/admin-dashboard/frontend/testimonios.html": {
+    "mtime": 1779605983.0781026,
+    "hash": "7fcc5d9a38c08e51ed94b61d9a038b7c"
+  }
+}
