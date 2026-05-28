@@ -316,18 +316,21 @@
   }
 
   document.getElementById('modal-svc-save').addEventListener('click', async () => {
-    const nombre    = document.getElementById('svc-nombre').value.trim()
-    const duracion  = parseInt(document.getElementById('svc-duracion').value)
+    const btn = document.getElementById('modal-svc-save')
+    if (btn.disabled) return
+    btn.disabled = true
 
-    if (!nombre) { document.getElementById('err-svc-nombre').classList.remove('hidden'); document.getElementById('svc-nombre').classList.add('error'); return }
+    const nombre    = document.getElementById('svc-nombre').value.trim()
+    const duracion  = parseInt(document.getElementById('svc-duracion').value, 10)
+
+    if (!nombre) { document.getElementById('err-svc-nombre').classList.remove('hidden'); document.getElementById('svc-nombre').classList.add('error'); btn.disabled = false; return }
     document.getElementById('err-svc-nombre').classList.add('hidden'); document.getElementById('svc-nombre').classList.remove('error')
-    if (!duracion || duracion < 1) { document.getElementById('err-svc-duracion').classList.remove('hidden'); document.getElementById('svc-duracion').classList.add('error'); return }
+    if (!duracion || duracion < 1) { document.getElementById('err-svc-duracion').classList.remove('hidden'); document.getElementById('svc-duracion').classList.add('error'); btn.disabled = false; return }
     document.getElementById('err-svc-duracion').classList.add('hidden'); document.getElementById('svc-duracion').classList.remove('error')
 
     const btnTxt  = document.getElementById('svc-btn-txt')
     const btnSpin = document.getElementById('svc-btn-spin')
     btnTxt.textContent = 'Guardando…'; btnSpin.classList.remove('hidden')
-    document.getElementById('modal-svc-save').disabled = true
 
     try {
       const payload = {
@@ -335,7 +338,7 @@
         categoria:   document.getElementById('svc-categoria').value.trim() || null,
         descripcion: document.getElementById('svc-descripcion').value.trim() || null,
         duracion_min: duracion,
-        buffer_min:  parseInt(document.getElementById('svc-buffer').value) || 10,
+        buffer_min:  parseInt(document.getElementById('svc-buffer').value, 10) || 10,
         precio:      parseFloat(document.getElementById('svc-precio').value) || null,
         imagen_url:  document.getElementById('svc-imagen').value.trim() || null,
         activo:      svcActivoState,

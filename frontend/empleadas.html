@@ -371,7 +371,7 @@
   window.toggleChips = (btn) => {
     const row        = btn.closest('.chips-row')
     const expanded   = btn.dataset.expanded === 'true'
-    const extraCount = parseInt(btn.dataset.extra)
+    const extraCount = parseInt(btn.dataset.extra, 10)
     // Chips de servicio en la fila, excluyendo el propio botón
     const chips = [...row.querySelectorAll('.service-chip')].filter(c => c !== btn)
 

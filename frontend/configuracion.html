@@ -314,6 +314,8 @@
     const el = document.getElementById(inputId)
     const ct = document.getElementById(counterId)
     const update = () => ct.textContent = `${el.value.length} / ${max}`
+    el.removeEventListener('input', el._charCounter)
+    el._charCounter = update
     el.addEventListener('input', update)
     update()
   }
@@ -427,9 +429,9 @@
         facebook:  document.getElementById('conf-facebook').value.trim() || null,
         tiktok:    document.getElementById('conf-tiktok').value.trim() || null,
       },
-      reserva_anticip_min_horas: parseInt(document.getElementById('conf-anticip-min').value) || 2,
-      reserva_anticip_max_dias:  parseInt(document.getElementById('conf-anticip-max').value) || 60,
-      buffer_min:               parseInt(document.getElementById('conf-buffer').value) || 15,
+      reserva_anticip_min_horas: parseInt(document.getElementById('conf-anticip-min').value, 10) || 2,
+      reserva_anticip_max_dias:  parseInt(document.getElementById('conf-anticip-max').value, 10) || 60,
+      buffer_min:               parseInt(document.getElementById('conf-buffer').value, 10) || 15,
       politica_cancelacion:     document.getElementById('conf-politica').value.trim() || null,
       color_primario:           document.getElementById('conf-color-primary').value.trim() || null,
       color_acento:             document.getElementById('conf-color-accent').value.trim() || null,

@@ -271,14 +271,14 @@
   let ratingActual = 5
   document.querySelectorAll('.star-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      ratingActual = parseInt(btn.dataset.val)
+      ratingActual = parseInt(btn.dataset.val, 10)
       document.getElementById('test-rating').value = ratingActual
       updateStars()
     })
   })
   function updateStars() {
     document.querySelectorAll('.star-btn').forEach(btn => {
-      btn.style.opacity = parseInt(btn.dataset.val) <= ratingActual ? '1' : '0.25'
+      btn.style.opacity = parseInt(btn.dataset.val, 10) <= ratingActual ? '1' : '0.25'
     })
   }
   updateStars()
@@ -474,7 +474,7 @@
     const nombre   = document.getElementById('test-nombre').value.trim()
     const texto    = document.getElementById('test-texto').value.trim()
     const estado   = document.getElementById('test-estado').value
-    const rating   = parseInt(document.getElementById('test-rating').value)
+    const rating   = parseInt(document.getElementById('test-rating').value, 10)
     const servId   = document.getElementById('test-servicio').value || null
 
     if (!nombre || !texto) { toast('Nombre y reseña son requeridos', 'error'); return }

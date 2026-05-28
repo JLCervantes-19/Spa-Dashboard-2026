@@ -380,7 +380,7 @@
         activo: row.querySelector('.dia-toggle').checked,
       }
     })
-    const slotDur = parseInt(document.getElementById('slot-duracion').value)
+    const slotDur = parseInt(document.getElementById('slot-duracion').value, 10)
 
     const updates = { horario_semana: horario, slot_duracion_min: slotDur }
     let error
