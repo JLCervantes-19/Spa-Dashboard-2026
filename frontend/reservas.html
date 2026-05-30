@@ -37,10 +37,12 @@
             <option value="">Todos los estados</option>
             <option value="pendiente">Pendiente</option>
             <option value="confirmada">Confirmada</option>
+            <option value="en_proceso">En proceso</option>
             <option value="realizada">Realizada</option>
             <option value="atrasada">Atrasada</option>
             <option value="no_asistio">No asistió</option>
             <option value="cancelada">Cancelada</option>
+            <option value="reagendada">Reagendada</option>
           </select>
           <div class="search-input-wrapper">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -108,10 +110,12 @@
           <select id="res-nuevo-estado" class="form-select">
             <option value="pendiente">Pendiente</option>
             <option value="confirmada">Confirmada</option>
+            <option value="en_proceso">En proceso</option>
             <option value="realizada">Realizada</option>
             <option value="atrasada">Atrasada</option>
             <option value="no_asistio">No asistió</option>
             <option value="cancelada">Cancelada</option>
+            <option value="reagendada">Reagendada</option>
           </select>
         </div>
         <div class="form-group">
@@ -184,6 +188,36 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" id="modal-nres-cancel">Cancelar</button>
       <button class="btn btn-primary" id="modal-nres-save">Crear reserva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REAGENDAR -->
+<div class="modal-overlay hidden" id="modal-reagendar">
+  <div class="modal modal-lg" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <p class="modal-title">Reagendar cita</p>
+        <p class="modal-subtitle" id="reagendar-info"></p>
+      </div>
+      <button class="modal-close" id="modal-reagendar-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nueva fecha</label>
+        <input type="date" id="reagendar-fecha" class="form-input" />
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label class="form-label">Nueva hora</label>
+        <select id="reagendar-hora" class="form-select"><option value="">Selecciona primero una fecha</option></select>
+      </div>
+      <div id="reagendar-msg" style="margin-top:12px;font-size:0.82rem;color:var(--danger);display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-reagendar-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="btn-confirmar-reagendar" disabled>Confirmar reagendamiento</button>
     </div>
   </div>
 </div>
@@ -314,6 +348,9 @@
           <div class="table-actions">
             <button class="action-btn" data-tooltip="Ver detalle" onclick="verDetalle('${r.id}')">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="action-btn" data-tooltip="Reagendar" onclick="abrirReagendar('${r.id}','${r.servicios?.id || ''}','${(r.clientes?.nombre || '').replace(/'/g, "\\'")}','${r.fecha}','${(r.hora_inicio || '').slice(0,5)}')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </button>
             <button class="action-btn danger" data-tooltip="Eliminar" onclick="eliminarReserva('${r.id}')">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
@@ -501,6 +538,85 @@
   document.getElementById('modal-nueva-reserva').addEventListener('click', e => { if (e.target.id === 'modal-nueva-reserva') closeModal('modal-nueva-reserva') })
 
   await cargarDatos()
+
+  // ——— REAGENDAMIENTO ———
+  let reagendarCitaId = null
+  let reagendarServicioId = null
+
+  window.abrirReagendar = (citaId, servicioId, clienteNombre, fechaActual, horaActual) => {
+    reagendarCitaId = citaId
+    reagendarServicioId = servicioId
+    document.getElementById('reagendar-info').textContent =
+      `${clienteNombre} — actualmente ${fechaActual} ${horaActual}`
+    document.getElementById('reagendar-fecha').value = ''
+    document.getElementById('reagendar-hora').innerHTML = '<option value="">Selecciona primero una fecha</option>'
+    document.getElementById('btn-confirmar-reagendar').disabled = true
+    document.getElementById('reagendar-msg').style.display = 'none'
+    document.getElementById('modal-reagendar').classList.remove('hidden')
+    document.getElementById('modal-reagendar').classList.add('open')
+  }
+
+  document.getElementById('modal-reagendar-close')?.addEventListener('click', () => {
+    document.getElementById('modal-reagendar').classList.remove('open')
+    document.getElementById('modal-reagendar').classList.add('hidden')
+  })
+  document.getElementById('modal-reagendar-cancel')?.addEventListener('click', () => {
+    document.getElementById('modal-reagendar').classList.remove('open')
+    document.getElementById('modal-reagendar').classList.add('hidden')
+  })
+
+  document.getElementById('reagendar-fecha')?.addEventListener('change', async (e) => {
+    const fecha = e.target.value
+    const horaSelect = document.getElementById('reagendar-hora')
+    horaSelect.innerHTML = '<option value="">Cargando...</option>'
+    document.getElementById('btn-confirmar-reagendar').disabled = true
+    if (!fecha || !reagendarServicioId) return
+    try {
+      const res = await fetch(`/api/slots?servicio=${reagendarServicioId}&fecha=${fecha}`)
+      const slots = await res.json()
+      const disponibles = slots.filter(s => s.disponible)
+      if (!disponibles.length) {
+        horaSelect.innerHTML = '<option value="">Sin horarios disponibles</option>'
+        return
+      }
+      horaSelect.innerHTML = '<option value="">Selecciona una hora</option>' +
+        disponibles.map(s => {
+          const [h,m] = s.hora.split(':').map(Number)
+          const ampm = h >= 12 ? 'PM' : 'AM'
+          const h12 = h % 12 || 12
+          return `<option value="${s.hora}">${h12}:${String(m).padStart(2,'0')} ${ampm}</option>`
+        }).join('')
+    } catch { horaSelect.innerHTML = '<option value="">Error cargando slots</option>' }
+  })
+
+  document.getElementById('reagendar-hora')?.addEventListener('change', e => {
+    document.getElementById('btn-confirmar-reagendar').disabled = !e.target.value
+  })
+
+  document.getElementById('btn-confirmar-reagendar')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-confirmar-reagendar')
+    if (btn.disabled) return
+    btn.disabled = true
+    const fecha = document.getElementById('reagendar-fecha').value
+    const hora = document.getElementById('reagendar-hora').value
+    const msg = document.getElementById('reagendar-msg')
+    if (!fecha || !hora || !reagendarCitaId) { btn.disabled = false; return }
+    try {
+      const { error } = await supabase
+        .from('citas')
+        .update({ fecha, hora_inicio: hora, estado: 'reagendada' })
+        .eq('id', reagendarCitaId)
+      if (error) throw error
+      document.getElementById('modal-reagendar').classList.remove('open')
+      document.getElementById('modal-reagendar').classList.add('hidden')
+      await cargarDatos()
+      toast('Cita reagendada correctamente', 'success')
+    } catch (err) {
+      msg.textContent = err.message || 'Error al reagendar'
+      msg.style.display = 'block'
+      btn.disabled = false
+    }
+  })
 </script>
 </body>
 </html>

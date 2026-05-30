@@ -5,15 +5,17 @@
 export const ESTADOS_CITA = {
   pendiente:   { label: 'Pendiente',   badge: 'badge-pendiente'  },
   confirmada:  { label: 'Confirmada',  badge: 'badge-confirmada' },
+  en_proceso:  { label: 'En proceso',  badge: 'badge-en_proceso' },
   realizada:   { label: 'Realizada',   badge: 'badge-realizada'  },
   atrasada:    { label: 'Atrasada',    badge: 'badge-atrasada'   },
   no_asistio:  { label: 'No asistió',  badge: 'badge-no_asistio' },
   cancelada:   { label: 'Cancelada',   badge: 'badge-cancelada'  },
+  reagendada:  { label: 'Reagendada',  badge: 'badge-reagendada' },
 }
 
 export const ESTADOS_TESTIMONIO = {
   pendiente: { label: 'Pendiente', badge: 'badge-yellow' },
-  aprobado:  { label: 'Aprobado',  badge: 'badge-green'  },
+  publicado: { label: 'Publicado', badge: 'badge-green'  },
   oculto:    { label: 'Oculto',    badge: 'badge-gray'   },
 }
 

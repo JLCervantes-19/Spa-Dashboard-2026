@@ -113,10 +113,12 @@
               <option value="">Todos los estados</option>
               <option value="pendiente">Pendiente</option>
               <option value="confirmada">Confirmada</option>
+              <option value="en_proceso">En proceso</option>
               <option value="realizada">Realizada</option>
               <option value="atrasada">Atrasada</option>
               <option value="no_asistio">No asistió</option>
               <option value="cancelada">Cancelada</option>
+              <option value="reagendada">Reagendada</option>
             </select>
           </div>
         </div>
@@ -186,10 +188,12 @@
         <select id="select-nuevo-estado" class="form-select">
           <option value="pendiente">Pendiente</option>
           <option value="confirmada">Confirmada</option>
+          <option value="en_proceso">En proceso</option>
           <option value="realizada">Realizada</option>
           <option value="atrasada">Atrasada</option>
           <option value="no_asistio">No asistió</option>
           <option value="cancelada">Cancelada</option>
+          <option value="reagendada">Reagendada</option>
         </select>
       </div>
       <div class="form-group">
@@ -264,6 +268,8 @@
     citasSemArr  = r3.data || []
     empleadas    = r4.data || []
     citasDiasArr = r5.data || []
+    console.log('[Dashboard] citas hoy:', r1.data, r1.error)
+    console.log('[Dashboard] citas semana:', r3.data, r3.error)
     sinAsignarHoy = citasHoyArr.filter(c => !c.empleados).length
 
     ingresosHoy = citasHoyArr

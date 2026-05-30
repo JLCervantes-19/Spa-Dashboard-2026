@@ -211,11 +211,15 @@
           <input type="text" id="test-nombre" class="form-input" maxlength="100" />
         </div>
         <div class="form-group">
-          <label class="form-label">Servicio</label>
-          <select id="test-servicio" class="form-input">
-            <option value="">Sin especificar</option>
-          </select>
+          <label class="form-label">Cargo / descripción</label>
+          <input type="text" id="test-cargo" class="form-input" maxlength="100" placeholder="Ej: Cliente frecuente" />
         </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Servicio</label>
+        <select id="test-servicio" class="form-input">
+          <option value="">Sin especificar</option>
+        </select>
       </div>
       <div class="form-group">
         <label class="form-label">Calificación</label>
@@ -243,7 +247,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" id="modal-test-close2">Cancelar</button>
-      <button class="btn btn-danger btn-sm" id="btn-eliminar-test" style="display:none;margin-right:auto">Eliminar</button>
+      <button class="btn btn-ghost btn-sm" id="btn-eliminar-test" style="display:none;margin-right:auto">Ocultar</button>
       <button class="btn btn-primary" id="btn-guardar-test">Guardar</button>
     </div>
   </div>
@@ -445,6 +449,7 @@
     document.getElementById('test-id').value = t.id
     document.getElementById('modal-test-titulo').textContent = 'Editar testimonio'
     document.getElementById('test-nombre').value = t.nombre
+    document.getElementById('test-cargo').value = t.cargo || ''
     document.getElementById('test-servicio').value = t.servicio_id || ''
     document.getElementById('test-texto').value = t.texto
     document.getElementById('test-estado').value = t.estado || 'pendiente'
@@ -459,6 +464,7 @@
     document.getElementById('test-id').value = ''
     document.getElementById('modal-test-titulo').textContent = 'Nuevo testimonio'
     document.getElementById('test-nombre').value = ''
+    document.getElementById('test-cargo').value = ''
     document.getElementById('test-servicio').value = ''
     document.getElementById('test-texto').value = ''
     document.getElementById('test-estado').value = 'publicado'
@@ -472,6 +478,7 @@
   document.getElementById('btn-guardar-test').addEventListener('click', async () => {
     const id       = document.getElementById('test-id').value
     const nombre   = document.getElementById('test-nombre').value.trim()
+    const cargo    = document.getElementById('test-cargo').value.trim() || null
     const texto    = document.getElementById('test-texto').value.trim()
     const estado   = document.getElementById('test-estado').value
     const rating   = parseInt(document.getElementById('test-rating').value, 10)
@@ -479,7 +486,7 @@
 
     if (!nombre || !texto) { toast('Nombre y reseña son requeridos', 'error'); return }
 
-    const payload = { nombre, texto, estado, rating, servicio_id: servId }
+    const payload = { nombre, cargo, texto, estado, rating, servicio_id: servId }
     let error
     if (id) {
       ({ error } = await supabase.from('testimonios').update(payload).eq('id', id))
@@ -496,13 +503,13 @@
   document.getElementById('btn-eliminar-test').addEventListener('click', () => {
     const id = document.getElementById('test-id').value
     confirmAction({
-      title: 'Eliminar testimonio',
-      text: 'Se eliminará permanentemente. ¿Continuar?',
-      btnLabel: 'Eliminar',
+      title: 'Ocultar testimonio',
+      text: 'El testimonio quedará oculto y no se mostrará en el sitio. ¿Continuar?',
+      btnLabel: 'Ocultar',
       onConfirm: async () => {
-        const { error } = await supabase.from('testimonios').delete().eq('id', id)
-        if (error) { toast('Error al eliminar', 'error'); return }
-        toast('Testimonio eliminado', 'success')
+        const { error } = await supabase.from('testimonios').update({ estado: 'oculto' }).eq('id', id)
+        if (error) { toast('Error al ocultar', 'error'); return }
+        toast('Testimonio ocultado', 'success')
         closeModal('modal-testimonio')
         await recargar()
       }
