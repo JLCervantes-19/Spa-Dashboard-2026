@@ -9,6 +9,51 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/admin.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <style>
+    /* Filtro de período */
+    .periodo-filter {
+      display: inline-flex;
+      background: var(--hover-bg, #f6f2f9);
+      border: 1px solid var(--card-border, #e9e2ef);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .periodo-filter button {
+      border: none;
+      background: transparent;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-muted, #8a7f93);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .periodo-filter button.active {
+      background: #fff;
+      color: var(--purple-dark, #522566);
+      box-shadow: 0 1px 4px rgba(82, 37, 102, 0.12);
+    }
+    /* Tarjetas KPI */
+    .kpi-card { position: relative; }
+    .kpi-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted, #8a7f93);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kpi-meta .dot-sep { opacity: 0.4; }
+    .kpi-accent {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 12px 12px 0 0;
+    }
+  </style>
 </head>
 <body>
 <div class="admin-layout">
@@ -20,7 +65,13 @@
         <h1 class="page-title">Dashboard</h1>
         <p class="page-subtitle" id="fecha-hoy"></p>
       </div>
-      <div class="page-header-right">
+      <div class="page-header-right" style="display:flex;align-items:center;gap:14px">
+        <div class="periodo-filter" id="periodo-filter">
+          <button data-periodo="dia" class="active">Día</button>
+          <button data-periodo="semana">Semana</button>
+          <button data-periodo="mes">Mes</button>
+          <button data-periodo="ano">Año</button>
+        </div>
         <a href="/reservas.html" class="btn btn-primary btn-sm">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Nueva reserva
@@ -38,19 +89,6 @@
         <div class="kpi-card skeleton" style="height:110px"></div>
         <div class="kpi-card skeleton" style="height:110px"></div>
         <div class="kpi-card skeleton" style="height:110px"></div>
-        <div class="kpi-card skeleton" style="height:110px"></div>
-        <div class="kpi-card skeleton" style="height:110px"></div>
-      </div>
-
-      <!-- PUNTUALIDAD -->
-      <div class="card mb-24" id="stats-puntualidad">
-        <div class="card-header"><span class="card-title">Puntualidad del mes</span></div>
-        <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">
-          <div class="skeleton" style="height:60px;border-radius:8px"></div>
-          <div class="skeleton" style="height:60px;border-radius:8px"></div>
-          <div class="skeleton" style="height:60px;border-radius:8px"></div>
-          <div class="skeleton" style="height:60px;border-radius:8px"></div>
-        </div>
       </div>
 
       <!-- GRÁFICOS FILA 1 -->
@@ -67,7 +105,7 @@
         </div>
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Distribución de estados</span>
+            <span class="card-title" id="titulo-chart-estados">Distribución de estados</span>
           </div>
           <div class="card-body" style="display:flex;align-items:center;justify-content:center">
             <div class="chart-container" style="height:220px;max-width:220px">
@@ -81,7 +119,7 @@
       <div class="charts-row mb-24">
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Servicios más solicitados</span>
+            <span class="card-title" id="titulo-chart-servicios">Servicios más solicitados</span>
           </div>
           <div class="card-body">
             <div class="chart-container" style="height:200px">
@@ -91,7 +129,7 @@
         </div>
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Citas por empleada esta semana</span>
+            <span class="card-title" id="titulo-chart-empleadas">Citas por empleada</span>
           </div>
           <div class="card-body">
             <div class="chart-container" style="height:200px">
@@ -113,12 +151,10 @@
               <option value="">Todos los estados</option>
               <option value="pendiente">Pendiente</option>
               <option value="confirmada">Confirmada</option>
-              <option value="en_proceso">En proceso</option>
-              <option value="realizada">Realizada</option>
-              <option value="atrasada">Atrasada</option>
+              <option value="completada">Completada</option>
               <option value="no_asistio">No asistió</option>
-              <option value="cancelada">Cancelada</option>
-              <option value="reagendada">Reagendada</option>
+              <option value="cancelada_cliente">Cancelada (cliente)</option>
+              <option value="cancelada_admin">Cancelada (admin)</option>
             </select>
           </div>
         </div>
@@ -141,10 +177,10 @@
         </div>
       </div>
 
-      <!-- AGENDA SEMANA -->
+      <!-- PRÓXIMAS CITAS -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Agenda de la semana</span>
+          <span class="card-title">Próximas citas (7 días)</span>
           <a href="/reservas.html" class="btn btn-ghost btn-sm">Ver todas →</a>
         </div>
         <div class="table-wrapper">
@@ -188,12 +224,10 @@
         <select id="select-nuevo-estado" class="form-select">
           <option value="pendiente">Pendiente</option>
           <option value="confirmada">Confirmada</option>
-          <option value="en_proceso">En proceso</option>
-          <option value="realizada">Realizada</option>
-          <option value="atrasada">Atrasada</option>
+          <option value="completada">Completada</option>
           <option value="no_asistio">No asistió</option>
-          <option value="cancelada">Cancelada</option>
-          <option value="reagendada">Reagendada</option>
+          <option value="cancelada_cliente">Cancelada (cliente)</option>
+          <option value="cancelada_admin">Cancelada (admin)</option>
         </select>
       </div>
       <div class="form-group">
@@ -213,15 +247,17 @@
   import { supabase }        from '/js/supabase-client.js'
   import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
   import {
-    formatHora, formatFechaCorta, todayISO, startOfWeekISO,
+    formatHora, formatFechaCorta, todayISO, rangoPeriodo, ESTADOS_INACTIVOS,
     badgeCita, avatarHTML, toast, openModal, closeModal, renderSidebarUser
   } from '/js/utils.js'
 
-  // ——— Iconos — deben estar ANTES de cualquier uso ————————
+  // ——— Iconos ————————————————————————————————————————————
   const calIco   = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
   const moneyIco = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`
   const checkIco = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`
   const userIco  = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>`
+  const xIco     = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
+  const alertIco = `<svg width="18" height="18" fill="none" stroke="var(--purple-dark)" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
 
   // ——— Auth guard ————————————————————————————————————————
   const auth = await requireAdmin()
@@ -231,156 +267,199 @@
   initSidebar(auth.admin)
   renderSidebarUser(auth.admin)
 
-  document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString('es-CO', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-  })
+  document.getElementById('fecha-hoy').textContent =
+    new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+      .toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
-  const hoy    = todayISO()
-  const semIni = startOfWeekISO()
-  const iniMes = hoy.slice(0,7) + '-01'
-  const iniAno = hoy.slice(0,4) + '-01-01'
+  const PERIODO_LABEL = { dia: 'hoy', semana: 'esta semana', mes: 'este mes', ano: 'este año' }
+  let periodoActual = 'dia'
+  const charts = {}   // instancias Chart.js por canvas, para destruir al refrescar
 
-  // ——— Cargar datos ————————————————————————————————————
-  let citasHoyArr = [], citasMesArr = [], citasSemArr = [], empleadas = [], citasDiasArr = []
-  let ingresosHoy = 0, ingresosMes = 0, ingresosAno = 0, clientesUnicos = 0
-  let sinAsignarHoy = 0
-  let loadError = null
-
-  try {
-    const [r1, r2, r3, r4, r5] = await Promise.all([
-      supabase.from('citas')
-        .select('id,fecha,hora_inicio,estado,notas,clientes(nombre,telefono),servicios(nombre,precio),empleados(id,nombre,apellido,foto_url,color)')
-        .eq('fecha', hoy).neq('estado','cancelada').order('hora_inicio'),
-      supabase.from('citas')
-        .select('id,estado,servicio_id,servicios(nombre,precio)')
-        .gte('fecha', iniMes).lte('fecha', hoy),
-      supabase.from('citas')
-        .select('id,fecha,hora_inicio,estado,clientes(nombre),servicios(nombre),empleados(nombre,apellido,foto_url,color)')
-        .gte('fecha', semIni).lte('fecha', hoy).order('fecha').order('hora_inicio'),
-      supabase.from('empleados').select('id,nombre,apellido').eq('activo', true),
-      supabase.from('citas').select('fecha,estado')
-        .gte('fecha', (() => { const d = new Date(); d.setDate(d.getDate()-30); return d.toISOString().split('T')[0] })())
-        .lte('fecha', hoy),
-    ])
-
-    citasHoyArr  = r1.data || []
-    citasMesArr  = r2.data || []
-    citasSemArr  = r3.data || []
-    empleadas    = r4.data || []
-    citasDiasArr = r5.data || []
-    console.log('[Dashboard] citas hoy:', r1.data, r1.error)
-    console.log('[Dashboard] citas semana:', r3.data, r3.error)
-    sinAsignarHoy = citasHoyArr.filter(c => !c.empleados).length
-
-    ingresosHoy = citasHoyArr
-      .filter(c => c.estado === 'realizada')
-      .reduce((s, c) => s + (c.servicios?.precio || 0), 0)
-
-    ingresosMes = citasMesArr
-      .filter(c => c.estado === 'realizada')
-      .reduce((s, c) => s + (c.servicios?.precio || 0), 0)
-
-    const [rAno, rClientes] = await Promise.all([
-      supabase.from('citas').select('servicios(precio)').eq('estado','realizada').gte('fecha', iniAno).lte('fecha', hoy),
-      supabase.from('citas').select('cliente_id').gte('fecha', iniMes).lte('fecha', hoy),
-    ])
-    ingresosAno    = (rAno.data || []).reduce((s, c) => s + (c.servicios?.precio || 0), 0)
-    clientesUnicos = new Set((rClientes.data || []).map(c => c.cliente_id)).size
-
-  } catch (err) {
-    loadError = err
-    console.error('Dashboard — error al cargar:', err)
-  }
-
-  // ——— KPI helper ————————————————————————————————————
-  function kpiCard(label, val, icon, trend) {
+  // ——— KPI helper ————————————————————————————————————————
+  function kpiCard(label, val, meta, icon, accentColor) {
     return `
       <div class="kpi-card">
+        ${accentColor ? `<div class="kpi-accent" style="background:${accentColor}"></div>` : ''}
         <div class="kpi-label">${label}</div>
         <div class="kpi-value">${val}</div>
-        ${trend ? `<div class="kpi-trend ${trend}">${trend==='up' ? '↑ En objetivo' : '↓ Por mejorar'}</div>` : '<div style="height:18px"></div>'}
+        <div class="kpi-meta">${meta || ''}</div>
         <div class="kpi-icon">${icon}</div>
       </div>
     `
   }
 
-  // ——— Render KPIs y puntualidad ———————————————————————
-  if (loadError) {
-    document.getElementById('kpi-grid').innerHTML = `
-      <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--danger)">
-        Error al cargar datos.
-        <button onclick="location.reload()" style="margin-left:8px;padding:6px 14px;border-radius:6px;background:var(--danger);color:#fff;border:none;cursor:pointer;font-size:0.78rem">Reintentar</button>
-      </div>
-    `
-    document.getElementById('stats-puntualidad').innerHTML = ''
-  } else {
-    const mesTotal      = citasMesArr.length
-    const hoyTotal      = citasHoyArr.length
-    const semTotal      = citasSemArr.length
-    const realizadas    = citasMesArr.filter(c => c.estado === 'realizada').length
-    const atrasadas     = citasMesArr.filter(c => c.estado === 'atrasada').length
-    const noAsistio     = citasMesArr.filter(c => c.estado === 'no_asistio').length
-    const confirmadas   = citasMesArr.filter(c => !['cancelada','no_asistio'].includes(c.estado)).length
-    const tasaAsist     = confirmadas > 0 ? Math.round((realizadas / confirmadas) * 100) : 0
-    const totalCerradas = realizadas + atrasadas + noAsistio
-    const pctCumpl      = totalCerradas > 0 ? Math.round((realizadas / totalCerradas) * 100) : 0
+  function renderChart(canvasId, config) {
+    if (charts[canvasId]) charts[canvasId].destroy()
+    charts[canvasId] = new Chart(document.getElementById(canvasId), config)
+  }
+
+  // ——— Carga y render del período seleccionado ————————————
+  async function cargarPeriodo() {
+    const [desde, hasta] = rangoPeriodo(periodoActual)
+    const etiqueta = PERIODO_LABEL[periodoActual]
+
+    let citas = []
+    try {
+      const { data, error } = await supabase.from('citas')
+        .select('id,fecha,hora_inicio,estado,cliente_id,empleado_id,servicios(nombre,precio),empleados(nombre,apellido)')
+        .gte('fecha', desde).lte('fecha', hasta)
+        .order('fecha').order('hora_inicio')
+      if (error) throw error
+      citas = data || []
+    } catch (err) {
+      console.error('Dashboard — error al cargar período:', err)
+      document.getElementById('kpi-grid').innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--danger)">
+          Error al cargar datos.
+          <button onclick="location.reload()" style="margin-left:8px;padding:6px 14px;border-radius:6px;background:var(--danger);color:#fff;border:none;cursor:pointer;font-size:0.78rem">Reintentar</button>
+        </div>`
+      return
+    }
+
+    // ——— KPIs ———
+    const canceladasCli = citas.filter(c => c.estado === 'cancelada_cliente').length
+    const canceladasAdm = citas.filter(c => c.estado === 'cancelada_admin').length
+    const canceladas    = canceladasCli + canceladasAdm
+    const noAsistio     = citas.filter(c => c.estado === 'no_asistio').length
+    const completadas   = citas.filter(c => c.estado === 'completada').length
+    const confirmadas   = citas.filter(c => c.estado === 'confirmada').length
+    const pendientes    = citas.filter(c => c.estado === 'pendiente').length
+    const activas       = citas.filter(c => !ESTADOS_INACTIVOS.includes(c.estado))
+    const totalActivas  = activas.length
+
+    const ingresos       = citas.filter(c => c.estado === 'completada')
+                                .reduce((s, c) => s + (c.servicios?.precio || 0), 0)
+    const clientesUnicos = new Set(activas.map(c => c.cliente_id).filter(Boolean)).size
+    const cerradas       = completadas + noAsistio
+    const tasaAsist      = cerradas > 0 ? Math.round((completadas / cerradas) * 100) : null
+    const sinAsignar     = activas.filter(c => !c.empleado_id).length
 
     document.getElementById('kpi-grid').innerHTML = `
-      ${kpiCard('Citas hoy',           hoyTotal,                                    calIco,   '')}
-      ${kpiCard('Citas semana',        semTotal,                                    calIco,   '')}
-      ${kpiCard('Citas mes',           mesTotal,                                    calIco,   '')}
-      ${kpiCard('Ingresos hoy',        '$' + ingresosHoy.toLocaleString('es-CO'),  moneyIco, '')}
-      ${kpiCard('Ingresos mes',        '$' + ingresosMes.toLocaleString('es-CO'),  moneyIco, '')}
-      ${kpiCard('Ingresos año',        '$' + ingresosAno.toLocaleString('es-CO'),  moneyIco, '')}
-      ${kpiCard('Tasa asistencia',     tasaAsist + '%',                             checkIco, tasaAsist >= 70 ? 'up' : 'down')}
-      ${kpiCard('Clientes únicos mes', clientesUnicos,                              userIco,  '')}
-      ${sinAsignarHoy > 0 ? `
+      ${kpiCard(`Citas ${etiqueta}`, totalActivas,
+        `${confirmadas} confirmada${confirmadas !== 1 ? 's' : ''}<span class="dot-sep">·</span>${pendientes} pendiente${pendientes !== 1 ? 's' : ''}`,
+        calIco, 'var(--purple-medium, #7A3A8E)')}
+      ${kpiCard('Completadas', completadas,
+        tasaAsist === null ? 'Sin citas cerradas aún' : `${tasaAsist}% de asistencia`,
+        checkIco, '#16a34a')}
+      ${kpiCard(`Ingresos ${etiqueta}`, '$' + ingresos.toLocaleString('es-CO'),
+        'De citas completadas', moneyIco, '#C9A961')}
+      ${kpiCard('Clientes únicos', clientesUnicos,
+        `Con cita activa ${etiqueta}`, userIco, '#2563eb')}
+      ${kpiCard('Canceladas', canceladas,
+        `${canceladasCli} cliente<span class="dot-sep">·</span>${canceladasAdm} admin`,
+        xIco, '#64748b')}
+      ${kpiCard('No asistió', noAsistio,
+        totalActivas + cerradas > 0 ? `${Math.round((noAsistio / Math.max(citas.length, 1)) * 100)}% del período` : '',
+        alertIco, '#dc2626')}
+      ${sinAsignar > 0 ? `
       <div class="kpi-card" style="border:1px solid var(--danger);background:rgba(239,68,68,0.05)">
-        <div class="kpi-label" style="color:var(--danger)">⚠ Sin asignar hoy</div>
-        <div class="kpi-value" style="color:var(--danger)">${sinAsignarHoy}</div>
-        <div class="kpi-meta"><a href="/reservas.html" style="color:var(--danger);font-size:0.72rem;text-decoration:underline">Ver reservas →</a></div>
+        <div class="kpi-label" style="color:var(--danger)">⚠ Sin asignar ${etiqueta}</div>
+        <div class="kpi-value" style="color:var(--danger)">${sinAsignar}</div>
+        <div class="kpi-meta"><a href="/reservas.html" style="color:var(--danger);text-decoration:underline">Asignar empleada →</a></div>
       </div>` : ''}
     `
 
-    document.getElementById('stats-puntualidad').innerHTML = `
-      <div class="card-header"><span class="card-title">Puntualidad del mes</span></div>
-      <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">
-        <div>
-          <div style="font-size:1.8rem;font-weight:600;color:var(--success)">${realizadas}</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">Realizadas</div>
-        </div>
-        <div>
-          <div style="font-size:1.8rem;font-weight:600;color:var(--warning)">${atrasadas}</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">Atrasadas</div>
-        </div>
-        <div>
-          <div style="font-size:1.8rem;font-weight:600;color:var(--danger)">${noAsistio}</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">No asistieron</div>
-        </div>
-        <div>
-          <div style="font-size:1.8rem;font-weight:600;color:var(--purple-medium)">${pctCumpl}%</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">% cumplimiento</div>
-        </div>
-      </div>
-    `
+    // ——— Gráficos del período ———
+    document.getElementById('titulo-chart-estados').textContent   = `Estados (${etiqueta})`
+    document.getElementById('titulo-chart-servicios').textContent = `Servicios más solicitados (${etiqueta})`
+    document.getElementById('titulo-chart-empleadas').textContent = `Citas por empleada (${etiqueta})`
+
+    const ESTADO_COLOR = {
+      'Pendiente': '#AD74C3', 'Confirmada': '#2563eb', 'Completada': '#16a34a',
+      'No asistió': '#dc2626', 'Cancelada (cliente)': '#ea580c', 'Cancelada (admin)': '#64748b',
+    }
+    const ESTADO_LABEL = {
+      pendiente: 'Pendiente', confirmada: 'Confirmada', completada: 'Completada',
+      no_asistio: 'No asistió', cancelada_cliente: 'Cancelada (cliente)', cancelada_admin: 'Cancelada (admin)',
+    }
+    const estadosCont = {}
+    citas.forEach(c => {
+      const l = ESTADO_LABEL[c.estado] || c.estado
+      estadosCont[l] = (estadosCont[l] || 0) + 1
+    })
+    renderChart('chart-estados', {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(estadosCont),
+        datasets: [{
+          data: Object.values(estadosCont),
+          backgroundColor: Object.keys(estadosCont).map(l => ESTADO_COLOR[l] || '#9ca3af'),
+          borderWidth: 2, borderColor: '#fff',
+        }],
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8 } } }, cutout: '65%' }
+    })
+
+    const servCont = {}
+    citas.forEach(c => {
+      const n = c.servicios?.nombre || 'Sin servicio'
+      servCont[n] = (servCont[n] || 0) + 1
+    })
+    const sorted = Object.entries(servCont).sort((a, b) => b[1] - a[1]).slice(0, 6)
+    renderChart('chart-servicios', {
+      type: 'bar',
+      data: { labels: sorted.map(s => s[0]), datasets: [{ data: sorted.map(s => s[1]), backgroundColor: 'rgba(122,58,142,0.7)', borderRadius: 4 }] },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 }, precision: 0 }, grid: { color: 'rgba(82,37,102,0.06)' } }, y: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
+    })
+
+    const empCont = {}
+    activas.forEach(c => {
+      const n = c.empleados ? [c.empleados.nombre, c.empleados.apellido].filter(Boolean).join(' ') : 'Sin asignar'
+      empCont[n] = (empCont[n] || 0) + 1
+    })
+    renderChart('chart-empleadas', {
+      type: 'bar',
+      data: { labels: Object.keys(empCont), datasets: [{ data: Object.values(empCont), backgroundColor: 'rgba(82,37,102,0.65)', borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } }, grid: { display: false } }, y: { ticks: { font: { size: 10 }, precision: 0 }, grid: { color: 'rgba(82,37,102,0.06)' }, beginAtZero: true } } }
+    })
   }
 
-  // ——— Poblar filtro empleadas ————————————————————————
-  const filtroEmp = document.getElementById('filtro-empleada-hoy')
-  ;(empleadas || []).forEach(e => {
-    const opt = document.createElement('option')
-    opt.value = e.id
-    opt.textContent = [e.nombre, e.apellido].filter(Boolean).join(' ')
-    filtroEmp.appendChild(opt)
-  })
+  // ——— Gráfico fijo: reservas últimos 30 días ———————————————
+  async function cargarChart30Dias() {
+    const hoy = todayISO()
+    const hace30 = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+    hace30.setDate(hace30.getDate() - 30)
+    const desde = `${hace30.getFullYear()}-${String(hace30.getMonth() + 1).padStart(2, '0')}-${String(hace30.getDate()).padStart(2, '0')}`
 
-  // ——— Render tabla citas hoy ————————————————————————
-  let citasHoyFiltradas = [...citasHoyArr]
+    const { data } = await supabase.from('citas').select('fecha').gte('fecha', desde).lte('fecha', hoy)
+    const fechaConteo = {}
+    ;(data || []).forEach(c => { fechaConteo[c.fecha] = (fechaConteo[c.fecha] || 0) + 1 })
+
+    const labels30 = [], vals30 = []
+    const cursor = new Date(hace30)
+    for (let i = 0; i <= 30; i++) {
+      const f = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`
+      labels30.push(cursor.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }))
+      vals30.push(fechaConteo[f] || 0)
+      cursor.setDate(cursor.getDate() + 1)
+    }
+
+    renderChart('chart-reservas-dias', {
+      type: 'line',
+      data: { labels: labels30, datasets: [{ label: 'Reservas', data: vals30, borderColor: '#7A3A8E', backgroundColor: 'rgba(122,58,142,0.08)', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8, font: { size: 10 } }, grid: { display: false } }, y: { ticks: { font: { size: 10 }, precision: 0 }, grid: { color: 'rgba(82,37,102,0.06)' }, beginAtZero: true } } }
+    })
+  }
+
+  // ——— Tabla: citas de hoy ————————————————————————————————
+  let citasHoyArr = []
+  const filtroEmp = document.getElementById('filtro-empleada-hoy')
+
+  async function cargarCitasHoy() {
+    const hoy = todayISO()
+    const { data } = await supabase.from('citas')
+      .select('id,fecha,hora_inicio,estado,notas,clientes(nombre,telefono),servicios(nombre,precio),empleados(id,nombre,apellido,foto_url)')
+      .eq('fecha', hoy)
+      .order('hora_inicio')
+    citasHoyArr = data || []
+    renderCitasHoy()
+  }
+
   function renderCitasHoy() {
     const tbody = document.getElementById('citas-hoy-tbody')
     const emp   = filtroEmp.value
     const est   = document.getElementById('filtro-estado-hoy').value
-    const arr   = citasHoyFiltradas.filter(c =>
+    const arr   = citasHoyArr.filter(c =>
       (!emp || c.empleados?.id === emp) &&
       (!est || c.estado === est)
     )
@@ -405,7 +484,7 @@
         <td>${badgeCita(c.estado)}</td>
         <td>
           <div class="table-actions">
-            <button class="action-btn" data-tooltip="Cambiar estado" onclick="abrirModalEstado('${c.id}','${c.clientes?.nombre || ''}','${c.estado}')">
+            <button class="action-btn" data-tooltip="Cambiar estado" onclick="abrirModalEstado('${c.id}','${(c.clientes?.nombre || '').replace(/'/g, '')}','${c.estado}')">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
           </div>
@@ -413,16 +492,31 @@
       </tr>
     `).join('')
   }
-  renderCitasHoy()
+
   filtroEmp.addEventListener('change', renderCitasHoy)
   document.getElementById('filtro-estado-hoy').addEventListener('change', renderCitasHoy)
 
-  // ——— Render agenda semana ———————————————————————————
-  const agendaTbody = document.getElementById('agenda-semana-tbody')
-  if (!citasSemArr.length) {
-    agendaTbody.innerHTML = `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:32px">No hay citas esta semana</td></tr>`
-  } else {
-    agendaTbody.innerHTML = citasSemArr.map(c => `
+  // ——— Tabla: próximas citas (hoy + 7 días) ————————————————
+  async function cargarProximas() {
+    const hoy = todayISO()
+    const fin = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+    fin.setDate(fin.getDate() + 7)
+    const hasta = `${fin.getFullYear()}-${String(fin.getMonth() + 1).padStart(2, '0')}-${String(fin.getDate()).padStart(2, '0')}`
+
+    const { data } = await supabase.from('citas')
+      .select('id,fecha,hora_inicio,estado,clientes(nombre),servicios(nombre),empleados(nombre,apellido,foto_url)')
+      .gte('fecha', hoy).lte('fecha', hasta)
+      .not('estado', 'in', '(cancelada_cliente,cancelada_admin,no_asistio)')
+      .order('fecha').order('hora_inicio')
+      .limit(30)
+
+    const agendaTbody = document.getElementById('agenda-semana-tbody')
+    const arr = data || []
+    if (!arr.length) {
+      agendaTbody.innerHTML = `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:32px">No hay citas próximas</td></tr>`
+      return
+    }
+    agendaTbody.innerHTML = arr.map(c => `
       <tr>
         <td style="white-space:nowrap">${formatFechaCorta(c.fecha)}</td>
         <td style="font-weight:500">${formatHora(c.hora_inicio)}</td>
@@ -439,57 +533,29 @@
     `).join('')
   }
 
-  // ——— Gráficos ————————————————————————————————————————
-  if (!loadError) {
-    const fechaConteo = {}
-    citasDiasArr.forEach(c => { fechaConteo[c.fecha] = (fechaConteo[c.fecha] || 0) + 1 })
-    const labels30 = [], vals30 = []
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i)
-      const f = d.toISOString().split('T')[0]
-      labels30.push(d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }))
-      vals30.push(fechaConteo[f] || 0)
-    }
+  // ——— Filtro de período ————————————————————————————————
+  document.querySelectorAll('#periodo-filter button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.periodo === periodoActual) return
+      periodoActual = btn.dataset.periodo
+      document.querySelectorAll('#periodo-filter button').forEach(b => b.classList.remove('active'))
+      btn.classList.add('active')
+      cargarPeriodo()
+    })
+  })
 
-    new Chart(document.getElementById('chart-reservas-dias'), {
-      type: 'line',
-      data: { labels: labels30, datasets: [{ label: 'Reservas', data: vals30, borderColor: '#7A3A8E', backgroundColor: 'rgba(122,58,142,0.08)', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8, font: { size: 10 } }, grid: { display: false } }, y: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(82,37,102,0.06)' }, beginAtZero: true, precision: 0 } } }
-    })
-
-    const estadosCont = {}
-    citasMesArr.forEach(c => { estadosCont[c.estado] = (estadosCont[c.estado] || 0) + 1 })
-    new Chart(document.getElementById('chart-estados'), {
-      type: 'doughnut',
-      data: { labels: Object.keys(estadosCont), datasets: [{ data: Object.values(estadosCont), backgroundColor: ['#AD74C3','#16a34a','#d97706','#dc2626','#64748b','#2563eb'], borderWidth: 2, borderColor: '#fff' }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8 } } }, cutout: '65%' }
-    })
-
-    const servCont = {}
-    citasMesArr.forEach(c => {
-      const n = c.servicios?.nombre || 'Sin servicio'
-      servCont[n] = (servCont[n] || 0) + 1
-    })
-    const sorted = Object.entries(servCont).sort((a,b) => b[1]-a[1]).slice(0, 6)
-    new Chart(document.getElementById('chart-servicios'), {
-      type: 'bar',
-      data: { labels: sorted.map(s => s[0]), datasets: [{ data: sorted.map(s => s[1]), backgroundColor: 'rgba(122,58,142,0.7)', borderRadius: 4 }] },
-      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(82,37,102,0.06)' }, precision: 0 }, y: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
-    })
-
-    const empCont = {}
-    citasSemArr.forEach(c => {
-      const n = c.empleados ? [c.empleados.nombre, c.empleados.apellido].filter(Boolean).join(' ') : 'Sin asignar'
-      empCont[n] = (empCont[n] || 0) + 1
-    })
-    new Chart(document.getElementById('chart-empleadas'), {
-      type: 'bar',
-      data: { labels: Object.keys(empCont), datasets: [{ data: Object.values(empCont), backgroundColor: 'rgba(82,37,102,0.65)', borderRadius: 4 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } }, grid: { display: false } }, y: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(82,37,102,0.06)' }, beginAtZero: true, precision: 0 } } }
+  // ——— Poblar filtro empleadas ————————————————————————————
+  async function poblarEmpleadas() {
+    const { data } = await supabase.from('empleados').select('id,nombre,apellido').eq('activo', true)
+    ;(data || []).forEach(e => {
+      const opt = document.createElement('option')
+      opt.value = e.id
+      opt.textContent = [e.nombre, e.apellido].filter(Boolean).join(' ')
+      filtroEmp.appendChild(opt)
     })
   }
 
-  // ——— Modal cambiar estado ——————————————————————————
+  // ——— Modal cambiar estado ——————————————————————————————
   let citaIdActual = null
   window.abrirModalEstado = (id, nombre, estadoActual) => {
     citaIdActual = id
@@ -514,9 +580,12 @@
     toast('Estado actualizado', 'success')
     const idx = citasHoyArr.findIndex(c => c.id === citaIdActual)
     if (idx !== -1) citasHoyArr[idx].estado = estado
-    citasHoyFiltradas = [...citasHoyArr]
     renderCitasHoy()
+    cargarPeriodo()
   })
+
+  // ——— Init ———————————————————————————————————————————————
+  await Promise.all([poblarEmpleadas(), cargarPeriodo(), cargarChart30Dias(), cargarCitasHoy(), cargarProximas()])
 </script>
 </body>
 </html>

@@ -37,12 +37,10 @@
             <option value="">Todos los estados</option>
             <option value="pendiente">Pendiente</option>
             <option value="confirmada">Confirmada</option>
-            <option value="en_proceso">En proceso</option>
-            <option value="realizada">Realizada</option>
-            <option value="atrasada">Atrasada</option>
+            <option value="completada">Completada</option>
             <option value="no_asistio">No asistió</option>
-            <option value="cancelada">Cancelada</option>
-            <option value="reagendada">Reagendada</option>
+            <option value="cancelada_cliente">Cancelada (cliente)</option>
+            <option value="cancelada_admin">Cancelada (admin)</option>
           </select>
           <div class="search-input-wrapper">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -94,7 +92,16 @@
     <div class="modal-body">
       <div class="detail-grid mb-16" id="res-detail-grid">
         <div class="detail-item"><div class="detail-label">Cliente</div><div class="detail-value" id="res-cliente"></div></div>
-        <div class="detail-item"><div class="detail-label">Teléfono</div><div class="detail-value" id="res-tel"></div></div>
+        <div class="detail-item">
+          <div class="detail-label">Teléfono</div>
+          <div class="detail-value" style="display:flex;align-items:center;gap:10px">
+            <span id="res-tel"></span>
+            <a id="res-whatsapp" href="#" target="_blank" rel="noopener" style="display:none;align-items:center;gap:5px;padding:4px 10px;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.3);border-radius:8px;color:#16a34a;font-size:0.72rem;font-weight:500;text-decoration:none">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.117 1.526 5.847L.057 23.5l5.816-1.524A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894a9.868 9.868 0 01-5.034-1.378l-.361-.214-3.741.98.999-3.648-.235-.374A9.851 9.851 0 012.106 12C2.106 6.58 6.58 2.106 12 2.106S21.894 6.58 21.894 12 17.42 21.894 12 21.894z"/></svg>
+              WhatsApp
+            </a>
+          </div>
+        </div>
         <div class="detail-item"><div class="detail-label">Servicio</div><div class="detail-value" id="res-servicio"></div></div>
         <div class="detail-item"><div class="detail-label">Empleada</div><div class="detail-value" id="res-empleada"></div></div>
         <div class="detail-item"><div class="detail-label">Fecha</div><div class="detail-value" id="res-fecha"></div></div>
@@ -110,12 +117,10 @@
           <select id="res-nuevo-estado" class="form-select">
             <option value="pendiente">Pendiente</option>
             <option value="confirmada">Confirmada</option>
-            <option value="en_proceso">En proceso</option>
-            <option value="realizada">Realizada</option>
-            <option value="atrasada">Atrasada</option>
+            <option value="completada">Completada</option>
             <option value="no_asistio">No asistió</option>
-            <option value="cancelada">Cancelada</option>
-            <option value="reagendada">Reagendada</option>
+            <option value="cancelada_cliente">Cancelada (cliente)</option>
+            <option value="cancelada_admin">Cancelada (admin)</option>
           </select>
         </div>
         <div class="form-group">
@@ -229,8 +234,7 @@
   import {
     formatFecha, formatFechaCorta, formatHora, badgeCita, avatarHTML,
     toast, openModal, closeModal, confirmAction, renderSidebarUser,
-    debounce, autoAsignarEmpleada, truncate
-  } from '/js/utils.js'
+    debounce, autoAsignarEmpleada, truncate, todayISO } from '/js/utils.js'
 
   const auth = await requireAdmin()
   if (!auth) throw new Error()
@@ -398,6 +402,17 @@
     document.getElementById('modal-res-subtitulo').textContent = `${formatFechaCorta(r.fecha)} · ${formatHora(r.hora_inicio)}`
     document.getElementById('res-cliente').textContent   = r.clientes?.nombre || '—'
     document.getElementById('res-tel').textContent       = r.clientes?.telefono || '—'
+
+    // Contacto por WhatsApp — disponible únicamente para el admin
+    const waBtn = document.getElementById('res-whatsapp')
+    const telDigits = (r.clientes?.telefono || '').replace(/\D/g, '')
+    if (telDigits) {
+      const waMsg = encodeURIComponent(`Hola ${r.clientes?.nombre || ''}, te escribimos del spa por tu cita de ${r.servicios?.nombre || 'servicio'} del ${formatFechaCorta(r.fecha)}.`)
+      waBtn.href = `https://wa.me/${telDigits.length === 10 ? '57' + telDigits : telDigits}?text=${waMsg}`
+      waBtn.style.display = 'inline-flex'
+    } else {
+      waBtn.style.display = 'none'
+    }
     document.getElementById('res-servicio').textContent  = r.servicios?.nombre || '—'
     document.getElementById('res-empleada').textContent  = r.empleados ? [r.empleados.nombre, r.empleados.apellido].filter(Boolean).join(' ') : '—'
     document.getElementById('res-fecha').textContent     = formatFecha(r.fecha)
@@ -442,7 +457,7 @@
 
   // ——— Nueva reserva ————————————————————————————————————
   document.getElementById('btn-nueva-reserva').addEventListener('click', () => {
-    const hoy = new Date().toISOString().split('T')[0]
+    const hoy = todayISO()
     document.getElementById('nres-fecha').value = hoy
     openModal('modal-nueva-reserva')
   })
@@ -492,11 +507,26 @@
     btn.disabled = true; btn.textContent = 'Creando…'
 
     try {
-      // Buscar/crear cliente
+      // Buscar/crear cliente — deduplicación por teléfono O email.
+      // Si ambos apuntan a registros distintos se usa el más completo.
       let cliente_id = null
-      const { data: cliEx } = await supabase.from('clientes').select('id').eq('telefono', telefono).single()
-      if (cliEx) {
-        cliente_id = cliEx.id
+      const filtros = [`telefono.eq.${telefono}`]
+      if (email) filtros.push(`email.eq.${email}`)
+      const { data: coincidencias } = await supabase
+        .from('clientes')
+        .select('id, nombre, telefono, email, fecha_nacimiento, alergias, notas')
+        .or(filtros.join(','))
+
+      if (coincidencias?.length) {
+        const completitud = c =>
+          ['nombre','telefono','email','fecha_nacimiento','alergias','notas']
+            .filter(k => c[k] != null && String(c[k]).trim() !== '').length
+        const elegido = [...coincidencias].sort((a, b) => completitud(b) - completitud(a))[0]
+        cliente_id = elegido.id
+        const patch = {}
+        if (email && !elegido.email) patch.email = email
+        if (telefono && !elegido.telefono) patch.telefono = telefono
+        if (Object.keys(patch).length) await supabase.from('clientes').update(patch).eq('id', cliente_id)
       } else {
         const { data: nuevoC, error: cErr } = await supabase.from('clientes').insert({ nombre, telefono, email, origen: 'admin' }).select().single()
         if (cErr) throw cErr
@@ -514,10 +544,11 @@
       const finMin    = h * 60 + m + totalMin
       const hora_fin  = `${String(Math.floor(finMin/60)).padStart(2,'0')}:${String(finMin%60).padStart(2,'0')}`
 
+      // Con empleada asignada la cita nace confirmada; sin empleada queda pendiente
       const { error } = await supabase.from('citas').insert({
         cliente_id, servicio_id: svcId, empleado_id,
         fecha, hora_inicio: hora, hora_fin, duracion_total: totalMin,
-        estado: 'pendiente', origen: 'admin', notas
+        estado: empleado_id ? 'confirmada' : 'pendiente', origen: 'admin', notas
       })
       if (error) throw error
 
@@ -540,6 +571,8 @@
   await cargarDatos()
 
   // ——— REAGENDAMIENTO ———
+  // Base del API de slots: la app pública de reservas (misma BD)
+  const SLOTS_API_BASE = 'https://spa-blush-theta.vercel.app/api'
   let reagendarCitaId = null
   let reagendarServicioId = null
 
@@ -572,8 +605,14 @@
     document.getElementById('btn-confirmar-reagendar').disabled = true
     if (!fecha || !reagendarServicioId) return
     try {
-      const res = await fetch(`/api/slots?servicio=${reagendarServicioId}&fecha=${fecha}`)
-      const slots = await res.json()
+      // El endpoint de slots vive en la app de clientes (dominio distinto al dashboard)
+      const res = await fetch(`${SLOTS_API_BASE}/slots?servicio=${reagendarServicioId}&fecha=${fecha}`)
+      const payload = await res.json()
+      const slots = Array.isArray(payload) ? payload : (payload.slots || [])
+      if (!Array.isArray(payload) && payload.cerrado) {
+        horaSelect.innerHTML = '<option value="">El spa está cerrado ese día</option>'
+        return
+      }
       const disponibles = slots.filter(s => s.disponible)
       if (!disponibles.length) {
         horaSelect.innerHTML = '<option value="">Sin horarios disponibles</option>'
@@ -602,9 +641,17 @@
     const msg = document.getElementById('reagendar-msg')
     if (!fecha || !hora || !reagendarCitaId) { btn.disabled = false; return }
     try {
+      // Recalcular hora_fin con la duración registrada de la cita
+      const cita = reservasAll.find(r => r.id === reagendarCitaId)
+      const totalMin = cita?.duracion_total
+        || ((cita?.servicios?.duracion_min || 60) + 10)
+      const [h, m] = hora.split(':').map(Number)
+      const finMin = h * 60 + m + totalMin
+      const hora_fin = `${String(Math.floor(finMin / 60)).padStart(2, '0')}:${String(finMin % 60).padStart(2, '0')}`
+
       const { error } = await supabase
         .from('citas')
-        .update({ fecha, hora_inicio: hora, estado: 'reagendada' })
+        .update({ fecha, hora_inicio: hora, hora_fin, estado: 'confirmada' })
         .eq('id', reagendarCitaId)
       if (error) throw error
       document.getElementById('modal-reagendar').classList.remove('open')

@@ -256,8 +256,7 @@
   import {
     avatarHTML, badgeActivo, badgeCita, formatFechaCorta, formatHora,
     formatDateTime, toast, openModal, closeModal, confirmAction,
-    renderSidebarUser, debounce, truncate
-  } from '/js/utils.js'
+    renderSidebarUser, debounce, truncate, todayISO, startOfWeekISO } from '/js/utils.js'
 
   const auth = await requireAdmin()
   if (!auth) throw new Error()
@@ -304,8 +303,8 @@
 
   function renderTabla() {
     const tbody = document.getElementById('empleadas-tbody')
-    const hoy = new Date().toISOString().split('T')[0]
-    const iniSem = (() => { const d = new Date(); d.setDate(d.getDate() - d.getDay()); return d.toISOString().split('T')[0] })()
+    const hoy = todayISO()
+    const iniSem = startOfWeekISO()
 
     let arr = empleadasAll.filter(e => {
       const nombre = [e.nombre, e.apellido].filter(Boolean).join(' ').toLowerCase()
@@ -672,10 +671,10 @@
       .order('fecha', { ascending: false })
       .limit(20)
 
-    const hoy = new Date().toISOString().split('T')[0]
+    const hoy = todayISO()
     const iniMes = hoy.slice(0,7) + '-01'
     const citasMes = (historial || []).filter(c => c.fecha >= iniMes)
-    const realizadas = (historial || []).filter(c => c.estado === 'realizada').length
+    const realizadas = (historial || []).filter(c => c.estado === 'completada').length
     const total = (historial || []).length
     const tasa = total > 0 ? Math.round((realizadas / total) * 100) : 0
 

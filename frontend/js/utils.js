@@ -2,16 +2,18 @@
 // utils.js — Utilidades compartidas del admin
 // ============================================================
 
+// Estados canónicos del sistema (sincronizados con el CHECK de la tabla citas)
 export const ESTADOS_CITA = {
-  pendiente:   { label: 'Pendiente',   badge: 'badge-pendiente'  },
-  confirmada:  { label: 'Confirmada',  badge: 'badge-confirmada' },
-  en_proceso:  { label: 'En proceso',  badge: 'badge-en_proceso' },
-  realizada:   { label: 'Realizada',   badge: 'badge-realizada'  },
-  atrasada:    { label: 'Atrasada',    badge: 'badge-atrasada'   },
-  no_asistio:  { label: 'No asistió',  badge: 'badge-no_asistio' },
-  cancelada:   { label: 'Cancelada',   badge: 'badge-cancelada'  },
-  reagendada:  { label: 'Reagendada',  badge: 'badge-reagendada' },
+  pendiente:         { label: 'Pendiente',           badge: 'badge-pendiente'         },
+  confirmada:        { label: 'Confirmada',          badge: 'badge-confirmada'        },
+  completada:        { label: 'Completada',          badge: 'badge-completada'        },
+  no_asistio:        { label: 'No asistió',          badge: 'badge-no_asistio'        },
+  cancelada_cliente: { label: 'Cancelada (cliente)', badge: 'badge-cancelada_cliente' },
+  cancelada_admin:   { label: 'Cancelada (admin)',   badge: 'badge-cancelada_admin'   },
 }
+
+// Estados que NO ocupan agenda (liberan el horario)
+export const ESTADOS_INACTIVOS = ['cancelada_cliente', 'cancelada_admin', 'no_asistio']
 
 export const ESTADOS_TESTIMONIO = {
   pendiente: { label: 'Pendiente', badge: 'badge-yellow' },
@@ -48,17 +50,52 @@ export function formatDateTime(ts) {
   const d = new Date(ts)
   return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
+// Fecha actual en la zona horaria del spa (Bogotá).
+// No usar toISOString(): devuelve la fecha UTC y desde las 7 PM
+// hora Colombia salta al día siguiente, rompiendo los KPI de "hoy".
+function hoyBogota() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+}
+function toISODate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 export function todayISO() {
-  return new Date().toISOString().split('T')[0]
+  return toISODate(hoyBogota())
 }
 export function startOfWeekISO() {
-  const d = new Date()
+  const d = hoyBogota()
   d.setDate(d.getDate() - d.getDay())
-  return d.toISOString().split('T')[0]
+  return toISODate(d)
+}
+export function endOfWeekISO() {
+  const d = hoyBogota()
+  d.setDate(d.getDate() - d.getDay() + 6)
+  return toISODate(d)
 }
 export function startOfMonthISO() {
-  const d = new Date()
+  const d = hoyBogota()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-01`
+}
+export function endOfMonthISO() {
+  const d = hoyBogota()
+  return toISODate(new Date(d.getFullYear(), d.getMonth() + 1, 0))
+}
+export function startOfYearISO() {
+  return `${hoyBogota().getFullYear()}-01-01`
+}
+export function endOfYearISO() {
+  return `${hoyBogota().getFullYear()}-12-31`
+}
+// Rango de fechas [desde, hasta] para el filtro temporal del dashboard
+export function rangoPeriodo(periodo) {
+  const hoy = todayISO()
+  switch (periodo) {
+    case 'dia':    return [hoy, hoy]
+    case 'semana': return [startOfWeekISO(), endOfWeekISO()]
+    case 'mes':    return [startOfMonthISO(), endOfMonthISO()]
+    case 'ano':    return [startOfYearISO(), endOfYearISO()]
+    default:       return [hoy, hoy]
+  }
 }
 
 // ——— Moneda ————————————————————————————————————————————————
@@ -217,7 +254,10 @@ export function debounce(fn, ms = 300) {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms) }
 }
 
-// ——— Auto-asignación de empleada ——————————————————————————
+// ——— Auto-asignación de empleada (balanceo de carga) ————————
+// Asigna a la empleada con menos citas de ESE servicio en los últimos
+// 30 días; si hay empate, elige al azar entre las empatadas.
+// Misma lógica que el backend de la web de clientes (routes/bookings.js).
 export async function autoAsignarEmpleada(supabase, servicioId, fecha) {
   const { data: asignaciones } = await supabase
     .from('empleado_servicios')
@@ -228,18 +268,24 @@ export async function autoAsignarEmpleada(supabase, servicioId, fecha) {
 
   const empleadaIds = asignaciones.map(a => a.empleado_id)
 
-  const { data: citasDia } = await supabase
+  const hace30 = hoyBogota()
+  hace30.setDate(hace30.getDate() - 30)
+
+  const { data: citasServicio } = await supabase
     .from('citas')
     .select('empleado_id')
-    .eq('fecha', fecha)
-    .neq('estado', 'cancelada')
+    .eq('servicio_id', servicioId)
+    .gte('fecha', toISODate(hace30))
+    .not('estado', 'in', '(cancelada_cliente,cancelada_admin,no_asistio)')
     .in('empleado_id', empleadaIds)
 
   const conteo = {}
   empleadaIds.forEach(id => { conteo[id] = 0 })
-  ;(citasDia || []).forEach(c => {
+  ;(citasServicio || []).forEach(c => {
     if (c.empleado_id) conteo[c.empleado_id] = (conteo[c.empleado_id] || 0) + 1
   })
 
-  return empleadaIds.reduce((min, id) => conteo[id] < conteo[min] ? id : min, empleadaIds[0])
+  const minimo = Math.min(...empleadaIds.map(id => conteo[id]))
+  const empatadas = empleadaIds.filter(id => conteo[id] === minimo)
+  return empatadas[Math.floor(Math.random() * empatadas.length)]
 }

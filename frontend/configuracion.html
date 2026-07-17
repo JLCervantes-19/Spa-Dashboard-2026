@@ -104,7 +104,7 @@
     <header class="page-header">
       <div class="page-header-left">
         <h1 class="page-title">Configuración</h1>
-        <p class="page-subtitle">Datos del negocio, apariencia y parámetros del sitio</p>
+        <p class="page-subtitle">Parámetros de reserva y datos de contacto</p>
       </div>
       <div class="page-header-right">
         <button class="btn btn-primary" id="btn-guardar-config">Guardar cambios</button>
@@ -117,8 +117,9 @@
         <!-- COLUMNA IZQUIERDA -->
         <div>
 
-          <!-- DATOS DEL NEGOCIO -->
-          <div class="card config-section">
+          <!-- DATOS DEL NEGOCIO — oculto en esta etapa (se gestionará más adelante).
+               Los inputs permanecen en el DOM para que el guardado no borre datos existentes. -->
+          <div class="card config-section" style="display:none">
             <p class="config-section-title">Datos del negocio</p>
             <div class="form-group">
               <label class="form-label">Nombre del spa * <span class="tip" title="Aparece en el header, footer y meta title del sitio web">?</span></label>
@@ -203,41 +204,40 @@
         <!-- COLUMNA DERECHA -->
         <div>
 
-          <!-- RESERVAS -->
+          <!-- RESERVAS — todos los campos de esta sección están conectados
+               a la lógica de reservas de la web de clientes -->
           <div class="card config-section">
             <p class="config-section-title">Parámetros de reserva</p>
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Anticipación mínima <span class="tip" title="Cuántas horas antes del servicio puede realizarse la reserva. 0 = sin límite">?</span></label>
+                <label class="form-label">Anticipación mínima <span class="tip" title="Los clientes solo pueden reservar horarios que estén al menos a esta cantidad de horas del momento actual. Aplica también a reservas del mismo día. Se valida en el servidor.">?</span></label>
                 <div style="display:flex;align-items:center;gap:8px">
                   <input type="number" id="conf-anticip-min" class="form-input" min="0" max="1440" style="width:80px" />
                   <span class="text-muted" style="font-size:0.82rem">horas</span>
                 </div>
-                <p class="form-hint">Mínimo de anticipación para hacer una reserva</p>
+                <p class="form-hint">Controla qué horarios aparecen disponibles y qué reservas acepta el servidor</p>
               </div>
               <div class="form-group">
-                <label class="form-label">Reservas hasta <span class="tip" title="Cuántos días en el futuro puede agendar un cliente">?</span></label>
+                <label class="form-label">Reservas hasta <span class="tip" title="Cuántos días en el futuro puede agendar un cliente. El calendario de la web muestra este rango (tope máximo: 8 meses).">?</span></label>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <input type="number" id="conf-anticip-max" class="form-input" min="1" max="365" style="width:80px" />
+                  <input type="number" id="conf-anticip-max" class="form-input" min="1" max="240" style="width:80px" />
                   <span class="text-muted" style="font-size:0.82rem">días de anticipación</span>
                 </div>
+                <p class="form-hint">Define el rango del calendario de reservas (máx. 240 días = 8 meses)</p>
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Buffer entre citas <span class="tip" title="Tiempo de descanso/limpieza que se bloquea automáticamente después de cada servicio">?</span></label>
+              <label class="form-label">Buffer entre citas <span class="tip" title="Tiempo que se bloquea después de cada servicio para limpieza/descanso. Se usa cuando el servicio no define su propio buffer. Afecta la duración de cada horario disponible.">?</span></label>
               <div style="display:flex;align-items:center;gap:8px">
                 <input type="number" id="conf-buffer" class="form-input" min="0" max="120" style="width:80px" />
                 <span class="text-muted" style="font-size:0.82rem">minutos</span>
               </div>
-              <p class="form-hint">Tiempo de limpieza / descanso entre cada cita</p>
+              <p class="form-hint">Buffer por defecto para servicios que no tienen uno propio</p>
             </div>
-            <div class="form-group">
-              <label class="form-label">Política de cancelación</label>
-              <textarea id="conf-politica" class="form-textarea" rows="3" maxlength="600" placeholder="Texto que aparece al cliente al momento de reservar…"></textarea>
-            </div>
+            <p class="form-hint" style="margin-top:4px">El horario semanal y la duración de los slots se configuran en la sección <a href="/disponibilidad.html" style="color:var(--purple-medium)">Disponibilidad</a>.</p>
           </div>
 
-          <!-- APARIENCIA -->
+          <!-- APARIENCIA — oculto en esta etapa (se manejará más adelante) -->
           <div class="card config-section" style="display:none">
             <p class="config-section-title">Apariencia del sitio</p>
 
@@ -273,7 +273,7 @@
             </div>
           </div>
 
-          <!-- META SEO -->
+          <!-- META SEO — oculto en esta etapa (se trabajará después para posicionamiento) -->
           <div class="card config-section" style="display:none">
             <p class="config-section-title">SEO y metadatos</p>
             <div class="form-group">
@@ -389,7 +389,6 @@
     document.getElementById('conf-anticip-min').value    = data.reserva_anticip_min_horas ?? 2
     document.getElementById('conf-anticip-max').value    = data.reserva_anticip_max_dias ?? 60
     document.getElementById('conf-buffer').value         = data.buffer_min ?? 15
-    document.getElementById('conf-politica').value       = data.politica_cancelacion || ''
     document.getElementById('conf-color-primary').value  = data.color_primario || '#8A6EA8'
     document.getElementById('conf-color-accent').value   = data.color_acento || '#D4A84B'
     document.getElementById('conf-meta-title').value     = data.meta_title || ''
@@ -430,9 +429,8 @@
         tiktok:    document.getElementById('conf-tiktok').value.trim() || null,
       },
       reserva_anticip_min_horas: parseInt(document.getElementById('conf-anticip-min').value, 10) || 2,
-      reserva_anticip_max_dias:  parseInt(document.getElementById('conf-anticip-max').value, 10) || 60,
+      reserva_anticip_max_dias:  Math.min(parseInt(document.getElementById('conf-anticip-max').value, 10) || 60, 240),
       buffer_min:               parseInt(document.getElementById('conf-buffer').value, 10) || 15,
-      politica_cancelacion:     document.getElementById('conf-politica').value.trim() || null,
       color_primario:           document.getElementById('conf-color-primary').value.trim() || null,
       color_acento:             document.getElementById('conf-color-accent').value.trim() || null,
       meta_title:               document.getElementById('conf-meta-title').value.trim() || null,

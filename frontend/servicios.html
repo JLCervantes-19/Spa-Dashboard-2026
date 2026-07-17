@@ -85,7 +85,9 @@
         </div>
         <div class="form-group">
           <label class="form-label">Categoría</label>
-          <input type="text" id="svc-categoria" class="form-input" placeholder="Masajes, Rituales…" />
+          <select id="svc-categoria" class="form-input">
+            <option value="">— Sin categoría —</option>
+          </select>
         </div>
       </div>
       <div class="form-group">
@@ -144,8 +146,7 @@
   import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
   import {
     avatarHTML, badgeActivo, formatPrecio, toast, openModal, closeModal,
-    confirmAction, renderSidebarUser, debounce, truncate
-  } from '/js/utils.js'
+    confirmAction, renderSidebarUser, debounce, truncate, todayISO } from '/js/utils.js'
 
   const auth = await requireAdmin()
   if (!auth) throw new Error()
@@ -156,13 +157,24 @@
   let serviciosAll = []
   let empleadasAll = []
   let asignacionesAll = []
+  let categoriasAll  = []
   let empSeleccionados = []
   let svcActivoState = true
   let editingId = null
 
+  async function cargarCategorias() {
+    const { data } = await supabase.from('categorias').select('id,nombre,color').eq('activo', true).order('orden')
+    categoriasAll = data || []
+    const sel = document.getElementById('svc-categoria')
+    if (sel) {
+      sel.innerHTML = '<option value="">— Sin categoría —</option>' +
+        categoriasAll.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')
+    }
+  }
+
   async function cargarDatos() {
     const [{ data: svcs }, { data: emps }, { data: asigs }] = await Promise.all([
-      supabase.from('servicios').select('*').order('nombre'),
+      supabase.from('servicios').select('*, categorias(id,nombre,color)').order('nombre'),
       supabase.from('empleados').select('id,nombre,apellido,foto_url').eq('activo', true).order('nombre'),
       supabase.from('empleado_servicios').select('empleado_id,servicio_id,empleados(nombre,apellido,foto_url)'),
     ])
@@ -171,6 +183,8 @@
     asignacionesAll = asigs || []
     renderTabla()
   }
+
+  await cargarCategorias()
 
   let busqueda = '', filtroEstado = ''
 
@@ -296,7 +310,7 @@
     document.getElementById('modal-svc-titulo').textContent = 'Editar servicio'
     document.getElementById('svc-id').value          = id
     document.getElementById('svc-nombre').value      = s.nombre || ''
-    document.getElementById('svc-categoria').value   = s.categoria || ''
+    document.getElementById('svc-categoria').value   = s.categoria_id || ''
     document.getElementById('svc-descripcion').value = s.descripcion || ''
     document.getElementById('svc-duracion').value    = s.duracion_min || ''
     document.getElementById('svc-buffer').value      = s.buffer_min ?? ''
@@ -333,15 +347,18 @@
     btnTxt.textContent = 'Guardando…'; btnSpin.classList.remove('hidden')
 
     try {
+      const catId   = document.getElementById('svc-categoria').value || null
+      const catObj  = catId ? categoriasAll.find(c => c.id === catId) : null
       const payload = {
         nombre,
-        categoria:   document.getElementById('svc-categoria').value.trim() || null,
-        descripcion: document.getElementById('svc-descripcion').value.trim() || null,
+        categoria_id: catId,
+        categoria:    catObj?.nombre ?? null,
+        descripcion:  document.getElementById('svc-descripcion').value.trim() || null,
         duracion_min: duracion,
-        buffer_min:  parseInt(document.getElementById('svc-buffer').value, 10) || 10,
-        precio:      parseFloat(document.getElementById('svc-precio').value) || null,
-        imagen_url:  document.getElementById('svc-imagen').value.trim() || null,
-        activo:      svcActivoState,
+        buffer_min:   parseInt(document.getElementById('svc-buffer').value, 10) || 10,
+        precio:       parseFloat(document.getElementById('svc-precio').value) || null,
+        imagen_url:   document.getElementById('svc-imagen').value.trim() || null,
+        activo:       svcActivoState,
       }
 
       let targetId = editingId
@@ -377,8 +394,8 @@
       text: 'Se verificará que no haya reservas futuras antes de eliminar.',
       btnLabel: 'Eliminar',
       onConfirm: async () => {
-        const hoy = new Date().toISOString().split('T')[0]
-        const { data: futuras } = await supabase.from('citas').select('id').eq('servicio_id', id).gte('fecha', hoy).neq('estado','cancelada').limit(1)
+        const hoy = todayISO()
+        const { data: futuras } = await supabase.from('citas').select('id').eq('servicio_id', id).gte('fecha', hoy).not('estado','in','(cancelada_cliente,cancelada_admin,no_asistio)').limit(1)
         if (futuras?.length) {
           toast('No se puede eliminar: hay reservas futuras para este servicio', 'error'); return
         }

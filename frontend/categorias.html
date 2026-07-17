@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Categorías — Serenità Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Categorías</h1>
+        <p class="page-subtitle">Organiza y filtra los servicios del spa</p>
+      </div>
+      <div class="page-header-right">
+        <button class="btn btn-primary" id="btn-nueva-cat">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva categoría
+        </button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="card">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th>Color</th>
+                <th>Servicios</th>
+                <th>Orden</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cat-tbody">
+              <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL CATEGORÍA -->
+<div class="modal-overlay" id="modal-categoria">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div>
+        <p class="modal-title" id="modal-cat-titulo">Nueva categoría</p>
+      </div>
+      <button class="modal-close" id="modal-cat-close">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cat-id" />
+
+      <div class="form-group">
+        <label class="form-label">Nombre <span class="required">*</span></label>
+        <input type="text" id="cat-nombre" class="form-input" placeholder="Masajes" maxlength="40" />
+        <span class="form-error hidden" id="err-cat-nombre">Requerido</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Color</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="color" id="cat-color-picker" value="#AD74C3"
+            style="width:42px;height:42px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:none;flex-shrink:0" />
+          <input type="text" id="cat-color-hex" class="form-input" value="#AD74C3"
+            maxlength="7" placeholder="#C9A961"
+            style="flex:1;font-family:monospace;letter-spacing:0.05em;text-transform:uppercase" />
+          <!-- Preview burbuja -->
+          <span id="cat-preview-bubble"
+            style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:999px;font-size:0.75rem;font-weight:500;font-family:var(--font-body);white-space:nowrap;border:1.5px solid #AD74C3;color:#AD74C3;background:#AD74C318">
+            <span id="cat-preview-text">Masajes</span>
+          </span>
+        </div>
+        <p class="form-hint" style="margin-top:6px">Se usará como color identificador en los filtros del sitio web</p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Orden de aparición</label>
+          <input type="number" id="cat-orden" class="form-input" value="0" min="0" max="99" />
+          <p class="form-hint">Menor = aparece primero en filtros</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <div class="toggle-wrapper" style="margin-top:10px">
+            <div class="toggle on" id="cat-activo-switch"></div>
+            <span class="toggle-label" id="cat-activo-label">Activa</span>
+          </div>
+          <p class="form-hint">Las inactivas no aparecen en los filtros</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-cat-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="modal-cat-save">
+        <span id="cat-btn-txt">Guardar categoría</span>
+        <div class="spinner hidden" id="cat-btn-spin"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAdmin }                           from '/js/auth.js'
+  import { supabase }                               from '/js/supabase-client.js'
+  import { getSidebarHTML, initSidebar }            from '/js/sidebar.js'
+  import { toast, openModal, closeModal,
+           renderSidebarUser, confirmAction,
+           badgeActivo }                            from '/js/utils.js'
+
+  const auth = await requireAdmin()
+  if (!auth) throw new Error()
+  document.getElementById('sidebar').innerHTML = getSidebarHTML('/categorias.html')
+  initSidebar(auth.admin)
+  renderSidebarUser(auth.admin)
+
+  let categoriasAll  = []
+  let conteoSvcs     = {}
+  let catActivoState = true
+  let editingId      = null
+
+  // ── Cargar ────────────────────────────────────────────────
+  async function cargarDatos() {
+    const [{ data: cats, error: errCats }, { data: svcs }] = await Promise.all([
+      supabase.from('categorias').select('*').order('orden'),
+      supabase.from('servicios').select('id,categoria_id,categoria').eq('activo', true),
+    ])
+    if (errCats) { toast('Error cargando categorías: ' + errCats.message, 'error'); return }
+    categoriasAll = cats || []
+    conteoSvcs = {}
+    ;(svcs || []).forEach(s => {
+      if (s.categoria_id) conteoSvcs[s.categoria_id] = (conteoSvcs[s.categoria_id] || 0) + 1
+    })
+    renderTabla()
+  }
+
+  // ── Renderizar tabla ──────────────────────────────────────
+  function renderTabla() {
+    const tbody = document.getElementById('cat-tbody')
+    if (!categoriasAll.length) {
+      tbody.innerHTML = `
+        <tr><td colspan="6">
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg width="28" height="28" fill="none" stroke="var(--lilac)" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+            </div>
+            <p class="empty-state-title">Sin categorías</p>
+            <p class="empty-state-text">Crea tu primera categoría con el botón de arriba</p>
+          </div>
+        </td></tr>`
+      return
+    }
+
+    tbody.innerHTML = categoriasAll.map(c => {
+      const count = conteoSvcs[c.id] || 0
+      return `
+        <tr>
+          <td>
+            <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 13px;border-radius:999px;font-size:0.73rem;font-weight:500;font-family:var(--font-body);border:1.5px solid ${c.color};color:${c.color};background:${c.color}18">
+              ${c.nombre}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:22px;height:22px;border-radius:50%;background:${c.color};display:inline-block;border:1.5px solid rgba(0,0,0,0.06);flex-shrink:0"></span>
+              <code class="td-muted" style="font-size:0.72rem">${c.color.toUpperCase()}</code>
+            </div>
+          </td>
+          <td>
+            <span style="font-weight:500;color:var(--text-secondary)">${count}</span>
+            <span class="td-muted"> servicio${count !== 1 ? 's' : ''}</span>
+          </td>
+          <td class="td-muted">${c.orden}</td>
+          <td>${badgeActivo(c.activo)}</td>
+          <td>
+            <div class="table-actions">
+              <button class="action-btn" data-tooltip="Editar" onclick="editarCategoria('${c.id}')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="action-btn danger" data-tooltip="Eliminar" onclick="eliminarCategoria('${c.id}','${c.nombre.replace(/'/g,"&#39;")}',${count})">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>`
+    }).join('')
+  }
+
+  // ── Nueva categoría ───────────────────────────────────────
+  document.getElementById('btn-nueva-cat').addEventListener('click', () => {
+    editingId = null
+    document.getElementById('modal-cat-titulo').textContent = 'Nueva categoría'
+    document.getElementById('cat-id').value     = ''
+    document.getElementById('cat-nombre').value = ''
+    const maxOrden = categoriasAll.length ? Math.max(...categoriasAll.map(c => c.orden)) + 1 : 1
+    document.getElementById('cat-orden').value  = maxOrden
+    setColor('#AD74C3')
+    catActivoState = true
+    syncToggle()
+    updatePreview()
+    openModal('modal-categoria')
+    setTimeout(() => document.getElementById('cat-nombre').focus(), 80)
+  })
+
+  // ── Editar categoría ──────────────────────────────────────
+  window.editarCategoria = (id) => {
+    const c = categoriasAll.find(x => x.id === id)
+    if (!c) return
+    editingId = id
+    document.getElementById('modal-cat-titulo').textContent = 'Editar categoría'
+    document.getElementById('cat-id').value     = id
+    document.getElementById('cat-nombre').value = c.nombre
+    document.getElementById('cat-orden').value  = c.orden
+    setColor(c.color || '#AD74C3')
+    catActivoState = c.activo !== false
+    syncToggle()
+    updatePreview()
+    openModal('modal-categoria')
+  }
+
+  // ── Guardar ───────────────────────────────────────────────
+  document.getElementById('modal-cat-save').addEventListener('click', async () => {
+    const btn = document.getElementById('modal-cat-save')
+    if (btn.disabled) return
+    btn.disabled = true
+
+    const nombre = document.getElementById('cat-nombre').value.trim()
+    if (!nombre) {
+      document.getElementById('err-cat-nombre').classList.remove('hidden')
+      document.getElementById('cat-nombre').classList.add('error')
+      btn.disabled = false; return
+    }
+    document.getElementById('err-cat-nombre').classList.add('hidden')
+    document.getElementById('cat-nombre').classList.remove('error')
+
+    const btnTxt  = document.getElementById('cat-btn-txt')
+    const btnSpin = document.getElementById('cat-btn-spin')
+    btnTxt.textContent = 'Guardando…'; btnSpin.classList.remove('hidden')
+
+    try {
+      const hexVal = document.getElementById('cat-color-hex').value.trim().toUpperCase()
+      const payload = {
+        nombre,
+        color:  /^#[0-9A-Fa-f]{6}$/.test(hexVal) ? hexVal : '#C9A961',
+        orden:  parseInt(document.getElementById('cat-orden').value, 10) || 0,
+        activo: catActivoState,
+      }
+
+      if (editingId) {
+        const { error } = await supabase.from('categorias').update(payload).eq('id', editingId)
+        if (error) throw error
+        if (!payload.activo) {
+          await supabase.from('servicios').update({ categoria_id: null, categoria: null }).eq('categoria_id', editingId)
+        } else {
+          await supabase.from('servicios').update({ categoria: payload.nombre }).eq('categoria_id', editingId)
+        }
+      } else {
+        const { error } = await supabase.from('categorias').insert(payload)
+        if (error) throw error
+      }
+
+      toast(editingId ? 'Categoría actualizada' : 'Categoría creada', 'success')
+      closeModal('modal-categoria')
+      await cargarDatos()
+    } catch (err) {
+      toast(err.message || 'Error al guardar', 'error')
+    } finally {
+      btnTxt.textContent = 'Guardar categoría'; btnSpin.classList.add('hidden')
+      btn.disabled = false
+    }
+  })
+
+  // ── Eliminar ──────────────────────────────────────────────
+  window.eliminarCategoria = (id, nombre, count) => {
+    if (count > 0) {
+      toast(`"${nombre}" tiene ${count} servicio${count > 1 ? 's' : ''} asignado${count > 1 ? 's' : ''}. Reasígnalos primero.`, 'error')
+      return
+    }
+    confirmAction({
+      title:    `¿Eliminar "${nombre}"?`,
+      text:     'Esta acción no se puede deshacer.',
+      btnLabel: 'Eliminar',
+      onConfirm: async () => {
+        const { error } = await supabase.from('categorias').delete().eq('id', id)
+        if (error) { toast('Error: ' + error.message, 'error'); return }
+        toast('Categoría eliminada', 'success')
+        await cargarDatos()
+      }
+    })
+  }
+
+  // ── Color helpers ─────────────────────────────────────────
+  function setColor(hex) {
+    document.getElementById('cat-color-picker').value = hex
+    document.getElementById('cat-color-hex').value    = hex.toUpperCase()
+    updatePreview()
+  }
+
+  function updatePreview() {
+    const hex    = document.getElementById('cat-color-hex').value.trim()
+    const nombre = document.getElementById('cat-nombre').value.trim() || 'Ejemplo'
+    const bubble = document.getElementById('cat-preview-bubble')
+    const text   = document.getElementById('cat-preview-text')
+    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+      bubble.style.borderColor = hex
+      bubble.style.color       = hex
+      bubble.style.background  = hex + '18'
+    }
+    text.textContent = nombre
+  }
+
+  document.getElementById('cat-color-picker').addEventListener('input', e => {
+    document.getElementById('cat-color-hex').value = e.target.value.toUpperCase()
+    updatePreview()
+  })
+  document.getElementById('cat-color-hex').addEventListener('input', e => {
+    const v = e.target.value
+    if (/^#[0-9A-Fa-f]{6}$/.test(v)) document.getElementById('cat-color-picker').value = v
+    updatePreview()
+  })
+  document.getElementById('cat-nombre').addEventListener('input', updatePreview)
+
+  // ── Toggle ────────────────────────────────────────────────
+  function syncToggle() {
+    document.getElementById('cat-activo-switch').classList.toggle('on', catActivoState)
+    document.getElementById('cat-activo-label').textContent = catActivoState ? 'Activa' : 'Inactiva'
+  }
+  document.getElementById('cat-activo-switch').addEventListener('click', () => {
+    catActivoState = !catActivoState; syncToggle()
+  })
+
+  // ── Cerrar modal ──────────────────────────────────────────
+  document.getElementById('modal-cat-close').addEventListener('click',  () => closeModal('modal-categoria'))
+  document.getElementById('modal-cat-cancel').addEventListener('click', () => closeModal('modal-categoria'))
+  document.getElementById('modal-categoria').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal('modal-categoria')
+  })
+
+  await cargarDatos()
+</script>
+</body>
+</html>

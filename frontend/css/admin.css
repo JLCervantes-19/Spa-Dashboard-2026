@@ -505,14 +505,12 @@ img { max-width: 100%; display: block; }
 .badge-gray    .badge-dot { background: #94a3b8; }
 
 /* Estados de citas */
-.badge-pendiente  { background: #f3e8ff; color: #7c3aed; }
-.badge-confirmada { background: #eff6ff; color: #1d4ed8; }
-.badge-realizada  { background: var(--success-bg); color: var(--success); }
-.badge-atrasada   { background: var(--warning-bg); color: var(--warning); }
-.badge-no_asistio { background: var(--danger-bg);  color: var(--danger); }
-.badge-cancelada  { background: #f1f5f9; color: #64748b; }
-.badge-en_proceso { background: #fef9c3; color: #92400e; }
-.badge-reagendada { background: #ede9fe; color: #6d28d9; }
+.badge-pendiente         { background: #f3e8ff; color: #7c3aed; }
+.badge-confirmada        { background: #eff6ff; color: #1d4ed8; }
+.badge-completada        { background: var(--success-bg); color: var(--success); }
+.badge-no_asistio        { background: var(--danger-bg);  color: var(--danger); }
+.badge-cancelada_cliente { background: #fff7ed; color: #c2410c; }
+.badge-cancelada_admin   { background: #f1f5f9; color: #64748b; }
 
 /* ——— AVATARES ——————————————————————————————————————————————— */
 .avatar {
