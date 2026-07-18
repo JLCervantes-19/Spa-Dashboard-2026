@@ -39,6 +39,21 @@
   --info:           #2563eb;
   --info-bg:        #eff6ff;
 
+  /* Estados de cita — fuente canónica: SISTEMA WEB/design-tokens.css
+     (idénticos en spa.css, admin.css y staff.css) */
+  --estado-pendiente:      #AD74C3;
+  --estado-confirmada:     #2563eb;
+  --estado-completada:     #16a34a;
+  --estado-no-asistio:     #dc2626;
+  --estado-cancelada-c:    #c2410c;
+  --estado-cancelada-a:    #64748b;
+  --estado-pendiente-bg:   #F8EDFB;
+  --estado-confirmada-bg:  #eff6ff;
+  --estado-completada-bg:  #f0fdf4;
+  --estado-no-asistio-bg:  #fef2f2;
+  --estado-cancelada-c-bg: #fff7ed;
+  --estado-cancelada-a-bg: #f1f5f9;
+
   /* Tipografía */
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body:    'Jost', system-ui, sans-serif;
@@ -445,6 +460,7 @@ img { max-width: 100%; display: block; }
   border-color: var(--purple-medium);
   box-shadow: var(--shadow-sm);
 }
+.btn-primary:active:not(:disabled) { box-shadow: none; }
 .btn-secondary {
   background: transparent;
   color: var(--text-secondary);
@@ -505,12 +521,12 @@ img { max-width: 100%; display: block; }
 .badge-gray    .badge-dot { background: #94a3b8; }
 
 /* Estados de citas */
-.badge-pendiente         { background: #f3e8ff; color: #7c3aed; }
-.badge-confirmada        { background: #eff6ff; color: #1d4ed8; }
-.badge-completada        { background: var(--success-bg); color: var(--success); }
-.badge-no_asistio        { background: var(--danger-bg);  color: var(--danger); }
-.badge-cancelada_cliente { background: #fff7ed; color: #c2410c; }
-.badge-cancelada_admin   { background: #f1f5f9; color: #64748b; }
+.badge-pendiente         { background: var(--estado-pendiente-bg);   color: var(--estado-pendiente); }
+.badge-confirmada        { background: var(--estado-confirmada-bg);  color: var(--estado-confirmada); }
+.badge-completada        { background: var(--estado-completada-bg);  color: var(--estado-completada); }
+.badge-no_asistio        { background: var(--estado-no-asistio-bg);  color: var(--estado-no-asistio); }
+.badge-cancelada_cliente { background: var(--estado-cancelada-c-bg); color: var(--estado-cancelada-c); }
+.badge-cancelada_admin   { background: var(--estado-cancelada-a-bg); color: var(--estado-cancelada-a); }
 
 /* ——— AVATARES ——————————————————————————————————————————————— */
 .avatar {

@@ -364,9 +364,10 @@
     document.getElementById('titulo-chart-servicios').textContent = `Servicios más solicitados (${etiqueta})`
     document.getElementById('titulo-chart-empleadas').textContent = `Citas por empleada (${etiqueta})`
 
+    // Sincronizado con los tokens --estado-* (SISTEMA WEB/design-tokens.css)
     const ESTADO_COLOR = {
       'Pendiente': '#AD74C3', 'Confirmada': '#2563eb', 'Completada': '#16a34a',
-      'No asistió': '#dc2626', 'Cancelada (cliente)': '#ea580c', 'Cancelada (admin)': '#64748b',
+      'No asistió': '#dc2626', 'Cancelada (cliente)': '#c2410c', 'Cancelada (admin)': '#64748b',
     }
     const ESTADO_LABEL = {
       pendiente: 'Pendiente', confirmada: 'Confirmada', completada: 'Completada',
@@ -383,7 +384,7 @@
         labels: Object.keys(estadosCont),
         datasets: [{
           data: Object.values(estadosCont),
-          backgroundColor: Object.keys(estadosCont).map(l => ESTADO_COLOR[l] || '#9ca3af'),
+          backgroundColor: Object.keys(estadosCont).map(l => ESTADO_COLOR[l] || '#64748b'),
           borderWidth: 2, borderColor: '#fff',
         }],
       },

@@ -102,7 +102,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Buffer (min)</label>
-          <input type="number" id="svc-buffer" class="form-input" min="0" step="5" placeholder="10" />
+          <input type="number" id="svc-buffer" class="form-input" min="0" step="5" placeholder="Vacío = usa el global" />
           <p class="form-hint">Tiempo de preparación</p>
         </div>
         <div class="form-group">
@@ -355,7 +355,13 @@
         categoria:    catObj?.nombre ?? null,
         descripcion:  document.getElementById('svc-descripcion').value.trim() || null,
         duracion_min: duracion,
-        buffer_min:   parseInt(document.getElementById('svc-buffer').value, 10) || 10,
+        // Vacío = null (hereda el buffer global de configuración); 0 es un valor válido
+        buffer_min:   (() => {
+          const v = document.getElementById('svc-buffer').value.trim()
+          if (v === '') return null
+          const n = parseInt(v, 10)
+          return Number.isFinite(n) && n >= 0 ? n : null
+        })(),
         precio:       parseFloat(document.getElementById('svc-precio').value) || null,
         imagen_url:   document.getElementById('svc-imagen').value.trim() || null,
         activo:       svcActivoState,

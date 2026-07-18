@@ -245,24 +245,27 @@
   let reservasAll = []
   let empleadasAll = []
   let serviciosAll = []
+  let bufferGlobal = 10   // buffer por defecto de configuración (mismo fallback que el backend)
   let currentPage = 1
   const PAGE_SIZE = 20
   let citaActualId = null
 
   // ——— Cargar datos ————————————————————————————————————
   async function cargarDatos() {
-    const [{ data: res }, { data: emps }, { data: svcs }] = await Promise.all([
+    const [{ data: res }, { data: emps }, { data: svcs }, { data: cfg }] = await Promise.all([
       supabase.from('citas')
-        .select('id,fecha,hora_inicio,hora_fin,duracion_total,estado,notas,origen,clientes(id,nombre,telefono,email),servicios(id,nombre,precio,duracion_min),empleados(id,nombre,apellido,foto_url)')
+        .select('id,fecha,hora_inicio,hora_fin,duracion_total,estado,notas,origen,clientes(id,nombre,telefono,email),servicios(id,nombre,precio,duracion_min,buffer_min),empleados(id,nombre,apellido,foto_url)')
         .order('fecha', { ascending: false })
         .order('hora_inicio', { ascending: false })
         .limit(500),
       supabase.from('empleados').select('id,nombre,apellido').eq('activo', true).order('nombre'),
       supabase.from('servicios').select('id,nombre,duracion_min,buffer_min').eq('activo', true).order('nombre'),
+      supabase.from('configuracion').select('buffer_min').limit(1).single(),
     ])
     reservasAll = res || []
     empleadasAll = emps || []
     serviciosAll = svcs || []
+    bufferGlobal = cfg?.buffer_min ?? 10
     poblarSelectores()
     aplicarFiltros()
   }
@@ -539,7 +542,8 @@
         empleado_id = await autoAsignarEmpleada(supabase, svcId, fecha)
       }
 
-      const totalMin  = (svc.duracion_min || 60) + (svc.buffer_min || 10)
+      // buffer_min null = heredar el buffer global; 0 es un valor válido
+      const totalMin  = (svc.duracion_min || 60) + (svc.buffer_min ?? bufferGlobal)
       const [h, m]    = hora.split(':').map(Number)
       const finMin    = h * 60 + m + totalMin
       const hora_fin  = `${String(Math.floor(finMin/60)).padStart(2,'0')}:${String(finMin%60).padStart(2,'0')}`
@@ -644,7 +648,7 @@
       // Recalcular hora_fin con la duración registrada de la cita
       const cita = reservasAll.find(r => r.id === reagendarCitaId)
       const totalMin = cita?.duracion_total
-        || ((cita?.servicios?.duracion_min || 60) + 10)
+        || ((cita?.servicios?.duracion_min || 60) + (cita?.servicios?.buffer_min ?? bufferGlobal))
       const [h, m] = hora.split(':').map(Number)
       const finMin = h * 60 + m + totalMin
       const hora_fin = `${String(Math.floor(finMin / 60)).padStart(2, '0')}:${String(finMin % 60).padStart(2, '0')}`

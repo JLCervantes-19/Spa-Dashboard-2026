@@ -4,126 +4,43 @@
   "graph": {
     "hyperedges": [
       {
-        "id": "admin_auth_guard_pattern",
-        "label": "Admin Authentication Guard Pattern",
+        "id": "hyperedge_modelo_estados_citas",
+        "label": "Migraci\u00f3n del modelo de estados de citas: de 8 estados (documentado en ESTADOS-RESERVAS.md y LOGICA-DEL-SISTEMA.md) a 6 estados estandarizados (implementado en el c\u00f3digo actual)",
         "nodes": [
-          "auth_requireadmin",
-          "schema_admin_admin_users",
-          "schema_admin_is_admin",
-          "schema_admin_rls_policy"
+          "estados_reservas_modelo_8_estados",
+          "logica_sistema_modelo_8_estados",
+          "citas_modelo_6_estados"
         ],
-        "relation": "implement",
+        "relation": "form",
         "confidence": "INFERRED",
         "confidence_score": 0.95,
-        "source_file": "database/schema_admin.sql"
+        "source_file": "frontend/reservas.html"
       },
       {
-        "id": "empleada_service_assignment",
-        "label": "Empleada-Servicio Assignment Flow",
+        "id": "hyperedge_config_reservas_disponibilidad",
+        "label": "Configuraci\u00f3n compartida de reservas y disponibilidad v\u00eda la tabla configuracion (par\u00e1metros de reserva + horario semanal)",
         "nodes": [
-          "schema_admin_empleado_servicios",
-          "utils_autoasignarempleada",
-          "empleadas_html_empleadas_page"
+          "configuracion_parametros_reserva",
+          "disponibilidad_horario_semanal",
+          "tabla_configuracion"
         ],
         "relation": "participate_in",
-        "confidence": "EXTRACTED",
-        "confidence_score": 0.95,
-        "source_file": "frontend/js/utils.js"
+        "confidence": "INFERRED",
+        "confidence_score": 0.85,
+        "source_file": "frontend/configuracion.html"
       },
       {
-        "id": "frontend_pages_shared_modules",
-        "label": "All Frontend Pages Share Auth + Supabase Client + Sidebar + Utils",
+        "id": "hyperedge_asignacion_automatica_empleadas",
+        "label": "Asignaci\u00f3n autom\u00e1tica de empleadas a citas: balanceo de carga por servicio con desempate aleatorio, usado al crear reservas y visible en la gesti\u00f3n de servicios/empleadas",
         "nodes": [
-          "dashboard_html",
-          "empleadas_html",
-          "admins_html",
-          "testimonios_html",
-          "configuracion_html",
-          "auth_js",
-          "supabase_client_js",
-          "sidebar_js",
-          "utils_js"
-        ],
-        "relation": "implement",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "frontend/dashboard.html"
-      },
-      {
-        "id": "admin_auth_double_validation",
-        "label": "Admin Auth Double Validation: Supabase Auth + is_admin() RLS",
-        "nodes": [
-          "auth_js",
-          "fn_is_admin",
-          "table_admin_users",
-          "supabase_project"
-        ],
-        "relation": "implement",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "README.md"
-      },
-      {
-        "id": "employee_creation_flow",
-        "label": "Employee Creation Flow: Edge Fn \u2192 Auth \u2192 empleados \u2192 empleado_servicios",
-        "nodes": [
-          "empleadas_html",
-          "edge_function_smooth",
-          "table_empleados",
-          "table_empleado_servicios",
-          "supabase_project"
+          "empleadas_balanceo_carga_por_servicio",
+          "reservas_pagina",
+          "servicios_pagina"
         ],
         "relation": "participate_in",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "frontend/empleadas.html"
-      },
-      {
-        "id": "admin_creation_flow",
-        "label": "Admin Creation Flow: Edge Fn \u2192 Auth \u2192 admin_users",
-        "nodes": [
-          "admins_html",
-          "edge_function_smooth",
-          "table_admin_users",
-          "supabase_project"
-        ],
-        "relation": "participate_in",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "frontend/admins.html"
-      },
-      {
-        "id": "migration_2_rls_setup",
-        "label": "Migration 2: configuracion table + testimonios normalization + RLS policies",
-        "nodes": [
-          "migration_2_sql",
-          "table_configuracion",
-          "table_testimonios",
-          "rls_policy_admin_full",
-          "rls_policy_lectura_publica",
-          "rls_policy_testimonios_public",
-          "fn_is_admin"
-        ],
-        "relation": "implement",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "database/migration_2.sql"
-      },
-      {
-        "id": "dashboard_kpi_charts",
-        "label": "Dashboard KPIs + Chart.js Visualizations from citas/empleados",
-        "nodes": [
-          "dashboard_html",
-          "chartjs_lib",
-          "table_citas",
-          "table_empleados",
-          "table_servicios",
-          "table_clientes"
-        ],
-        "relation": "implement",
-        "confidence": "EXTRACTED",
-        "confidence_score": 1.0,
-        "source_file": "frontend/dashboard.html"
+        "confidence": "INFERRED",
+        "confidence_score": 0.75,
+        "source_file": "frontend/reservas.html"
       }
     ]
   },
@@ -133,486 +50,486 @@
       "file_type": "code",
       "source_file": "server.js",
       "source_location": "L1",
-      "id": "server_js",
       "community": 5,
-      "norm_label": "server.js"
+      "norm_label": "server.js",
+      "id": "server_js"
     },
     {
       "label": "__filename",
       "file_type": "code",
       "source_file": "server.js",
       "source_location": "L7",
-      "id": "admin_dashboard_server_filename",
       "community": 5,
-      "norm_label": "__filename"
+      "norm_label": "__filename",
+      "id": "admin_dashboard_server_filename"
     },
     {
       "label": "__dirname",
       "file_type": "code",
       "source_file": "server.js",
       "source_location": "L8",
-      "id": "admin_dashboard_server_dirname",
       "community": 5,
-      "norm_label": "__dirname"
+      "norm_label": "__dirname",
+      "id": "admin_dashboard_server_dirname"
     },
     {
       "label": "app",
       "file_type": "code",
       "source_file": "server.js",
       "source_location": "L10",
-      "id": "admin_dashboard_server_app",
       "community": 5,
-      "norm_label": "app"
+      "norm_label": "app",
+      "id": "admin_dashboard_server_app"
     },
     {
       "label": "auth.js",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
       "source_location": "L1",
-      "id": "frontend_js_auth_js",
-      "community": 2,
-      "norm_label": "auth.js"
+      "community": 3,
+      "norm_label": "auth.js",
+      "id": "frontend_js_auth_js"
     },
     {
       "label": "getAttempts()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L10",
-      "id": "js_auth_getattempts",
-      "community": 2,
-      "norm_label": "getattempts()"
+      "source_location": "L19",
+      "community": 3,
+      "norm_label": "getattempts()",
+      "id": "js_auth_getattempts"
     },
     {
       "label": "recordAttempt()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L17",
-      "id": "js_auth_recordattempt",
-      "community": 2,
-      "norm_label": "recordattempt()"
+      "source_location": "L27",
+      "community": 3,
+      "norm_label": "recordattempt()",
+      "id": "js_auth_recordattempt"
     },
     {
       "label": "clearAttempts()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L28",
-      "id": "js_auth_clearattempts",
-      "community": 2,
-      "norm_label": "clearattempts()"
+      "source_location": "L39",
+      "community": 3,
+      "norm_label": "clearattempts()",
+      "id": "js_auth_clearattempts"
     },
     {
       "label": "isRateLimited()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L29",
-      "id": "js_auth_isratelimited",
-      "community": 2,
-      "norm_label": "isratelimited()"
+      "source_location": "L41",
+      "community": 3,
+      "norm_label": "isratelimited()",
+      "id": "js_auth_isratelimited"
     },
     {
       "label": "login()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L36",
-      "id": "js_auth_login",
-      "community": 2,
-      "norm_label": "login()"
+      "source_location": "L228",
+      "community": 3,
+      "norm_label": "login()",
+      "id": "js_auth_login"
     },
     {
       "label": "logout()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L64",
-      "id": "js_auth_logout",
-      "community": 2,
-      "norm_label": "logout()"
+      "source_location": "L259",
+      "community": 3,
+      "norm_label": "logout()",
+      "id": "js_auth_logout"
     },
     {
       "label": "getSession()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L73",
-      "id": "js_auth_getsession",
-      "community": 2,
-      "norm_label": "getsession()"
+      "source_location": "L270",
+      "community": 3,
+      "norm_label": "getsession()",
+      "id": "js_auth_getsession"
     },
     {
       "label": "requireAdmin()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L79",
-      "id": "js_auth_requireadmin",
-      "community": 2,
-      "norm_label": "requireadmin()"
+      "source_location": "L276",
+      "community": 3,
+      "norm_label": "requireadmin()",
+      "id": "js_auth_requireadmin"
     },
     {
       "label": "redirectIfAdmin()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L104",
-      "id": "js_auth_redirectifadmin",
-      "community": 2,
-      "norm_label": "redirectifadmin()"
+      "source_location": "L308",
+      "community": 3,
+      "norm_label": "redirectifadmin()",
+      "id": "js_auth_redirectifadmin"
     },
     {
       "label": "cambiarPassword()",
       "file_type": "code",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L118",
-      "id": "js_auth_cambiarpassword",
-      "community": 2,
-      "norm_label": "cambiarpassword()"
+      "source_location": "L327",
+      "community": 3,
+      "norm_label": "cambiarpassword()",
+      "id": "js_auth_cambiarpassword"
     },
     {
       "label": "sidebar.js",
       "file_type": "code",
       "source_file": "frontend/js/sidebar.js",
       "source_location": "L1",
-      "id": "frontend_js_sidebar_js",
-      "community": 2,
-      "norm_label": "sidebar.js"
+      "community": 3,
+      "norm_label": "sidebar.js",
+      "id": "frontend_js_sidebar_js"
     },
     {
       "label": "getSidebarHTML()",
       "file_type": "code",
       "source_file": "frontend/js/sidebar.js",
       "source_location": "L6",
-      "id": "js_sidebar_getsidebarhtml",
-      "community": 2,
-      "norm_label": "getsidebarhtml()"
+      "community": 3,
+      "norm_label": "getsidebarhtml()",
+      "id": "js_sidebar_getsidebarhtml"
     },
     {
       "label": "initSidebar()",
       "file_type": "code",
       "source_file": "frontend/js/sidebar.js",
-      "source_location": "L48",
-      "id": "js_sidebar_initsidebar",
-      "community": 2,
-      "norm_label": "initsidebar()"
+      "source_location": "L49",
+      "community": 3,
+      "norm_label": "initsidebar()",
+      "id": "js_sidebar_initsidebar"
     },
     {
       "label": "utils.js",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
       "source_location": "L1",
-      "id": "frontend_js_utils_js",
-      "community": 0,
-      "norm_label": "utils.js"
+      "community": 1,
+      "norm_label": "utils.js",
+      "id": "frontend_js_utils_js"
     },
     {
       "label": "ESTADOS_CITA",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L5",
-      "id": "js_utils_estados_cita",
-      "community": 0,
-      "norm_label": "estados_cita"
+      "source_location": "L6",
+      "community": 1,
+      "norm_label": "estados_cita",
+      "id": "js_utils_estados_cita"
     },
     {
       "label": "ESTADOS_TESTIMONIO",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L14",
-      "id": "js_utils_estados_testimonio",
-      "community": 0,
-      "norm_label": "estados_testimonio"
+      "source_location": "L18",
+      "community": 1,
+      "norm_label": "estados_testimonio",
+      "id": "js_utils_estados_testimonio"
     },
     {
       "label": "DIAS_SEMANA",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L20",
-      "id": "js_utils_dias_semana",
-      "community": 0,
-      "norm_label": "dias_semana"
+      "source_location": "L24",
+      "community": 1,
+      "norm_label": "dias_semana",
+      "id": "js_utils_dias_semana"
     },
     {
       "label": "formatFecha()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L23",
-      "id": "js_utils_formatfecha",
-      "community": 0,
-      "norm_label": "formatfecha()"
+      "source_location": "L27",
+      "community": 1,
+      "norm_label": "formatfecha()",
+      "id": "js_utils_formatfecha"
     },
     {
       "label": "formatFechaCorta()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L28",
-      "id": "js_utils_formatfechacorta",
-      "community": 0,
-      "norm_label": "formatfechacorta()"
+      "source_location": "L32",
+      "community": 1,
+      "norm_label": "formatfechacorta()",
+      "id": "js_utils_formatfechacorta"
     },
     {
       "label": "formatFechaLarga()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L33",
-      "id": "js_utils_formatfechalarga",
-      "community": 0,
-      "norm_label": "formatfechalarga()"
+      "source_location": "L37",
+      "community": 1,
+      "norm_label": "formatfechalarga()",
+      "id": "js_utils_formatfechalarga"
     },
     {
       "label": "formatHora()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L38",
-      "id": "js_utils_formathora",
-      "community": 0,
-      "norm_label": "formathora()"
+      "source_location": "L42",
+      "community": 1,
+      "norm_label": "formathora()",
+      "id": "js_utils_formathora"
     },
     {
       "label": "formatDateTime()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L44",
-      "id": "js_utils_formatdatetime",
-      "community": 0,
-      "norm_label": "formatdatetime()"
+      "source_location": "L48",
+      "community": 1,
+      "norm_label": "formatdatetime()",
+      "id": "js_utils_formatdatetime"
     },
     {
       "label": "todayISO()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L49",
-      "id": "js_utils_todayiso",
-      "community": 0,
-      "norm_label": "todayiso()"
+      "source_location": "L62",
+      "community": 1,
+      "norm_label": "todayiso()",
+      "id": "js_utils_todayiso"
     },
     {
       "label": "startOfWeekISO()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L52",
-      "id": "js_utils_startofweekiso",
-      "community": 0,
-      "norm_label": "startofweekiso()"
+      "source_location": "L65",
+      "community": 1,
+      "norm_label": "startofweekiso()",
+      "id": "js_utils_startofweekiso"
     },
     {
       "label": "startOfMonthISO()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L57",
-      "id": "js_utils_startofmonthiso",
-      "community": 0,
-      "norm_label": "startofmonthiso()"
+      "source_location": "L75",
+      "community": 1,
+      "norm_label": "startofmonthiso()",
+      "id": "js_utils_startofmonthiso"
     },
     {
       "label": "formatPrecio()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L63",
-      "id": "js_utils_formatprecio",
-      "community": 0,
-      "norm_label": "formatprecio()"
+      "source_location": "L102",
+      "community": 1,
+      "norm_label": "formatprecio()",
+      "id": "js_utils_formatprecio"
     },
     {
       "label": "sanitizeText()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L69",
-      "id": "js_utils_sanitizetext",
-      "community": 0,
-      "norm_label": "sanitizetext()"
+      "source_location": "L108",
+      "community": 1,
+      "norm_label": "sanitizetext()",
+      "id": "js_utils_sanitizetext"
     },
     {
       "label": "truncate()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L75",
-      "id": "js_utils_truncate",
-      "community": 0,
-      "norm_label": "truncate()"
+      "source_location": "L114",
+      "community": 1,
+      "norm_label": "truncate()",
+      "id": "js_utils_truncate"
     },
     {
       "label": "iniciales()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L81",
-      "id": "js_utils_iniciales",
-      "community": 6,
-      "norm_label": "iniciales()"
+      "source_location": "L120",
+      "community": 1,
+      "norm_label": "iniciales()",
+      "id": "js_utils_iniciales"
     },
     {
       "label": "AVATAR_COLORS",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L87",
-      "id": "js_utils_avatar_colors",
-      "community": 0,
-      "norm_label": "avatar_colors"
+      "source_location": "L126",
+      "community": 1,
+      "norm_label": "avatar_colors",
+      "id": "js_utils_avatar_colors"
     },
     {
       "label": "avatarColor()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L92",
-      "id": "js_utils_avatarcolor",
-      "community": 6,
-      "norm_label": "avatarcolor()"
+      "source_location": "L131",
+      "community": 1,
+      "norm_label": "avatarcolor()",
+      "id": "js_utils_avatarcolor"
     },
     {
       "label": "avatarHTML()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L96",
-      "id": "js_utils_avatarhtml",
-      "community": 6,
-      "norm_label": "avatarhtml()"
+      "source_location": "L135",
+      "community": 1,
+      "norm_label": "avatarhtml()",
+      "id": "js_utils_avatarhtml"
     },
     {
       "label": "_avatarIni()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L104",
-      "id": "js_utils_avatarini",
-      "community": 6,
-      "norm_label": "_avatarini()"
+      "source_location": "L143",
+      "community": 1,
+      "norm_label": "_avatarini()",
+      "id": "js_utils_avatarini"
     },
     {
       "label": "badgeCita()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L109",
-      "id": "js_utils_badgecita",
-      "community": 0,
-      "norm_label": "badgecita()"
+      "source_location": "L148",
+      "community": 1,
+      "norm_label": "badgecita()",
+      "id": "js_utils_badgecita"
     },
     {
       "label": "badgeTestimonio()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L113",
-      "id": "js_utils_badgetestimonio",
-      "community": 0,
-      "norm_label": "badgetestimonio()"
+      "source_location": "L152",
+      "community": 1,
+      "norm_label": "badgetestimonio()",
+      "id": "js_utils_badgetestimonio"
     },
     {
       "label": "badgeActivo()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L117",
-      "id": "js_utils_badgeactivo",
-      "community": 0,
-      "norm_label": "badgeactivo()"
+      "source_location": "L156",
+      "community": 1,
+      "norm_label": "badgeactivo()",
+      "id": "js_utils_badgeactivo"
     },
     {
       "label": "toast()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L124",
-      "id": "js_utils_toast",
-      "community": 0,
-      "norm_label": "toast()"
+      "source_location": "L163",
+      "community": 1,
+      "norm_label": "toast()",
+      "id": "js_utils_toast"
     },
     {
       "label": "openModal()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L149",
-      "id": "js_utils_openmodal",
-      "community": 0,
-      "norm_label": "openmodal()"
+      "source_location": "L188",
+      "community": 1,
+      "norm_label": "openmodal()",
+      "id": "js_utils_openmodal"
     },
     {
       "label": "closeModal()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L150",
-      "id": "js_utils_closemodal",
-      "community": 0,
-      "norm_label": "closemodal()"
+      "source_location": "L189",
+      "community": 1,
+      "norm_label": "closemodal()",
+      "id": "js_utils_closemodal"
     },
     {
       "label": "confirmAction()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L152",
-      "id": "js_utils_confirmaction",
-      "community": 0,
-      "norm_label": "confirmaction()"
+      "source_location": "L191",
+      "community": 1,
+      "norm_label": "confirmaction()",
+      "id": "js_utils_confirmaction"
     },
     {
       "label": "setActiveNav()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L193",
-      "id": "js_utils_setactivenav",
-      "community": 0,
-      "norm_label": "setactivenav()"
+      "source_location": "L232",
+      "community": 1,
+      "norm_label": "setactivenav()",
+      "id": "js_utils_setactivenav"
     },
     {
       "label": "renderSidebarUser()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L200",
-      "id": "js_utils_rendersidebaruser",
-      "community": 0,
-      "norm_label": "rendersidebaruser()"
+      "source_location": "L239",
+      "community": 1,
+      "norm_label": "rendersidebaruser()",
+      "id": "js_utils_rendersidebaruser"
     },
     {
       "label": "debounce()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L213",
-      "id": "js_utils_debounce",
-      "community": 0,
-      "norm_label": "debounce()"
+      "source_location": "L252",
+      "community": 1,
+      "norm_label": "debounce()",
+      "id": "js_utils_debounce"
     },
     {
       "label": "autoAsignarEmpleada()",
       "file_type": "code",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L219",
-      "id": "js_utils_autoasignarempleada",
-      "community": 0,
-      "norm_label": "autoasignarempleada()"
+      "source_location": "L261",
+      "community": 1,
+      "norm_label": "autoasignarempleada()",
+      "id": "js_utils_autoasignarempleada"
     },
     {
       "label": "supabase-client.js",
       "file_type": "code",
       "source_file": "frontend/js/supabase-client.js",
       "source_location": "L1",
-      "id": "frontend_js_supabase_client_js",
-      "community": 2,
-      "norm_label": "supabase-client.js"
+      "community": 3,
+      "norm_label": "supabase-client.js",
+      "id": "frontend_js_supabase_client_js"
     },
     {
       "label": "supabase",
       "file_type": "code",
       "source_file": "frontend/js/supabase-client.js",
       "source_location": "L9",
-      "id": "js_supabase_client_supabase",
-      "community": 2,
-      "norm_label": "supabase"
+      "community": 3,
+      "norm_label": "supabase",
+      "id": "js_supabase_client_supabase"
     },
     {
       "label": "supabase.js",
       "file_type": "code",
       "source_file": "config/supabase.js",
       "source_location": "L1",
-      "id": "config_supabase_js",
       "community": 5,
-      "norm_label": "supabase.js"
+      "norm_label": "supabase.js",
+      "id": "config_supabase_js"
     },
     {
       "label": "getSupabaseClient()",
       "file_type": "code",
       "source_file": "config/supabase.js",
       "source_location": "L5",
-      "id": "config_supabase_getsupabaseclient",
       "community": 5,
-      "norm_label": "getsupabaseclient()"
+      "norm_label": "getsupabaseclient()",
+      "id": "config_supabase_getsupabaseclient"
     },
     {
       "label": "index.js",
       "file_type": "code",
       "source_file": "api/index.js",
       "source_location": "L1",
-      "id": "api_index_js",
       "community": 5,
-      "norm_label": "index.js"
+      "norm_label": "index.js",
+      "id": "api_index_js"
     },
     {
       "label": "Table: admin_users",
@@ -623,9 +540,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "schema_admin_admin_users",
-      "community": 1,
-      "norm_label": "table: admin_users"
+      "community": 4,
+      "norm_label": "table: admin_users",
+      "id": "schema_admin_admin_users"
     },
     {
       "label": "Table: empleado_servicios",
@@ -636,9 +553,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "schema_admin_empleado_servicios",
-      "community": 1,
-      "norm_label": "table: empleado_servicios"
+      "community": 4,
+      "norm_label": "table: empleado_servicios",
+      "id": "schema_admin_empleado_servicios"
     },
     {
       "label": "Function: is_admin()",
@@ -649,9 +566,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "schema_admin_is_admin",
-      "community": 1,
-      "norm_label": "function: is_admin()"
+      "community": 4,
+      "norm_label": "function: is_admin()",
+      "id": "schema_admin_is_admin"
     },
     {
       "label": "RLS Policies (admin full access)",
@@ -662,9 +579,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "schema_admin_rls_policy",
-      "community": 1,
-      "norm_label": "rls policies (admin full access)"
+      "community": 4,
+      "norm_label": "rls policies (admin full access)",
+      "id": "schema_admin_rls_policy"
     },
     {
       "label": "Extension: pgcrypto",
@@ -675,9 +592,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "setup_completo_pgcrypto",
-      "community": 1,
-      "norm_label": "extension: pgcrypto"
+      "community": 4,
+      "norm_label": "extension: pgcrypto",
+      "id": "setup_completo_pgcrypto"
     },
     {
       "label": "Admin User Seed (admin@sereniita.com)",
@@ -688,9 +605,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "setup_completo_admin_seed",
-      "community": 1,
-      "norm_label": "admin user seed (admin@sereniita.com)"
+      "community": 4,
+      "norm_label": "admin user seed (admin@sereniita.com)",
+      "id": "setup_completo_admin_seed"
     },
     {
       "label": "Function: login(email, password)",
@@ -701,9 +618,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "auth_login",
-      "community": 1,
-      "norm_label": "function: login(email, password)"
+      "community": 4,
+      "norm_label": "function: login(email, password)",
+      "id": "auth_login"
     },
     {
       "label": "Function: logout()",
@@ -714,9 +631,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "auth_logout",
-      "community": 1,
-      "norm_label": "function: logout()"
+      "community": 4,
+      "norm_label": "function: logout()",
+      "id": "auth_logout"
     },
     {
       "label": "Function: getSession()",
@@ -727,9 +644,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "auth_getsession",
-      "community": 1,
-      "norm_label": "function: getsession()"
+      "community": 4,
+      "norm_label": "function: getsession()",
+      "id": "auth_getsession"
     },
     {
       "label": "Function: requireAdmin()",
@@ -740,9 +657,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "auth_requireadmin",
-      "community": 1,
-      "norm_label": "function: requireadmin()"
+      "community": 4,
+      "norm_label": "function: requireadmin()",
+      "id": "auth_requireadmin"
     },
     {
       "label": "Function: redirectIfAdmin()",
@@ -753,9 +670,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "auth_redirectifadmin",
-      "community": 1,
-      "norm_label": "function: redirectifadmin()"
+      "community": 4,
+      "norm_label": "function: redirectifadmin()",
+      "id": "auth_redirectifadmin"
     },
     {
       "label": "Function: cambiarPassword(newPassword)",
@@ -766,9 +683,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "auth_cambiarpassword",
-      "community": 1,
-      "norm_label": "function: cambiarpassword(newpassword)"
+      "community": 4,
+      "norm_label": "function: cambiarpassword(newpassword)",
+      "id": "auth_cambiarpassword"
     },
     {
       "label": "Rate Limiting (10 attempts / 15 min sessionStorage)",
@@ -779,9 +696,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "auth_rate_limiting",
-      "community": 1,
-      "norm_label": "rate limiting (10 attempts / 15 min sessionstorage)"
+      "community": 4,
+      "norm_label": "rate limiting (10 attempts / 15 min sessionstorage)",
+      "id": "auth_rate_limiting"
     },
     {
       "label": "Constant: ESTADOS_CITA",
@@ -792,9 +709,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_estados_cita",
-      "community": 7,
-      "norm_label": "constant: estados_cita"
+      "community": 8,
+      "norm_label": "constant: estados_cita",
+      "id": "utils_estados_cita"
     },
     {
       "label": "Constant: ESTADOS_TESTIMONIO",
@@ -805,9 +722,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_estados_testimonio",
-      "community": 8,
-      "norm_label": "constant: estados_testimonio"
+      "community": 9,
+      "norm_label": "constant: estados_testimonio",
+      "id": "utils_estados_testimonio"
     },
     {
       "label": "Function: formatFecha(fecha)",
@@ -818,9 +735,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_formatfecha",
-      "community": 9,
-      "norm_label": "function: formatfecha(fecha)"
+      "community": 10,
+      "norm_label": "function: formatfecha(fecha)",
+      "id": "utils_formatfecha"
     },
     {
       "label": "Function: formatHora(hora)",
@@ -831,9 +748,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_formathora",
-      "community": 10,
-      "norm_label": "function: formathora(hora)"
+      "community": 11,
+      "norm_label": "function: formathora(hora)",
+      "id": "utils_formathora"
     },
     {
       "label": "Function: formatPrecio(n)",
@@ -844,9 +761,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_formatprecio",
-      "community": 11,
-      "norm_label": "function: formatprecio(n)"
+      "community": 12,
+      "norm_label": "function: formatprecio(n)",
+      "id": "utils_formatprecio"
     },
     {
       "label": "Function: sanitizeText(str)",
@@ -857,9 +774,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_sanitizetext",
-      "community": 1,
-      "norm_label": "function: sanitizetext(str)"
+      "community": 4,
+      "norm_label": "function: sanitizetext(str)",
+      "id": "utils_sanitizetext"
     },
     {
       "label": "Function: avatarHTML(nombre, apellido, fotoUrl, size)",
@@ -870,9 +787,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_avatarhtml",
-      "community": 12,
-      "norm_label": "function: avatarhtml(nombre, apellido, fotourl, size)"
+      "community": 13,
+      "norm_label": "function: avatarhtml(nombre, apellido, fotourl, size)",
+      "id": "utils_avatarhtml"
     },
     {
       "label": "Function: badgeCita(estado)",
@@ -883,9 +800,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_badgecita",
-      "community": 7,
-      "norm_label": "function: badgecita(estado)"
+      "community": 8,
+      "norm_label": "function: badgecita(estado)",
+      "id": "utils_badgecita"
     },
     {
       "label": "Function: badgeTestimonio(estado)",
@@ -896,9 +813,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_badgetestimonio",
-      "community": 8,
-      "norm_label": "function: badgetestimonio(estado)"
+      "community": 9,
+      "norm_label": "function: badgetestimonio(estado)",
+      "id": "utils_badgetestimonio"
     },
     {
       "label": "Function: toast(msg, type)",
@@ -909,9 +826,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_toast",
-      "community": 13,
-      "norm_label": "function: toast(msg, type)"
+      "community": 14,
+      "norm_label": "function: toast(msg, type)",
+      "id": "utils_toast"
     },
     {
       "label": "Function: openModal(id)",
@@ -922,9 +839,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_openmodal",
-      "community": 14,
-      "norm_label": "function: openmodal(id)"
+      "community": 15,
+      "norm_label": "function: openmodal(id)",
+      "id": "utils_openmodal"
     },
     {
       "label": "Function: closeModal(id)",
@@ -935,9 +852,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_closemodal",
-      "community": 15,
-      "norm_label": "function: closemodal(id)"
+      "community": 16,
+      "norm_label": "function: closemodal(id)",
+      "id": "utils_closemodal"
     },
     {
       "label": "Function: confirmAction({title, text, btnLabel, onConfirm})",
@@ -948,9 +865,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_confirmaction",
-      "community": 16,
-      "norm_label": "function: confirmaction({title, text, btnlabel, onconfirm})"
+      "community": 17,
+      "norm_label": "function: confirmaction({title, text, btnlabel, onconfirm})",
+      "id": "utils_confirmaction"
     },
     {
       "label": "Function: renderSidebarUser(admin)",
@@ -961,9 +878,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_rendersidebaruser",
-      "community": 17,
-      "norm_label": "function: rendersidebaruser(admin)"
+      "community": 18,
+      "norm_label": "function: rendersidebaruser(admin)",
+      "id": "utils_rendersidebaruser"
     },
     {
       "label": "Function: debounce(fn, ms)",
@@ -974,9 +891,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_debounce",
-      "community": 18,
-      "norm_label": "function: debounce(fn, ms)"
+      "community": 19,
+      "norm_label": "function: debounce(fn, ms)",
+      "id": "utils_debounce"
     },
     {
       "label": "Function: autoAsignarEmpleada(supabase, servicioId, fecha)",
@@ -987,9 +904,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_autoasignarempleada",
-      "community": 1,
-      "norm_label": "function: autoasignarempleada(supabase, servicioid, fecha)"
+      "community": 4,
+      "norm_label": "function: autoasignarempleada(supabase, servicioid, fecha)",
+      "id": "utils_autoasignarempleada"
     },
     {
       "label": "Supabase Client Instance",
@@ -1000,9 +917,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "supabase_client_supabase",
-      "community": 1,
-      "norm_label": "supabase client instance"
+      "community": 4,
+      "norm_label": "supabase client instance",
+      "id": "supabase_client_supabase"
     },
     {
       "label": "Page: Login (index.html)",
@@ -1013,9 +930,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "index_html_login_page",
-      "community": 1,
-      "norm_label": "page: login (index.html)"
+      "community": 4,
+      "norm_label": "page: login (index.html)",
+      "id": "index_html_login_page"
     },
     {
       "label": "Page: Reservas (reservas.html)",
@@ -1026,9 +943,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "reservas_html_reservas_page",
-      "community": 1,
-      "norm_label": "page: reservas (reservas.html)"
+      "community": 4,
+      "norm_label": "page: reservas (reservas.html)",
+      "id": "reservas_html_reservas_page"
     },
     {
       "label": "Page: Servicios (servicios.html)",
@@ -1039,9 +956,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "servicios_html_servicios_page",
-      "community": 1,
-      "norm_label": "page: servicios (servicios.html)"
+      "community": 4,
+      "norm_label": "page: servicios (servicios.html)",
+      "id": "servicios_html_servicios_page"
     },
     {
       "label": "Page: Disponibilidad (disponibilidad.html)",
@@ -1052,9 +969,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "disponibilidad_html_disponibilidad_page",
-      "community": 1,
-      "norm_label": "page: disponibilidad (disponibilidad.html)"
+      "community": 4,
+      "norm_label": "page: disponibilidad (disponibilidad.html)",
+      "id": "disponibilidad_html_disponibilidad_page"
     },
     {
       "label": "Page: Clientes (clientes.html)",
@@ -1065,9 +982,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "clientes_html_clientes_page",
-      "community": 1,
-      "norm_label": "page: clientes (clientes.html)"
+      "community": 4,
+      "norm_label": "page: clientes (clientes.html)",
+      "id": "clientes_html_clientes_page"
     },
     {
       "label": "Sidebar Component (frontend/js/sidebar.js)",
@@ -1078,9 +995,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "sidebar_js",
-      "community": 3,
-      "norm_label": "sidebar component (frontend/js/sidebar.js)"
+      "community": 2,
+      "norm_label": "sidebar component (frontend/js/sidebar.js)",
+      "id": "sidebar_js"
     },
     {
       "label": "Auth Module (frontend/js/auth.js)",
@@ -1091,9 +1008,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "auth_js",
-      "community": 3,
-      "norm_label": "auth module (frontend/js/auth.js)"
+      "community": 2,
+      "norm_label": "auth module (frontend/js/auth.js)",
+      "id": "auth_js"
     },
     {
       "label": "Supabase Frontend Client (frontend/js/supabase-client.js)",
@@ -1104,9 +1021,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "supabase_client_js",
-      "community": 3,
-      "norm_label": "supabase frontend client (frontend/js/supabase-client.js)"
+      "community": 2,
+      "norm_label": "supabase frontend client (frontend/js/supabase-client.js)",
+      "id": "supabase_client_js"
     },
     {
       "label": "Utilities & Helpers (frontend/js/utils.js)",
@@ -1117,9 +1034,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils_js",
-      "community": 3,
-      "norm_label": "utilities & helpers (frontend/js/utils.js)"
+      "community": 2,
+      "norm_label": "utilities & helpers (frontend/js/utils.js)",
+      "id": "utils_js"
     },
     {
       "label": "Dashboard Page (frontend/dashboard.html)",
@@ -1130,9 +1047,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dashboard_html",
-      "community": 3,
-      "norm_label": "dashboard page (frontend/dashboard.html)"
+      "community": 2,
+      "norm_label": "dashboard page (frontend/dashboard.html)",
+      "id": "dashboard_html"
     },
     {
       "label": "Empleadas CRUD Page (frontend/empleadas.html)",
@@ -1143,9 +1060,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "empleadas_html",
-      "community": 3,
-      "norm_label": "empleadas crud page (frontend/empleadas.html)"
+      "community": 2,
+      "norm_label": "empleadas crud page (frontend/empleadas.html)",
+      "id": "empleadas_html"
     },
     {
       "label": "Admins Management Page (frontend/admins.html)",
@@ -1156,9 +1073,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "admins_html",
-      "community": 3,
-      "norm_label": "admins management page (frontend/admins.html)"
+      "community": 2,
+      "norm_label": "admins management page (frontend/admins.html)",
+      "id": "admins_html"
     },
     {
       "label": "Testimonios Management Page (frontend/testimonios.html)",
@@ -1169,9 +1086,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "testimonios_html",
-      "community": 3,
-      "norm_label": "testimonios management page (frontend/testimonios.html)"
+      "community": 2,
+      "norm_label": "testimonios management page (frontend/testimonios.html)",
+      "id": "testimonios_html"
     },
     {
       "label": "Configuracion Page (frontend/configuracion.html)",
@@ -1182,9 +1099,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "configuracion_html",
-      "community": 3,
-      "norm_label": "configuracion page (frontend/configuracion.html)"
+      "community": 2,
+      "norm_label": "configuracion page (frontend/configuracion.html)",
+      "id": "configuracion_html"
     },
     {
       "label": "DB Migration 2 (database/migration_2.sql)",
@@ -1195,9 +1112,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "migration_2_sql",
-      "community": 4,
-      "norm_label": "db migration 2 (database/migration_2.sql)"
+      "community": 2,
+      "norm_label": "db migration 2 (database/migration_2.sql)",
+      "id": "migration_2_sql"
     },
     {
       "label": "README \u2014 Admin Dashboard",
@@ -1208,9 +1125,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "readme_md",
-      "community": 4,
-      "norm_label": "readme \u2014 admin dashboard"
+      "community": 2,
+      "norm_label": "readme \u2014 admin dashboard",
+      "id": "readme_md"
     },
     {
       "label": "Instructions: Add Admin Manually",
@@ -1221,9 +1138,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "instrucciones_admin_md",
-      "community": 4,
-      "norm_label": "instructions: add admin manually"
+      "community": 2,
+      "norm_label": "instructions: add admin manually",
+      "id": "instrucciones_admin_md"
     },
     {
       "label": "CLAUDE.md \u2014 Project Config",
@@ -1234,9 +1151,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claude_md",
       "community": 5,
-      "norm_label": "claude.md \u2014 project config"
+      "norm_label": "claude.md \u2014 project config",
+      "id": "claude_md"
     },
     {
       "label": "Supabase Project: BD_Spa's_Startup (whouejjrpjcvoueyajbu)",
@@ -1247,9 +1164,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "supabase_project",
-      "community": 5,
-      "norm_label": "supabase project: bd_spa's_startup (whouejjrpjcvoueyajbu)"
+      "community": 2,
+      "norm_label": "supabase project: bd_spa's_startup (whouejjrpjcvoueyajbu)",
+      "id": "supabase_project"
     },
     {
       "label": "Supabase Edge Function: smooth-function",
@@ -1260,9 +1177,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "edge_function_smooth",
-      "community": 4,
-      "norm_label": "supabase edge function: smooth-function"
+      "community": 2,
+      "norm_label": "supabase edge function: smooth-function",
+      "id": "edge_function_smooth"
     },
     {
       "label": "Vercel Project: spa-dashboard",
@@ -1273,9 +1190,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "vercel_spa_dashboard",
       "community": 5,
-      "norm_label": "vercel project: spa-dashboard"
+      "norm_label": "vercel project: spa-dashboard",
+      "id": "vercel_spa_dashboard"
     },
     {
       "label": "DB Table: admin_users",
@@ -1286,9 +1203,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "table_admin_users",
-      "community": 4,
-      "norm_label": "db table: admin_users"
+      "community": 2,
+      "norm_label": "db table: admin_users",
+      "id": "table_admin_users"
     },
     {
       "label": "DB Table: configuracion",
@@ -1299,9 +1216,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "table_configuracion",
-      "community": 4,
-      "norm_label": "db table: configuracion"
+      "community": 2,
+      "norm_label": "db table: configuracion",
+      "id": "table_configuracion"
     },
     {
       "label": "DB Table: testimonios",
@@ -1312,9 +1229,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "table_testimonios",
-      "community": 4,
-      "norm_label": "db table: testimonios"
+      "community": 2,
+      "norm_label": "db table: testimonios",
+      "id": "table_testimonios"
     },
     {
       "label": "DB Table: empleados",
@@ -1325,9 +1242,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "table_empleados",
-      "community": 3,
-      "norm_label": "db table: empleados"
+      "community": 2,
+      "norm_label": "db table: empleados",
+      "id": "table_empleados"
     },
     {
       "label": "DB Table: empleado_servicios",
@@ -1338,9 +1255,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "table_empleado_servicios",
-      "community": 3,
-      "norm_label": "db table: empleado_servicios"
+      "community": 2,
+      "norm_label": "db table: empleado_servicios",
+      "id": "table_empleado_servicios"
     },
     {
       "label": "DB Table: citas",
@@ -1351,9 +1268,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "table_citas",
-      "community": 3,
-      "norm_label": "db table: citas"
+      "community": 2,
+      "norm_label": "db table: citas",
+      "id": "table_citas"
     },
     {
       "label": "DB Table: servicios",
@@ -1364,9 +1281,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "table_servicios",
-      "community": 3,
-      "norm_label": "db table: servicios"
+      "community": 2,
+      "norm_label": "db table: servicios",
+      "id": "table_servicios"
     },
     {
       "label": "DB Table: clientes",
@@ -1377,9 +1294,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "table_clientes",
-      "community": 19,
-      "norm_label": "db table: clientes"
+      "community": 20,
+      "norm_label": "db table: clientes",
+      "id": "table_clientes"
     },
     {
       "label": "DB Function: is_admin() SECURITY DEFINER",
@@ -1390,9 +1307,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "fn_is_admin",
-      "community": 4,
-      "norm_label": "db function: is_admin() security definer"
+      "community": 2,
+      "norm_label": "db function: is_admin() security definer",
+      "id": "fn_is_admin"
     },
     {
       "label": "RLS Policy: admin_full_config (ALL via is_admin())",
@@ -1403,9 +1320,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "rls_policy_admin_full",
-      "community": 4,
-      "norm_label": "rls policy: admin_full_config (all via is_admin())"
+      "community": 2,
+      "norm_label": "rls policy: admin_full_config (all via is_admin())",
+      "id": "rls_policy_admin_full"
     },
     {
       "label": "RLS Policy: lectura_publica_config (SELECT public)",
@@ -1416,9 +1333,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "rls_policy_lectura_publica",
-      "community": 4,
-      "norm_label": "rls policy: lectura_publica_config (select public)"
+      "community": 2,
+      "norm_label": "rls policy: lectura_publica_config (select public)",
+      "id": "rls_policy_lectura_publica"
     },
     {
       "label": "RLS Policy: lectura_publica_aprobados (testimonios)",
@@ -1429,9 +1346,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "rls_policy_testimonios_public",
-      "community": 4,
-      "norm_label": "rls policy: lectura_publica_aprobados (testimonios)"
+      "community": 2,
+      "norm_label": "rls policy: lectura_publica_aprobados (testimonios)",
+      "id": "rls_policy_testimonios_public"
     },
     {
       "label": "Chart.js v4 (CDN)",
@@ -1442,9 +1359,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "chartjs_lib",
-      "community": 3,
-      "norm_label": "chart.js v4 (cdn)"
+      "community": 2,
+      "norm_label": "chart.js v4 (cdn)",
+      "id": "chartjs_lib"
     },
     {
       "label": "n8n Workflow: Bot SPA Web (58vtbwK4zbdspKMQ)",
@@ -1455,9 +1372,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "n8n_workflow_bot",
       "community": 5,
-      "norm_label": "n8n workflow: bot spa web (58vtbwk4zbdspkmq)"
+      "norm_label": "n8n workflow: bot spa web (58vtbwk4zbdspkmq)",
+      "id": "n8n_workflow_bot"
     },
     {
       "label": "Supabase Storage Bucket: assets",
@@ -1468,9 +1385,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "supabase_storage_assets",
-      "community": 3,
-      "norm_label": "supabase storage bucket: assets"
+      "community": 2,
+      "norm_label": "supabase storage bucket: assets",
+      "id": "supabase_storage_assets"
     },
     {
       "label": "Rate Limiting: 10 login attempts / 15 min per browser",
@@ -1481,9 +1398,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "rate_limiting_login",
-      "community": 4,
-      "norm_label": "rate limiting: 10 login attempts / 15 min per browser"
+      "community": 2,
+      "norm_label": "rate limiting: 10 login attempts / 15 min per browser",
+      "id": "rate_limiting_login"
     },
     {
       "label": "Security Headers in vercel.json (CSP, X-Frame-Options, etc.)",
@@ -1494,9 +1411,763 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "security_headers_vercel",
-      "community": 4,
-      "norm_label": "security headers in vercel.json (csp, x-frame-options, etc.)"
+      "community": 2,
+      "norm_label": "security headers in vercel.json (csp, x-frame-options, etc.)",
+      "id": "security_headers_vercel"
+    },
+    {
+      "label": "isSessionExpired()",
+      "file_type": "code",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L48",
+      "id": "js_auth_issessionexpired",
+      "community": 3,
+      "norm_label": "issessionexpired()"
+    },
+    {
+      "label": "showInactivityWarning()",
+      "file_type": "code",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L62",
+      "id": "js_auth_showinactivitywarning",
+      "community": 3,
+      "norm_label": "showinactivitywarning()"
+    },
+    {
+      "label": "_clearWarning()",
+      "file_type": "code",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L164",
+      "id": "js_auth_clearwarning",
+      "community": 3,
+      "norm_label": "_clearwarning()"
+    },
+    {
+      "label": "dismissWarningIfActive()",
+      "file_type": "code",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L171",
+      "id": "js_auth_dismisswarningifactive",
+      "community": 3,
+      "norm_label": "dismisswarningifactive()"
+    },
+    {
+      "label": "startSessionGuard()",
+      "file_type": "code",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L178",
+      "id": "js_auth_startsessionguard",
+      "community": 3,
+      "norm_label": "startsessionguard()"
+    },
+    {
+      "label": "ESTADOS_INACTIVOS",
+      "file_type": "code",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L16",
+      "id": "js_utils_estados_inactivos",
+      "community": 1,
+      "norm_label": "estados_inactivos"
+    },
+    {
+      "label": "hoyBogota()",
+      "file_type": "code",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L56",
+      "id": "js_utils_hoybogota",
+      "community": 1,
+      "norm_label": "hoybogota()"
+    },
+    {
+      "label": "toISODate()",
+      "file_type": "code",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L59",
+      "id": "js_utils_toisodate",
+      "community": 1,
+      "norm_label": "toisodate()"
+    },
+    {
+      "label": "endOfWeekISO()",
+      "file_type": "code",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L70",
+      "id": "js_utils_endofweekiso",
+      "community": 1,
+      "norm_label": "endofweekiso()"
+    },
+    {
+      "label": "endOfMonthISO()",
+      "file_type": "code",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L79",
+      "id": "js_utils_endofmonthiso",
+      "community": 1,
+      "norm_label": "endofmonthiso()"
+    },
+    {
+      "label": "startOfYearISO()",
+      "file_type": "code",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L83",
+      "id": "js_utils_startofyeariso",
+      "community": 1,
+      "norm_label": "startofyeariso()"
+    },
+    {
+      "label": "endOfYearISO()",
+      "file_type": "code",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L86",
+      "id": "js_utils_endofyeariso",
+      "community": 1,
+      "norm_label": "endofyeariso()"
+    },
+    {
+      "label": "rangoPeriodo()",
+      "file_type": "code",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L90",
+      "id": "js_utils_rangoperiodo",
+      "community": 1,
+      "norm_label": "rangoperiodo()"
+    },
+    {
+      "label": "ESTADOS-RESERVAS.md \u2014 Estados de Reservas (documento)",
+      "file_type": "document",
+      "source_file": "ESTADOS-RESERVAS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "estados_reservas_documento",
+      "community": 7,
+      "norm_label": "estados-reservas.md \u2014 estados de reservas (documento)"
+    },
+    {
+      "label": "LOGICA-DEL-SISTEMA.md \u2014 L\u00f3gica del Sistema (Sprint estructural v1, generado 2026-05-29)",
+      "file_type": "document",
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "logica_sistema_documento",
+      "community": 0,
+      "norm_label": "logica-del-sistema.md \u2014 logica del sistema (sprint estructural v1, generado 2026-05-29)"
+    },
+    {
+      "label": "README.md \u2014 Admin Dashboard (gu\u00eda de despliegue y arquitectura)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_documento",
+      "community": 6,
+      "norm_label": "readme.md \u2014 admin dashboard (guia de despliegue y arquitectura)"
+    },
+    {
+      "label": "CLAUDE.md \u2014 Configuraci\u00f3n de Proyecto admin-dashboard (Supabase, Vercel, Render, n8n)",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_documento",
+      "community": 6,
+      "norm_label": "claude.md \u2014 configuracion de proyecto admin-dashboard (supabase, vercel, render, n8n)"
+    },
+    {
+      "label": "empleadas.html \u2014 P\u00e1gina CRUD de empleadas",
+      "file_type": "code",
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "empleadas_pagina",
+      "community": 0,
+      "norm_label": "empleadas.html \u2014 pagina crud de empleadas"
+    },
+    {
+      "label": "configuracion.html \u2014 P\u00e1gina de configuraci\u00f3n del spa",
+      "file_type": "code",
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "configuracion_pagina",
+      "community": 0,
+      "norm_label": "configuracion.html \u2014 pagina de configuracion del spa"
+    },
+    {
+      "label": "reservas.html \u2014 P\u00e1gina de gesti\u00f3n de reservas/citas",
+      "file_type": "code",
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "reservas_pagina",
+      "community": 0,
+      "norm_label": "reservas.html \u2014 pagina de gestion de reservas/citas"
+    },
+    {
+      "label": "dashboard.html \u2014 P\u00e1gina de KPIs y gr\u00e1ficas (Chart.js)",
+      "file_type": "code",
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dashboard_pagina",
+      "community": 0,
+      "norm_label": "dashboard.html \u2014 pagina de kpis y graficas (chart.js)"
+    },
+    {
+      "label": "servicios.html \u2014 P\u00e1gina CRUD de servicios",
+      "file_type": "code",
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "servicios_pagina",
+      "community": 0,
+      "norm_label": "servicios.html \u2014 pagina crud de servicios"
+    },
+    {
+      "label": "disponibilidad.html \u2014 P\u00e1gina de horarios, slots y bloqueos",
+      "file_type": "code",
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "disponibilidad_pagina",
+      "community": 0,
+      "norm_label": "disponibilidad.html \u2014 pagina de horarios, slots y bloqueos"
+    },
+    {
+      "label": "categorias.html \u2014 P\u00e1gina CRUD de categor\u00edas de servicios",
+      "file_type": "code",
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "categorias_pagina",
+      "community": 0,
+      "norm_label": "categorias.html \u2014 pagina crud de categorias de servicios"
+    },
+    {
+      "label": "testimonios.html \u2014 P\u00e1gina de aprobaci\u00f3n/orden de testimonios",
+      "file_type": "code",
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "testimonios_pagina",
+      "community": 0,
+      "norm_label": "testimonios.html \u2014 pagina de aprobacion/orden de testimonios"
+    },
+    {
+      "label": "Modelo de 8 estados de citas (pendiente, confirmada, en_proceso, realizada, atrasada, no_asistio, cancelada, reagendada) documentado en ESTADOS-RESERVAS.md \u2014 DESACTUALIZADO: la BD fue migrada a un modelo de 6 estados estandarizados",
+      "file_type": "rationale",
+      "source_file": "ESTADOS-RESERVAS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "estados_reservas_modelo_8_estados",
+      "community": 7,
+      "norm_label": "modelo de 8 estados de citas (pendiente, confirmada, en_proceso, realizada, atrasada, no_asistio, cancelada, reagendada) documentado en estados-reservas.md \u2014 desactualizado: la bd fue migrada a un modelo de 6 estados estandarizados"
+    },
+    {
+      "label": "Modelo de 8 estados de citas con CHECK constraint en tabla citas, documentado en LOGICA-DEL-SISTEMA.md (Secci\u00f3n 1) \u2014 DESACTUALIZADO: el constraint fue reemplazado por uno nuevo con 6 estados",
+      "file_type": "rationale",
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "logica_sistema_modelo_8_estados",
+      "community": 7,
+      "norm_label": "modelo de 8 estados de citas con check constraint en tabla citas, documentado en logica-del-sistema.md (seccion 1) \u2014 desactualizado: el constraint fue reemplazado por uno nuevo con 6 estados"
+    },
+    {
+      "label": "Modelo actual de 6 estados de citas (pendiente, confirmada, completada, no_asistio, cancelada_cliente, cancelada_admin) implementado en el c\u00f3digo del dashboard tras migraci\u00f3n de BD que reemplaz\u00f3 el CHECK constraint de 8 estados",
+      "file_type": "rationale",
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "citas_modelo_6_estados",
+      "community": 7,
+      "norm_label": "modelo actual de 6 estados de citas (pendiente, confirmada, completada, no_asistio, cancelada_cliente, cancelada_admin) implementado en el codigo del dashboard tras migracion de bd que reemplazo el check constraint de 8 estados"
+    },
+    {
+      "label": "Algoritmo de asignaci\u00f3n autom\u00e1tica documentado (candidatas \u2192 filtro disponibilidad/cruces \u2192 menor carga de citas 'realizada' en 30 d\u00edas \u2192 desempate alfab\u00e9tico), archivo SpaOhDiosas/routes/bookings.js",
+      "file_type": "rationale",
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "logica_sistema_algoritmo_asignacion",
+      "community": 0,
+      "norm_label": "algoritmo de asignacion automatica documentado (candidatas \u2192 filtro disponibilidad/cruces \u2192 menor carga de citas 'realizada' en 30 dias \u2192 desempate alfabetico), archivo spaohdiosas/routes/bookings.js"
+    },
+    {
+      "label": "Asignaci\u00f3n autom\u00e1tica de empleadas ahora balancea carga por SERVICIO ESPEC\u00cdFICO (conteo de citas de ese servicio en \u00faltimos 30 d\u00edas, no de cualquier servicio) con desempate ALEATORIO en vez de alfab\u00e9tico \u2014 usada por autoAsignarEmpleada() invocada desde reservas.html y servicios.html",
+      "file_type": "rationale",
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "empleadas_balanceo_carga_por_servicio",
+      "community": 0,
+      "norm_label": "asignacion automatica de empleadas ahora balancea carga por servicio especifico (conteo de citas de ese servicio en ultimos 30 dias, no de cualquier servicio) con desempate aleatorio en vez de alfabetico \u2014 usada por autoasignarempleada() invocada desde reservas.html y servicios.html"
+    },
+    {
+      "label": "Regla de negocio: anticipaci\u00f3n m\u00ednima de 2 horas para reservar (configuracion.reserva_anticip_min_horas), antes l\u00f3gica hardcoded '6PM \u2192 pasado ma\u00f1ana'",
+      "file_type": "rationale",
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "logica_sistema_regla_anticipacion_2h",
+      "community": 0,
+      "norm_label": "regla de negocio: anticipacion minima de 2 horas para reservar (configuracion.reserva_anticip_min_horas), antes logica hardcoded '6pm \u2192 pasado manana'"
+    },
+    {
+      "label": "Secci\u00f3n 'Par\u00e1metros de reserva' \u2014 \u00fanica secci\u00f3n activa de configuracion.html: anticipaci\u00f3n m\u00ednima (horas), reservas hasta (d\u00edas, tope 240=8 meses), buffer entre citas (minutos, fallback cuando el servicio no define uno propio); se elimin\u00f3 el campo decorativo 'Pol\u00edtica de cancelaci\u00f3n'",
+      "file_type": "rationale",
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "configuracion_parametros_reserva",
+      "community": 0,
+      "norm_label": "seccion 'parametros de reserva' \u2014 unica seccion activa de configuracion.html: anticipacion minima (horas), reservas hasta (dias, tope 240=8 meses), buffer entre citas (minutos, fallback cuando el servicio no define uno propio); se elimino el campo decorativo 'politica de cancelacion'"
+    },
+    {
+      "label": "Secciones 'Datos del negocio', 'Apariencia del sitio' y 'SEO y metadatos' ocultas con display:none en configuracion.html \u2014 inputs permanecen en el DOM para no perder datos existentes; PEND-04 pendiente de conectar color_primario/color_acento y meta_title/meta_description al frontend",
+      "file_type": "rationale",
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "configuracion_secciones_ocultas",
+      "community": 0,
+      "norm_label": "secciones 'datos del negocio', 'apariencia del sitio' y 'seo y metadatos' ocultas con display:none en configuracion.html \u2014 inputs permanecen en el dom para no perder datos existentes; pend-04 pendiente de conectar color_primario/color_acento y meta_title/meta_description al frontend"
+    },
+    {
+      "label": "Correcci\u00f3n de KPIs 'Citas hoy/semana' que fallaban por usar fecha UTC (toISOString) en vez de zona horaria de Bogot\u00e1 \u2014 se agreg\u00f3 helper todayISO() con TZ America/Bogota",
+      "file_type": "rationale",
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dashboard_kpi_timezone_fix",
+      "community": 0,
+      "norm_label": "correccion de kpis 'citas hoy/semana' que fallaban por usar fecha utc (toisostring) en vez de zona horaria de bogota \u2014 se agrego helper todayiso() con tz america/bogota"
+    },
+    {
+      "label": "Filtro de per\u00edodo D\u00eda/Semana/Mes/A\u00f1o que recalcula todas las tarjetas KPI y gr\u00e1ficos v\u00eda rangoPeriodo()",
+      "file_type": "rationale",
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "dashboard_periodo_filter",
+      "community": 0,
+      "norm_label": "filtro de periodo dia/semana/mes/ano que recalcula todas las tarjetas kpi y graficos via rangoperiodo()"
+    },
+    {
+      "label": "categorias.html es una p\u00e1gina NUEVA agregada al dashboard (antes no exist\u00eda) para gestionar categor\u00edas de servicios, que ahora se muestran primero en el flujo de reservas del cliente",
+      "file_type": "rationale",
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "categorias_pagina_nueva",
+      "community": 0,
+      "norm_label": "categorias.html es una pagina nueva agregada al dashboard (antes no existia) para gestionar categorias de servicios, que ahora se muestran primero en el flujo de reservas del cliente"
+    },
+    {
+      "label": "Bot\u00f3n de contacto por WhatsApp en el detalle de reserva de reservas.html \u2014 funcionalidad movida DESDE staff-app: las empleadas ya no pueden ver el tel\u00e9fono ni contactar por WhatsApp, solo el admin",
+      "file_type": "rationale",
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "reservas_whatsapp_contacto_admin",
+      "community": 0,
+      "norm_label": "boton de contacto por whatsapp en el detalle de reserva de reservas.html \u2014 funcionalidad movida desde staff-app: las empleadas ya no pueden ver el telefono ni contactar por whatsapp, solo el admin"
+    },
+    {
+      "label": "Correcci\u00f3n del \u00edndice \u00fanico no_overlap_citas en BD que imped\u00eda que dos empleadas distintas atendieran citas a la misma hora, bloqueando la capacidad paralela del sistema",
+      "file_type": "rationale",
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "no_overlap_citas_indice",
+      "community": 0,
+      "norm_label": "correccion del indice unico no_overlap_citas en bd que impedia que dos empleadas distintas atendieran citas a la misma hora, bloqueando la capacidad paralela del sistema"
+    },
+    {
+      "label": "RLS de Supabase endurecido: 12 tablas ten\u00edan pol\u00edticas de escritura an\u00f3nima abierta (USING true) con la llave p\u00fablica anon; se retir\u00f3 dejando solo lo m\u00ednimo necesario (bot n8n: SELECT en citas/clientes, INSERT en chat_sessions)",
+      "file_type": "rationale",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "rls_endurecido_supabase",
+      "community": 6,
+      "norm_label": "rls de supabase endurecido: 12 tablas tenian politicas de escritura anonima abierta (using true) con la llave publica anon; se retiro dejando solo lo minimo necesario (bot n8n: select en citas/clientes, insert en chat_sessions)"
+    },
+    {
+      "label": "Flujo de estados de testimonios: pendiente \u2192 publicado/oculto, con tablero drag-and-drop para reordenar publicados (columna orden en BD)",
+      "file_type": "rationale",
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "testimonios_flujo_estados",
+      "community": 0,
+      "norm_label": "flujo de estados de testimonios: pendiente \u2192 publicado/oculto, con tablero drag-and-drop para reordenar publicados (columna orden en bd)"
+    },
+    {
+      "label": "BUG-07: ESTADOS_TESTIMONIO usaba 'aprobado' en el JS pero la BD ya ten\u00eda constraint 'publicado' \u2014 renombrado en utils.js y testimonios.html",
+      "file_type": "rationale",
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "bug07_testimonios_estado_rename",
+      "community": 0,
+      "norm_label": "bug-07: estados_testimonio usaba 'aprobado' en el js pero la bd ya tenia constraint 'publicado' \u2014 renombrado en utils.js y testimonios.html"
+    },
+    {
+      "label": "BUG-08: parseInt sin radix en m\u00faltiples archivos pod\u00eda interpretar strings como octal \u2014 se agreg\u00f3 ', 10' en todos los usos de parseInt",
+      "file_type": "rationale",
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "bug08_parseint_radix",
+      "community": 0,
+      "norm_label": "bug-08: parseint sin radix en multiples archivos podia interpretar strings como octal \u2014 se agrego ', 10' en todos los usos de parseint"
+    },
+    {
+      "label": "BUG-09: addCharCounter en configuracion.html se llamaba 3 veces al cargar, agregando listeners duplicados \u2014 se guarda referencia en el._charCounter y se hace removeEventListener antes de agregar",
+      "file_type": "rationale",
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "bug09_listener_duplicado",
+      "community": 0,
+      "norm_label": "bug-09: addcharcounter en configuracion.html se llamaba 3 veces al cargar, agregando listeners duplicados \u2014 se guarda referencia en el._charcounter y se hace removeeventlistener antes de agregar"
+    },
+    {
+      "label": "BUG-10: el bot\u00f3n 'Guardar' en servicios.html no se deshabilitaba inmediatamente, permitiendo doble-submit \u2014 se agreg\u00f3 btn.disabled=true como primera l\u00ednea del handler",
+      "file_type": "rationale",
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "bug10_race_condition_guardado",
+      "community": 0,
+      "norm_label": "bug-10: el boton 'guardar' en servicios.html no se deshabilitaba inmediatamente, permitiendo doble-submit \u2014 se agrego btn.disabled=true como primera linea del handler"
+    },
+    {
+      "label": "Multiselect bidireccional de empleadas que realizan cada servicio \u2014 sincroniza tabla empleado_servicios y se refleja tambi\u00e9n en el perfil de la empleada",
+      "file_type": "rationale",
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "servicios_multiselect_empleadas",
+      "community": 0,
+      "norm_label": "multiselect bidireccional de empleadas que realizan cada servicio \u2014 sincroniza tabla empleado_servicios y se refleja tambien en el perfil de la empleada"
+    },
+    {
+      "label": "Horario semanal configurable (Lunes-Domingo, apertura/cierre, toggle activo) y duraci\u00f3n base de slots \u2014 almacenado en configuracion.horario_semana y configuracion.slot_duracion_min",
+      "file_type": "rationale",
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "disponibilidad_horario_semanal",
+      "community": 0,
+      "norm_label": "horario semanal configurable (lunes-domingo, apertura/cierre, toggle activo) y duracion base de slots \u2014 almacenado en configuracion.horario_semana y configuracion.slot_duracion_min"
+    },
+    {
+      "label": "Bloqueos de spa y por empleada (vacaciones, festivos, mantenimiento) en tabla bloqueos, con rango de fechas y horas opcional",
+      "file_type": "rationale",
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "disponibilidad_bloqueos",
+      "community": 0,
+      "norm_label": "bloqueos de spa y por empleada (vacaciones, festivos, mantenimiento) en tabla bloqueos, con rango de fechas y horas opcional"
+    },
+    {
+      "label": "El CLAUDE.md de admin-dashboard referencia el workflow n8n 'Bot SPA Web' con ID 'DbBMJfV5hulsPVdR', mientras que la configuraci\u00f3n global del proyecto referencia el ID '58vtbwK4zbdspKMQ' para el mismo workflow \u2014 posible desactualizaci\u00f3n de uno de los dos documentos",
+      "file_type": "rationale",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "n8n_workflow_id_discrepancia",
+      "community": 6,
+      "norm_label": "el claude.md de admin-dashboard referencia el workflow n8n 'bot spa web' con id 'dbbmjfv5hulspvdr', mientras que la configuracion global del proyecto referencia el id '58vtbwk4zbdspkmq' para el mismo workflow \u2014 posible desactualizacion de uno de los dos documentos"
+    },
+    {
+      "label": "graphify-out/ contiene el grafo de conocimiento del proyecto, forzado al repositorio con git add -f para sincronizarlo entre equipos, pese a estar excluido via .gitignore",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_graphify_out_nota",
+      "community": 6,
+      "norm_label": "graphify-out/ contiene el grafo de conocimiento del proyecto, forzado al repositorio con git add -f para sincronizarlo entre equipos, pese a estar excluido via .gitignore"
+    },
+    {
+      "label": "js/utils.js \u2014 helpers compartidos (formatters, avatares, todayISO, badges, toast, modals, autoAsignarEmpleada)",
+      "file_type": "code",
+      "source_file": "frontend/js/utils.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "frontend_utils_js",
+      "community": 0,
+      "norm_label": "js/utils.js \u2014 helpers compartidos (formatters, avatares, todayiso, badges, toast, modals, autoasignarempleada)"
+    },
+    {
+      "label": "js/auth.js \u2014 requireAdmin(), login, rate limiting",
+      "file_type": "code",
+      "source_file": "frontend/js/auth.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "frontend_auth_js",
+      "community": 0,
+      "norm_label": "js/auth.js \u2014 requireadmin(), login, rate limiting"
+    },
+    {
+      "label": "js/supabase-client.js \u2014 cliente Supabase con anon key hardcodeada",
+      "file_type": "code",
+      "source_file": "frontend/js/supabase-client.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "frontend_supabase_client_js",
+      "community": 0,
+      "norm_label": "js/supabase-client.js \u2014 cliente supabase con anon key hardcodeada"
+    },
+    {
+      "label": "js/sidebar.js \u2014 componente de navegaci\u00f3n lateral (getSidebarHTML, initSidebar)",
+      "file_type": "code",
+      "source_file": "frontend/js/sidebar.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "frontend_sidebar_js",
+      "community": 0,
+      "norm_label": "js/sidebar.js \u2014 componente de navegacion lateral (getsidebarhtml, initsidebar)"
+    },
+    {
+      "label": "Tabla Supabase: citas",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tabla_citas",
+      "community": 0,
+      "norm_label": "tabla supabase: citas"
+    },
+    {
+      "label": "Tabla Supabase: empleados",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tabla_empleados",
+      "community": 0,
+      "norm_label": "tabla supabase: empleados"
+    },
+    {
+      "label": "Tabla Supabase: servicios",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tabla_servicios",
+      "community": 0,
+      "norm_label": "tabla supabase: servicios"
+    },
+    {
+      "label": "Tabla Supabase: categorias (no listada en la tabla de CLAUDE.md, pero usada activamente por servicios.html y categorias.html)",
+      "file_type": "code",
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tabla_categorias",
+      "community": 0,
+      "norm_label": "tabla supabase: categorias (no listada en la tabla de claude.md, pero usada activamente por servicios.html y categorias.html)"
+    },
+    {
+      "label": "Tabla Supabase: configuracion",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tabla_configuracion",
+      "community": 0,
+      "norm_label": "tabla supabase: configuracion"
+    },
+    {
+      "label": "Tabla Supabase: testimonios",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tabla_testimonios",
+      "community": 0,
+      "norm_label": "tabla supabase: testimonios"
+    },
+    {
+      "label": "Tabla Supabase: clientes",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tabla_clientes",
+      "community": 0,
+      "norm_label": "tabla supabase: clientes"
+    },
+    {
+      "label": "Tabla Supabase: empleado_servicios",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tabla_empleado_servicios",
+      "community": 0,
+      "norm_label": "tabla supabase: empleado_servicios"
+    },
+    {
+      "label": "Tabla Supabase: bloqueos",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "tabla_bloqueos",
+      "community": 0,
+      "norm_label": "tabla supabase: bloqueos"
     }
   ],
   "links": [
@@ -1506,9 +2177,9 @@
       "source_file": "server.js",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "server_js",
-      "target": "admin_dashboard_server_filename",
-      "confidence_score": 1.0
+      "target": "admin_dashboard_server_filename"
     },
     {
       "relation": "contains",
@@ -1516,9 +2187,9 @@
       "source_file": "server.js",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "server_js",
-      "target": "admin_dashboard_server_dirname",
-      "confidence_score": 1.0
+      "target": "admin_dashboard_server_dirname"
     },
     {
       "relation": "contains",
@@ -1526,9 +2197,9 @@
       "source_file": "server.js",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "server_js",
-      "target": "admin_dashboard_server_app",
-      "confidence_score": 1.0
+      "target": "admin_dashboard_server_app"
     },
     {
       "relation": "references",
@@ -1538,8 +2209,8 @@
       "source_location": "line 2",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "api_index_js",
-      "target": "server_js"
+      "source": "server_js",
+      "target": "api_index_js"
     },
     {
       "relation": "references",
@@ -1558,9 +2229,9 @@
       "source_file": "frontend/js/auth.js",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "frontend_js_supabase_client_js",
-      "confidence_score": 1.0
+      "target": "frontend_js_supabase_client_js"
     },
     {
       "relation": "imports",
@@ -1569,109 +2240,109 @@
       "source_file": "frontend/js/auth.js",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_supabase_client_supabase",
-      "confidence_score": 1.0
+      "target": "js_supabase_client_supabase"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L10",
+      "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_getattempts",
-      "confidence_score": 1.0
+      "target": "js_auth_getattempts"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L17",
+      "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_recordattempt",
-      "confidence_score": 1.0
+      "target": "js_auth_recordattempt"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L28",
+      "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_clearattempts",
-      "confidence_score": 1.0
+      "target": "js_auth_clearattempts"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L29",
+      "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_isratelimited",
-      "confidence_score": 1.0
+      "target": "js_auth_isratelimited"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L36",
+      "source_location": "L228",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_login",
-      "confidence_score": 1.0
+      "target": "js_auth_login"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L64",
+      "source_location": "L259",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_logout",
-      "confidence_score": 1.0
+      "target": "js_auth_logout"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L73",
+      "source_location": "L270",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_getsession",
-      "confidence_score": 1.0
+      "target": "js_auth_getsession"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L79",
+      "source_location": "L276",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_requireadmin",
-      "confidence_score": 1.0
+      "target": "js_auth_requireadmin"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L104",
+      "source_location": "L308",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_redirectifadmin",
-      "confidence_score": 1.0
+      "target": "js_auth_redirectifadmin"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L118",
+      "source_location": "L327",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_auth_js",
-      "target": "js_auth_cambiarpassword",
-      "confidence_score": 1.0
+      "target": "js_auth_cambiarpassword"
     },
     {
       "relation": "imports_from",
@@ -1680,8 +2351,58 @@
       "source_file": "frontend/js/sidebar.js",
       "source_location": "L4",
       "weight": 1.0,
-      "source": "frontend_js_sidebar_js",
-      "target": "frontend_js_auth_js",
+      "confidence_score": 1.0,
+      "source": "frontend_js_auth_js",
+      "target": "frontend_js_sidebar_js"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "frontend_js_auth_js",
+      "target": "js_auth_issessionexpired",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "frontend_js_auth_js",
+      "target": "js_auth_showinactivitywarning",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L164",
+      "weight": 1.0,
+      "source": "frontend_js_auth_js",
+      "target": "js_auth_clearwarning",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "frontend_js_auth_js",
+      "target": "js_auth_dismisswarningifactive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L178",
+      "weight": 1.0,
+      "source": "frontend_js_auth_js",
+      "target": "js_auth_startsessionguard",
       "confidence_score": 1.0
     },
     {
@@ -1689,66 +2410,66 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L18",
+      "source_location": "L28",
       "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "js_auth_getattempts",
+      "target": "js_auth_recordattempt"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "js_auth_getattempts",
+      "target": "js_auth_isratelimited"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L235",
+      "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "js_auth_recordattempt",
-      "target": "js_auth_getattempts",
-      "confidence_score": 1.0
+      "target": "js_auth_login"
     },
     {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L30",
+      "source_location": "L238",
       "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "js_auth_clearattempts",
+      "target": "js_auth_login"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L260",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "js_auth_clearattempts",
+      "target": "js_auth_logout"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L229",
+      "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "js_auth_isratelimited",
-      "target": "js_auth_getattempts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/auth.js",
-      "source_location": "L43",
-      "weight": 1.0,
-      "source": "js_auth_login",
-      "target": "js_auth_recordattempt",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/auth.js",
-      "source_location": "L46",
-      "weight": 1.0,
-      "source": "js_auth_login",
-      "target": "js_auth_clearattempts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/auth.js",
-      "source_location": "L65",
-      "weight": 1.0,
-      "source": "js_auth_logout",
-      "target": "js_auth_clearattempts",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/auth.js",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "js_auth_login",
-      "target": "js_auth_isratelimited",
-      "confidence_score": 1.0
+      "target": "js_auth_login"
     },
     {
       "relation": "imports",
@@ -1757,8 +2478,19 @@
       "source_file": "frontend/js/sidebar.js",
       "source_location": "L4",
       "weight": 1.0,
-      "source": "frontend_js_sidebar_js",
-      "target": "js_auth_logout",
+      "confidence_score": 1.0,
+      "source": "js_auth_logout",
+      "target": "frontend_js_sidebar_js"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L284",
+      "weight": 1.0,
+      "source": "js_auth_logout",
+      "target": "js_auth_requireadmin",
       "confidence_score": 1.0
     },
     {
@@ -1766,10 +2498,43 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L80",
+      "source_location": "L313",
+      "weight": 1.0,
+      "source": "js_auth_logout",
+      "target": "js_auth_redirectifadmin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L277",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "js_auth_getsession",
+      "target": "js_auth_requireadmin"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L309",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "js_auth_getsession",
+      "target": "js_auth_redirectifadmin"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L283",
       "weight": 1.0,
       "source": "js_auth_requireadmin",
-      "target": "js_auth_getsession",
+      "target": "js_auth_issessionexpired",
       "confidence_score": 1.0
     },
     {
@@ -1777,10 +2542,21 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/auth.js",
-      "source_location": "L105",
+      "source_location": "L301",
+      "weight": 1.0,
+      "source": "js_auth_requireadmin",
+      "target": "js_auth_startsessionguard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L312",
       "weight": 1.0,
       "source": "js_auth_redirectifadmin",
-      "target": "js_auth_getsession",
+      "target": "js_auth_issessionexpired",
       "confidence_score": 1.0
     },
     {
@@ -1789,149 +2565,119 @@
       "source_file": "frontend/js/sidebar.js",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_sidebar_js",
-      "target": "js_sidebar_getsidebarhtml",
-      "confidence_score": 1.0
+      "target": "js_sidebar_getsidebarhtml"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/sidebar.js",
-      "source_location": "L48",
-      "weight": 1.0,
-      "source": "frontend_js_sidebar_js",
-      "target": "js_sidebar_initsidebar",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L5",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_estados_cita",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L14",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_estados_testimonio",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L20",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_dias_semana",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L23",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_formatfecha",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L28",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_formatfechacorta",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L33",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_formatfechalarga",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L38",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_formathora",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L44",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_formatdatetime",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
       "source_location": "L49",
       "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_todayiso",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "frontend_js_sidebar_js",
+      "target": "js_sidebar_initsidebar"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L52",
+      "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_startofweekiso",
-      "confidence_score": 1.0
+      "target": "js_utils_estados_cita"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L57",
+      "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_startofmonthiso",
-      "confidence_score": 1.0
+      "target": "js_utils_estados_testimonio"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L63",
+      "source_location": "L24",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_formatprecio",
-      "confidence_score": 1.0
+      "target": "js_utils_dias_semana"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L69",
+      "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_sanitizetext",
-      "confidence_score": 1.0
+      "target": "js_utils_formatfecha"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_formatfechacorta"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_formatfechalarga"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_formathora"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_formatdatetime"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_todayiso"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L65",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_startofweekiso"
     },
     {
       "relation": "contains",
@@ -1939,119 +2685,99 @@
       "source_file": "frontend/js/utils.js",
       "source_location": "L75",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_truncate",
-      "confidence_score": 1.0
+      "target": "js_utils_startofmonthiso"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L81",
+      "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_iniciales",
-      "confidence_score": 1.0
+      "target": "js_utils_formatprecio"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L87",
+      "source_location": "L108",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_avatar_colors",
-      "confidence_score": 1.0
+      "target": "js_utils_sanitizetext"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L92",
+      "source_location": "L114",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_avatarcolor",
-      "confidence_score": 1.0
+      "target": "js_utils_truncate"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L96",
+      "source_location": "L120",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_avatarhtml",
-      "confidence_score": 1.0
+      "target": "js_utils_iniciales"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L104",
+      "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_avatarini",
-      "confidence_score": 1.0
+      "target": "js_utils_avatar_colors"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L109",
+      "source_location": "L131",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_badgecita",
-      "confidence_score": 1.0
+      "target": "js_utils_avatarcolor"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L113",
+      "source_location": "L135",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_badgetestimonio",
-      "confidence_score": 1.0
+      "target": "js_utils_avatarhtml"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L117",
+      "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_badgeactivo",
-      "confidence_score": 1.0
+      "target": "js_utils_avatarini"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L124",
+      "source_location": "L148",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_toast",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L149",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_openmodal",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/js/utils.js",
-      "source_location": "L150",
-      "weight": 1.0,
-      "source": "frontend_js_utils_js",
-      "target": "js_utils_closemodal",
-      "confidence_score": 1.0
+      "target": "js_utils_badgecita"
     },
     {
       "relation": "contains",
@@ -2059,48 +2785,178 @@
       "source_file": "frontend/js/utils.js",
       "source_location": "L152",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_confirmaction",
+      "target": "js_utils_badgetestimonio"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L156",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_badgeactivo"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L163",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_toast"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L188",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_openmodal"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L189",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_closemodal"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L191",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_confirmaction"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L232",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_setactivenav"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L239",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_rendersidebaruser"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L252",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_debounce"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L261",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_autoasignarempleada"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_estados_inactivos",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L193",
+      "source_location": "L56",
       "weight": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_setactivenav",
+      "target": "js_utils_hoybogota",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L200",
+      "source_location": "L59",
       "weight": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_rendersidebaruser",
+      "target": "js_utils_toisodate",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L213",
+      "source_location": "L70",
       "weight": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_debounce",
+      "target": "js_utils_endofweekiso",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L219",
+      "source_location": "L79",
       "weight": 1.0,
       "source": "frontend_js_utils_js",
-      "target": "js_utils_autoasignarempleada",
+      "target": "js_utils_endofmonthiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_startofyeariso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_endofyeariso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L90",
+      "weight": 1.0,
+      "source": "frontend_js_utils_js",
+      "target": "js_utils_rangoperiodo",
       "confidence_score": 1.0
     },
     {
@@ -2108,10 +2964,10 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L97",
+      "source_location": "L63",
       "weight": 1.0,
-      "source": "js_utils_avatarhtml",
-      "target": "js_utils_iniciales",
+      "source": "js_utils_todayiso",
+      "target": "js_utils_hoybogota",
       "confidence_score": 1.0
     },
     {
@@ -2119,10 +2975,10 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L98",
+      "source_location": "L63",
       "weight": 1.0,
-      "source": "js_utils_avatarhtml",
-      "target": "js_utils_avatarcolor",
+      "source": "js_utils_todayiso",
+      "target": "js_utils_toisodate",
       "confidence_score": 1.0
     },
     {
@@ -2130,10 +2986,120 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "frontend/js/utils.js",
-      "source_location": "L100",
+      "source_location": "L91",
       "weight": 1.0,
+      "source": "js_utils_todayiso",
+      "target": "js_utils_rangoperiodo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "js_utils_startofweekiso",
+      "target": "js_utils_hoybogota",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "js_utils_startofweekiso",
+      "target": "js_utils_toisodate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "js_utils_startofweekiso",
+      "target": "js_utils_rangoperiodo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "js_utils_startofmonthiso",
+      "target": "js_utils_hoybogota",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L95",
+      "weight": 1.0,
+      "source": "js_utils_startofmonthiso",
+      "target": "js_utils_rangoperiodo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L136",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "js_utils_iniciales",
+      "target": "js_utils_avatarhtml"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L137",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "js_utils_avatarcolor",
+      "target": "js_utils_avatarhtml"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L139",
+      "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "js_utils_avatarhtml",
-      "target": "js_utils_avatarini",
+      "target": "js_utils_avatarini"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L271",
+      "weight": 1.0,
+      "source": "js_utils_autoasignarempleada",
+      "target": "js_utils_hoybogota",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L278",
+      "weight": 1.0,
+      "source": "js_utils_autoasignarempleada",
+      "target": "js_utils_toisodate",
       "confidence_score": 1.0
     },
     {
@@ -2142,9 +3108,9 @@
       "source_file": "frontend/js/supabase-client.js",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "frontend_js_supabase_client_js",
-      "target": "js_supabase_client_supabase",
-      "confidence_score": 1.0
+      "target": "js_supabase_client_supabase"
     },
     {
       "relation": "contains",
@@ -2152,9 +3118,9 @@
       "source_file": "config/supabase.js",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "config_supabase_js",
-      "target": "config_supabase_getsupabaseclient",
-      "confidence_score": 1.0
+      "target": "config_supabase_getsupabaseclient"
     },
     {
       "relation": "calls",
@@ -2164,8 +3130,8 @@
       "source_location": "line 1",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "api_index_js",
-      "target": "config_supabase_js"
+      "source": "config_supabase_js",
+      "target": "api_index_js"
     },
     {
       "relation": "references",
@@ -2184,8 +3150,8 @@
       "source_file": "database/schema_admin.sql",
       "source_location": "line 41",
       "weight": 1.0,
-      "source": "schema_admin_is_admin",
-      "target": "schema_admin_admin_users"
+      "source": "schema_admin_admin_users",
+      "target": "schema_admin_is_admin"
     },
     {
       "relation": "references",
@@ -2194,8 +3160,8 @@
       "source_file": "database/setup_completo.sql",
       "source_location": "line 195",
       "weight": 1.0,
-      "source": "setup_completo_admin_seed",
-      "target": "schema_admin_admin_users"
+      "source": "schema_admin_admin_users",
+      "target": "setup_completo_admin_seed"
     },
     {
       "relation": "references",
@@ -2204,8 +3170,8 @@
       "source_file": "frontend/js/auth.js",
       "source_location": "line 49",
       "weight": 1.0,
-      "source": "auth_login",
-      "target": "schema_admin_admin_users"
+      "source": "schema_admin_admin_users",
+      "target": "auth_login"
     },
     {
       "relation": "references",
@@ -2214,8 +3180,8 @@
       "source_file": "frontend/js/auth.js",
       "source_location": "line 87",
       "weight": 1.0,
-      "source": "auth_requireadmin",
-      "target": "schema_admin_admin_users"
+      "source": "schema_admin_admin_users",
+      "target": "auth_requireadmin"
     },
     {
       "relation": "references",
@@ -2224,8 +3190,8 @@
       "source_file": "frontend/js/utils.js",
       "source_location": "line 221",
       "weight": 1.0,
-      "source": "utils_autoasignarempleada",
-      "target": "schema_admin_empleado_servicios"
+      "source": "schema_admin_empleado_servicios",
+      "target": "utils_autoasignarempleada"
     },
     {
       "relation": "references",
@@ -2234,8 +3200,8 @@
       "source_file": "database/schema_admin.sql",
       "source_location": "line 56",
       "weight": 1.0,
-      "source": "schema_admin_rls_policy",
-      "target": "schema_admin_is_admin"
+      "source": "schema_admin_is_admin",
+      "target": "schema_admin_rls_policy"
     },
     {
       "relation": "semantically_similar_to",
@@ -2244,8 +3210,8 @@
       "source_file": "frontend/js/auth.js",
       "source_location": null,
       "weight": 0.65,
-      "source": "auth_rate_limiting",
-      "target": "schema_admin_rls_policy"
+      "source": "schema_admin_rls_policy",
+      "target": "auth_rate_limiting"
     },
     {
       "relation": "references",
@@ -2254,8 +3220,8 @@
       "source_file": "database/setup_completo.sql",
       "source_location": "line 177",
       "weight": 1.0,
-      "source": "setup_completo_admin_seed",
-      "target": "setup_completo_pgcrypto"
+      "source": "setup_completo_pgcrypto",
+      "target": "setup_completo_admin_seed"
     },
     {
       "relation": "calls",
@@ -2284,8 +3250,8 @@
       "source_file": "frontend/index.html",
       "source_location": "line 56",
       "weight": 1.0,
-      "source": "index_html_login_page",
-      "target": "auth_login"
+      "source": "auth_login",
+      "target": "index_html_login_page"
     },
     {
       "relation": "calls",
@@ -2314,8 +3280,8 @@
       "source_file": "frontend/js/auth.js",
       "source_location": "line 80",
       "weight": 1.0,
-      "source": "auth_requireadmin",
-      "target": "auth_getsession"
+      "source": "auth_getsession",
+      "target": "auth_requireadmin"
     },
     {
       "relation": "calls",
@@ -2324,8 +3290,8 @@
       "source_file": "frontend/js/auth.js",
       "source_location": "line 105",
       "weight": 1.0,
-      "source": "auth_redirectifadmin",
-      "target": "auth_getsession"
+      "source": "auth_getsession",
+      "target": "auth_redirectifadmin"
     },
     {
       "relation": "calls",
@@ -2344,8 +3310,8 @@
       "source_file": "frontend/reservas.html",
       "source_location": null,
       "weight": 0.95,
-      "source": "reservas_html_reservas_page",
-      "target": "auth_requireadmin"
+      "source": "auth_requireadmin",
+      "target": "reservas_html_reservas_page"
     },
     {
       "relation": "calls",
@@ -2354,8 +3320,8 @@
       "source_file": "frontend/servicios.html",
       "source_location": null,
       "weight": 0.95,
-      "source": "servicios_html_servicios_page",
-      "target": "auth_requireadmin"
+      "source": "auth_requireadmin",
+      "target": "servicios_html_servicios_page"
     },
     {
       "relation": "calls",
@@ -2364,8 +3330,8 @@
       "source_file": "frontend/disponibilidad.html",
       "source_location": null,
       "weight": 0.95,
-      "source": "disponibilidad_html_disponibilidad_page",
-      "target": "auth_requireadmin"
+      "source": "auth_requireadmin",
+      "target": "disponibilidad_html_disponibilidad_page"
     },
     {
       "relation": "calls",
@@ -2374,8 +3340,8 @@
       "source_file": "frontend/clientes.html",
       "source_location": null,
       "weight": 0.95,
-      "source": "clientes_html_clientes_page",
-      "target": "auth_requireadmin"
+      "source": "auth_requireadmin",
+      "target": "clientes_html_clientes_page"
     },
     {
       "relation": "calls",
@@ -2394,8 +3360,8 @@
       "source_file": "frontend/index.html",
       "source_location": "line 58",
       "weight": 1.0,
-      "source": "index_html_login_page",
-      "target": "auth_redirectifadmin"
+      "source": "auth_redirectifadmin",
+      "target": "index_html_login_page"
     },
     {
       "relation": "calls",
@@ -2414,8 +3380,8 @@
       "source_file": "frontend/js/utils.js",
       "source_location": null,
       "weight": 0.7,
-      "source": "utils_sanitizetext",
-      "target": "auth_rate_limiting"
+      "source": "auth_rate_limiting",
+      "target": "utils_sanitizetext"
     },
     {
       "relation": "references",
@@ -2424,8 +3390,8 @@
       "source_file": "frontend/js/utils.js",
       "source_location": "line 110",
       "weight": 1.0,
-      "source": "utils_badgecita",
-      "target": "utils_estados_cita"
+      "source": "utils_estados_cita",
+      "target": "utils_badgecita"
     },
     {
       "relation": "references",
@@ -2434,8 +3400,8 @@
       "source_file": "frontend/js/utils.js",
       "source_location": "line 114",
       "weight": 1.0,
-      "source": "utils_badgetestimonio",
-      "target": "utils_estados_testimonio"
+      "source": "utils_estados_testimonio",
+      "target": "utils_badgetestimonio"
     },
     {
       "relation": "calls",
@@ -2444,8 +3410,8 @@
       "source_file": "frontend/reservas.html",
       "source_location": null,
       "weight": 0.85,
-      "source": "reservas_html_reservas_page",
-      "target": "utils_autoasignarempleada"
+      "source": "utils_autoasignarempleada",
+      "target": "reservas_html_reservas_page"
     },
     {
       "relation": "calls",
@@ -2454,8 +3420,8 @@
       "source_file": "frontend/reservas.html",
       "source_location": null,
       "weight": 0.95,
-      "source": "reservas_html_reservas_page",
-      "target": "supabase_client_supabase"
+      "source": "supabase_client_supabase",
+      "target": "reservas_html_reservas_page"
     },
     {
       "relation": "references",
@@ -2474,8 +3440,8 @@
       "source_file": "frontend/dashboard.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "dashboard_html",
-      "target": "sidebar_js"
+      "source": "sidebar_js",
+      "target": "dashboard_html"
     },
     {
       "relation": "references",
@@ -2484,8 +3450,8 @@
       "source_file": "frontend/empleadas.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "empleadas_html",
-      "target": "sidebar_js"
+      "source": "sidebar_js",
+      "target": "empleadas_html"
     },
     {
       "relation": "references",
@@ -2494,8 +3460,8 @@
       "source_file": "frontend/admins.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "admins_html",
-      "target": "sidebar_js"
+      "source": "sidebar_js",
+      "target": "admins_html"
     },
     {
       "relation": "references",
@@ -2504,8 +3470,8 @@
       "source_file": "frontend/testimonios.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "testimonios_html",
-      "target": "sidebar_js"
+      "source": "sidebar_js",
+      "target": "testimonios_html"
     },
     {
       "relation": "references",
@@ -2514,8 +3480,8 @@
       "source_file": "frontend/configuracion.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "configuracion_html",
-      "target": "sidebar_js"
+      "source": "sidebar_js",
+      "target": "configuracion_html"
     },
     {
       "relation": "references",
@@ -2524,8 +3490,8 @@
       "source_file": "frontend/dashboard.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "dashboard_html",
-      "target": "auth_js"
+      "source": "auth_js",
+      "target": "dashboard_html"
     },
     {
       "relation": "references",
@@ -2534,8 +3500,8 @@
       "source_file": "frontend/empleadas.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "empleadas_html",
-      "target": "auth_js"
+      "source": "auth_js",
+      "target": "empleadas_html"
     },
     {
       "relation": "references",
@@ -2544,8 +3510,8 @@
       "source_file": "frontend/admins.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "admins_html",
-      "target": "auth_js"
+      "source": "auth_js",
+      "target": "admins_html"
     },
     {
       "relation": "references",
@@ -2554,8 +3520,8 @@
       "source_file": "frontend/testimonios.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "testimonios_html",
-      "target": "auth_js"
+      "source": "auth_js",
+      "target": "testimonios_html"
     },
     {
       "relation": "references",
@@ -2564,8 +3530,8 @@
       "source_file": "frontend/configuracion.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "configuracion_html",
-      "target": "auth_js"
+      "source": "auth_js",
+      "target": "configuracion_html"
     },
     {
       "relation": "references",
@@ -2604,8 +3570,8 @@
       "source_file": "frontend/dashboard.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "dashboard_html",
-      "target": "supabase_client_js"
+      "source": "supabase_client_js",
+      "target": "dashboard_html"
     },
     {
       "relation": "references",
@@ -2614,8 +3580,8 @@
       "source_file": "frontend/empleadas.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "empleadas_html",
-      "target": "supabase_client_js"
+      "source": "supabase_client_js",
+      "target": "empleadas_html"
     },
     {
       "relation": "references",
@@ -2624,8 +3590,8 @@
       "source_file": "frontend/admins.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "admins_html",
-      "target": "supabase_client_js"
+      "source": "supabase_client_js",
+      "target": "admins_html"
     },
     {
       "relation": "references",
@@ -2634,8 +3600,8 @@
       "source_file": "frontend/testimonios.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "testimonios_html",
-      "target": "supabase_client_js"
+      "source": "supabase_client_js",
+      "target": "testimonios_html"
     },
     {
       "relation": "references",
@@ -2644,8 +3610,8 @@
       "source_file": "frontend/configuracion.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "configuracion_html",
-      "target": "supabase_client_js"
+      "source": "supabase_client_js",
+      "target": "configuracion_html"
     },
     {
       "relation": "references",
@@ -2654,8 +3620,8 @@
       "source_file": "frontend/dashboard.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "dashboard_html",
-      "target": "utils_js"
+      "source": "utils_js",
+      "target": "dashboard_html"
     },
     {
       "relation": "references",
@@ -2664,8 +3630,8 @@
       "source_file": "frontend/empleadas.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "empleadas_html",
-      "target": "utils_js"
+      "source": "utils_js",
+      "target": "empleadas_html"
     },
     {
       "relation": "references",
@@ -2674,8 +3640,8 @@
       "source_file": "frontend/admins.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "admins_html",
-      "target": "utils_js"
+      "source": "utils_js",
+      "target": "admins_html"
     },
     {
       "relation": "references",
@@ -2684,8 +3650,8 @@
       "source_file": "frontend/testimonios.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "testimonios_html",
-      "target": "utils_js"
+      "source": "utils_js",
+      "target": "testimonios_html"
     },
     {
       "relation": "references",
@@ -2694,8 +3660,8 @@
       "source_file": "frontend/configuracion.html",
       "source_location": "script module import",
       "weight": 1.0,
-      "source": "configuracion_html",
-      "target": "utils_js"
+      "source": "utils_js",
+      "target": "configuracion_html"
     },
     {
       "relation": "references",
@@ -3014,8 +3980,8 @@
       "source_file": "README.md",
       "source_location": "supabase functions deploy smooth-function --project-ref whouejjrpjcvoueyajbu",
       "weight": 1.0,
-      "source": "edge_function_smooth",
-      "target": "supabase_project"
+      "source": "supabase_project",
+      "target": "edge_function_smooth"
     },
     {
       "relation": "references",
@@ -3044,8 +4010,18 @@
       "source_file": "README.md",
       "source_location": "Funci\u00f3n is_admin() verifica si el usuario logueado es admin",
       "weight": 1.0,
+      "source": "table_admin_users",
+      "target": "fn_is_admin"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migration_2.sql",
+      "source_location": null,
+      "weight": 1.0,
       "source": "fn_is_admin",
-      "target": "table_admin_users"
+      "target": "rls_policy_admin_full"
     },
     {
       "relation": "references",
@@ -3054,143 +4030,1201 @@
       "source_file": "database/migration_2.sql",
       "source_location": null,
       "weight": 1.0,
-      "source": "rls_policy_admin_full",
-      "target": "fn_is_admin"
+      "source": "fn_is_admin",
+      "target": "rls_policy_testimonios_public"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/auth.js",
+      "source_location": "L172",
+      "weight": 1.0,
+      "source": "js_auth_clearwarning",
+      "target": "js_auth_dismisswarningifactive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "js_utils_hoybogota",
+      "target": "js_utils_endofweekiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L80",
+      "weight": 1.0,
+      "source": "js_utils_hoybogota",
+      "target": "js_utils_endofmonthiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "js_utils_hoybogota",
+      "target": "js_utils_startofyeariso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L87",
+      "weight": 1.0,
+      "source": "js_utils_hoybogota",
+      "target": "js_utils_endofyeariso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "js_utils_toisodate",
+      "target": "js_utils_endofweekiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L81",
+      "weight": 1.0,
+      "source": "js_utils_toisodate",
+      "target": "js_utils_endofmonthiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "js_utils_endofweekiso",
+      "target": "js_utils_rangoperiodo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L95",
+      "weight": 1.0,
+      "source": "js_utils_endofmonthiso",
+      "target": "js_utils_rangoperiodo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L96",
+      "weight": 1.0,
+      "source": "js_utils_startofyeariso",
+      "target": "js_utils_rangoperiodo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/js/utils.js",
+      "source_location": "L96",
+      "weight": 1.0,
+      "source": "js_utils_endofyeariso",
+      "target": "js_utils_rangoperiodo",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "database/migration_2.sql",
+      "source_file": "ESTADOS-RESERVAS.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "rls_policy_testimonios_public",
-      "target": "fn_is_admin"
+      "source": "estados_reservas_documento",
+      "target": "estados_reservas_modelo_8_estados"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_documento",
+      "target": "logica_sistema_modelo_8_estados"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_documento",
+      "target": "logica_sistema_algoritmo_asignacion"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_documento",
+      "target": "logica_sistema_regla_anticipacion_2h"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_documento",
+      "target": "bug07_testimonios_estado_rename"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_documento",
+      "target": "bug08_parseint_radix"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_documento",
+      "target": "bug09_listener_duplicado"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_documento",
+      "target": "bug10_race_condition_guardado"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_documento",
+      "target": "configuracion_secciones_ocultas"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.3,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_documento",
+      "target": "rls_endurecido_supabase"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_documento",
+      "target": "readme_graphify_out_nota"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_documento",
+      "target": "claude_documento"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "claude_documento",
+      "target": "tabla_categorias"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.3,
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "claude_documento",
+      "target": "n8n_workflow_id_discrepancia"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "empleadas_balanceo_carga_por_servicio"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "tabla_empleado_servicios"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "bug08_parseint_radix"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "tabla_empleados"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "tabla_servicios"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "tabla_citas"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "frontend_utils_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "frontend_auth_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "frontend_supabase_client_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "empleadas_pagina",
+      "target": "frontend_sidebar_js"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_pagina",
+      "target": "configuracion_parametros_reserva"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_pagina",
+      "target": "configuracion_secciones_ocultas"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_pagina",
+      "target": "bug08_parseint_radix"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_pagina",
+      "target": "bug09_listener_duplicado"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_pagina",
+      "target": "tabla_configuracion"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_pagina",
+      "target": "frontend_utils_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_pagina",
+      "target": "frontend_auth_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_pagina",
+      "target": "frontend_supabase_client_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_pagina",
+      "target": "frontend_sidebar_js"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "citas_modelo_6_estados"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "empleadas_balanceo_carga_por_servicio"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "reservas_whatsapp_contacto_admin"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "no_overlap_citas_indice"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "tabla_citas"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "tabla_clientes"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "tabla_empleados"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "tabla_servicios"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "frontend_utils_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "frontend_auth_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "frontend_supabase_client_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "reservas_pagina",
+      "target": "frontend_sidebar_js"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_pagina",
+      "target": "citas_modelo_6_estados"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_pagina",
+      "target": "dashboard_kpi_timezone_fix"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_pagina",
+      "target": "dashboard_periodo_filter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_pagina",
+      "target": "tabla_citas"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_pagina",
+      "target": "tabla_empleados"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_pagina",
+      "target": "frontend_utils_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_pagina",
+      "target": "frontend_auth_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_pagina",
+      "target": "frontend_supabase_client_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_pagina",
+      "target": "frontend_sidebar_js"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.2,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "empleadas_balanceo_carga_por_servicio"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "categorias_pagina"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "tabla_categorias"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "servicios_multiselect_empleadas"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "bug08_parseint_radix"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "bug10_race_condition_guardado"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "tabla_servicios"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "tabla_empleados"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "tabla_citas"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "frontend_utils_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "frontend_auth_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "frontend_supabase_client_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_pagina",
+      "target": "frontend_sidebar_js"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_pagina",
+      "target": "disponibilidad_horario_semanal"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_pagina",
+      "target": "disponibilidad_bloqueos"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_pagina",
+      "target": "bug08_parseint_radix"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_pagina",
+      "target": "tabla_empleados"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_pagina",
+      "target": "frontend_utils_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_pagina",
+      "target": "frontend_auth_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_pagina",
+      "target": "frontend_supabase_client_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_pagina",
+      "target": "frontend_sidebar_js"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "categorias_pagina",
+      "target": "categorias_pagina_nueva"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "categorias_pagina",
+      "target": "tabla_categorias"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "categorias_pagina",
+      "target": "tabla_servicios"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "categorias_pagina",
+      "target": "frontend_utils_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "categorias_pagina",
+      "target": "frontend_auth_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "categorias_pagina",
+      "target": "frontend_supabase_client_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/categorias.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "categorias_pagina",
+      "target": "frontend_sidebar_js"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "testimonios_pagina",
+      "target": "testimonios_flujo_estados"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "testimonios_pagina",
+      "target": "bug07_testimonios_estado_rename"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "testimonios_pagina",
+      "target": "bug08_parseint_radix"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "testimonios_pagina",
+      "target": "tabla_servicios"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "testimonios_pagina",
+      "target": "frontend_utils_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "testimonios_pagina",
+      "target": "frontend_auth_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "testimonios_pagina",
+      "target": "frontend_supabase_client_js"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "testimonios_pagina",
+      "target": "frontend_sidebar_js"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "estados_reservas_modelo_8_estados",
+      "target": "citas_modelo_6_estados"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "estados_reservas_modelo_8_estados",
+      "target": "logica_sistema_modelo_8_estados"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_modelo_8_estados",
+      "target": "citas_modelo_6_estados"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "frontend/empleadas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_algoritmo_asignacion",
+      "target": "empleadas_balanceo_carga_por_servicio"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "LOGICA-DEL-SISTEMA.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "logica_sistema_regla_anticipacion_2h",
+      "target": "configuracion_parametros_reserva"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/configuracion.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "configuracion_parametros_reserva",
+      "target": "disponibilidad_horario_semanal"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "frontend/dashboard.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "dashboard_kpi_timezone_fix",
+      "target": "dashboard_periodo_filter"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "frontend/reservas.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "no_overlap_citas_indice",
+      "target": "tabla_citas"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "rls_endurecido_supabase",
+      "target": "tabla_citas"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/testimonios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "testimonios_flujo_estados",
+      "target": "tabla_testimonios"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/servicios.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "servicios_multiselect_empleadas",
+      "target": "tabla_empleado_servicios"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_horario_semanal",
+      "target": "tabla_configuracion"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/disponibilidad.html",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "disponibilidad_bloqueos",
+      "target": "tabla_bloqueos"
     }
   ],
   "hyperedges": [
     {
-      "id": "admin_auth_guard_pattern",
-      "label": "Admin Authentication Guard Pattern",
+      "id": "hyperedge_modelo_estados_citas",
+      "label": "Migraci\u00f3n del modelo de estados de citas: de 8 estados (documentado en ESTADOS-RESERVAS.md y LOGICA-DEL-SISTEMA.md) a 6 estados estandarizados (implementado en el c\u00f3digo actual)",
       "nodes": [
-        "auth_requireadmin",
-        "schema_admin_admin_users",
-        "schema_admin_is_admin",
-        "schema_admin_rls_policy"
+        "estados_reservas_modelo_8_estados",
+        "logica_sistema_modelo_8_estados",
+        "citas_modelo_6_estados"
       ],
-      "relation": "implement",
+      "relation": "form",
       "confidence": "INFERRED",
       "confidence_score": 0.95,
-      "source_file": "database/schema_admin.sql"
+      "source_file": "frontend/reservas.html"
     },
     {
-      "id": "empleada_service_assignment",
-      "label": "Empleada-Servicio Assignment Flow",
+      "id": "hyperedge_config_reservas_disponibilidad",
+      "label": "Configuraci\u00f3n compartida de reservas y disponibilidad v\u00eda la tabla configuracion (par\u00e1metros de reserva + horario semanal)",
       "nodes": [
-        "schema_admin_empleado_servicios",
-        "utils_autoasignarempleada",
-        "empleadas_html_empleadas_page"
+        "configuracion_parametros_reserva",
+        "disponibilidad_horario_semanal",
+        "tabla_configuracion"
       ],
       "relation": "participate_in",
-      "confidence": "EXTRACTED",
-      "confidence_score": 0.95,
-      "source_file": "frontend/js/utils.js"
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "frontend/configuracion.html"
     },
     {
-      "id": "frontend_pages_shared_modules",
-      "label": "All Frontend Pages Share Auth + Supabase Client + Sidebar + Utils",
+      "id": "hyperedge_asignacion_automatica_empleadas",
+      "label": "Asignaci\u00f3n autom\u00e1tica de empleadas a citas: balanceo de carga por servicio con desempate aleatorio, usado al crear reservas y visible en la gesti\u00f3n de servicios/empleadas",
       "nodes": [
-        "dashboard_html",
-        "empleadas_html",
-        "admins_html",
-        "testimonios_html",
-        "configuracion_html",
-        "auth_js",
-        "supabase_client_js",
-        "sidebar_js",
-        "utils_js"
-      ],
-      "relation": "implement",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/dashboard.html"
-    },
-    {
-      "id": "admin_auth_double_validation",
-      "label": "Admin Auth Double Validation: Supabase Auth + is_admin() RLS",
-      "nodes": [
-        "auth_js",
-        "fn_is_admin",
-        "table_admin_users",
-        "supabase_project"
-      ],
-      "relation": "implement",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md"
-    },
-    {
-      "id": "employee_creation_flow",
-      "label": "Employee Creation Flow: Edge Fn \u2192 Auth \u2192 empleados \u2192 empleado_servicios",
-      "nodes": [
-        "empleadas_html",
-        "edge_function_smooth",
-        "table_empleados",
-        "table_empleado_servicios",
-        "supabase_project"
+        "empleadas_balanceo_carga_por_servicio",
+        "reservas_pagina",
+        "servicios_pagina"
       ],
       "relation": "participate_in",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/empleadas.html"
-    },
-    {
-      "id": "admin_creation_flow",
-      "label": "Admin Creation Flow: Edge Fn \u2192 Auth \u2192 admin_users",
-      "nodes": [
-        "admins_html",
-        "edge_function_smooth",
-        "table_admin_users",
-        "supabase_project"
-      ],
-      "relation": "participate_in",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/admins.html"
-    },
-    {
-      "id": "migration_2_rls_setup",
-      "label": "Migration 2: configuracion table + testimonios normalization + RLS policies",
-      "nodes": [
-        "migration_2_sql",
-        "table_configuracion",
-        "table_testimonios",
-        "rls_policy_admin_full",
-        "rls_policy_lectura_publica",
-        "rls_policy_testimonios_public",
-        "fn_is_admin"
-      ],
-      "relation": "implement",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "database/migration_2.sql"
-    },
-    {
-      "id": "dashboard_kpi_charts",
-      "label": "Dashboard KPIs + Chart.js Visualizations from citas/empleados",
-      "nodes": [
-        "dashboard_html",
-        "chartjs_lib",
-        "table_citas",
-        "table_empleados",
-        "table_servicios",
-        "table_clientes"
-      ],
-      "relation": "implement",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/dashboard.html"
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "frontend/reservas.html"
     }
   ],
-  "built_at_commit": "0b9d8601c00bd43033b725ca8c6a98a09d32e120"
+  "built_at_commit": "6cc63e12397ca7c676657b53dc8b30ead513c648"
 }
