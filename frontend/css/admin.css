@@ -727,11 +727,11 @@ img { max-width: 100%; display: block; }
 .ms-option:hover { background: var(--lilac-pale); }
 .ms-option.selected { background: var(--lilac-pale); color: var(--purple-dark); font-weight: 500; }
 
-/* ——— MODALES ———————————————————————————————————————————————— */
+/* ——— MODALES (liquid glass) ————————————————————————————————— */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(28,13,37,0.5);
+  background: rgba(28,13,37,0.42);
   z-index: 300;
   display: flex;
   align-items: center;
@@ -739,23 +739,26 @@ img { max-width: 100%; display: block; }
   padding: 20px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s;
-  backdrop-filter: blur(4px);
+  transition: opacity 0.25s;
+  backdrop-filter: blur(6px);
 }
 .modal-overlay.open {
   opacity: 1;
   pointer-events: all;
 }
 .modal {
-  background: var(--card-bg);
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(255,255,255,0.5);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   width: 100%;
   max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
   transform: translateY(12px) scale(0.98);
-  transition: transform 0.2s;
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
 }
 .modal-overlay.open .modal { transform: translateY(0) scale(1); }
 .modal-lg { max-width: 760px; }
@@ -769,7 +772,9 @@ img { max-width: 100%; display: block; }
   gap: 12px;
   position: sticky;
   top: 0;
-  background: var(--card-bg);
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   z-index: 1;
 }
 .modal-title { font-size: 1.05rem; font-weight: 500; color: var(--text-secondary); }
@@ -795,7 +800,9 @@ img { max-width: 100%; display: block; }
   gap: 10px;
   position: sticky;
   bottom: 0;
-  background: var(--card-bg);
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 /* Confirm modal */
@@ -812,7 +819,9 @@ img { max-width: 100%; display: block; }
   justify-content: center;
   margin: 0 auto 16px;
 }
-.confirm-icon.danger { background: var(--danger-bg); color: var(--danger); }
+.confirm-icon.danger  { background: var(--danger-bg);  color: var(--danger); }
+.confirm-icon.success { background: var(--success-bg); color: var(--success); }
+.confirm-icon.warning { background: var(--warning-bg); color: var(--warning); }
 .confirm-title { font-size: 1.05rem; font-weight: 500; margin-bottom: 8px; }
 .confirm-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
 

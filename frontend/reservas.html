@@ -433,14 +433,23 @@
     const estado   = document.getElementById('res-nuevo-estado').value
     const empId    = document.getElementById('res-nueva-empleada').value
     const nota     = document.getElementById('res-nota-update').value.trim()
-    const upd      = { estado }
-    if (empId) upd.empleado_id = empId
-    if (nota)  upd.notas = nota
-    const { error } = await supabase.from('citas').update(upd).eq('id', citaActualId)
-    if (error) { toast('Error: ' + error.message, 'error'); return }
-    toast('Reserva actualizada', 'success')
-    closeModal('modal-reserva')
-    await cargarDatos()
+
+    confirmAction({
+      title: '¿Guardar cambios de esta reserva?',
+      text: 'Se actualizará el estado, empleada asignada y/o notas de la cita.',
+      btnLabel: 'Guardar cambios',
+      type: 'warning',
+      onConfirm: async () => {
+        const upd = { estado }
+        if (empId) upd.empleado_id = empId
+        if (nota)  upd.notas = nota
+        const { error } = await supabase.from('citas').update(upd).eq('id', citaActualId)
+        if (error) { toast('Error: ' + error.message, 'error'); return }
+        toast('Reserva actualizada', 'success')
+        closeModal('modal-reserva')
+        await cargarDatos()
+      }
+    })
   })
 
   // ——— Eliminar reserva ————————————————————————————————
@@ -507,63 +516,72 @@
     if (!svc) return
 
     const btn = document.getElementById('modal-nres-save')
-    btn.disabled = true; btn.textContent = 'Creando…'
+    btn.disabled = false
 
-    try {
-      // Buscar/crear cliente — deduplicación por teléfono O email.
-      // Si ambos apuntan a registros distintos se usa el más completo.
-      let cliente_id = null
-      const filtros = [`telefono.eq.${telefono}`]
-      if (email) filtros.push(`email.eq.${email}`)
-      const { data: coincidencias } = await supabase
-        .from('clientes')
-        .select('id, nombre, telefono, email, fecha_nacimiento, alergias, notas')
-        .or(filtros.join(','))
+    confirmAction({
+      title: `¿Crear la reserva para "${nombre}"?`,
+      text: `${svc.nombre} · ${fecha} · ${hora}`,
+      btnLabel: 'Crear reserva',
+      type: 'success',
+      onConfirm: async () => {
+        btn.disabled = true; btn.textContent = 'Creando…'
+        try {
+          // Buscar/crear cliente — deduplicación por teléfono O email.
+          // Si ambos apuntan a registros distintos se usa el más completo.
+          let cliente_id = null
+          const filtros = [`telefono.eq.${telefono}`]
+          if (email) filtros.push(`email.eq.${email}`)
+          const { data: coincidencias } = await supabase
+            .from('clientes')
+            .select('id, nombre, telefono, email, fecha_nacimiento, alergias, notas')
+            .or(filtros.join(','))
 
-      if (coincidencias?.length) {
-        const completitud = c =>
-          ['nombre','telefono','email','fecha_nacimiento','alergias','notas']
-            .filter(k => c[k] != null && String(c[k]).trim() !== '').length
-        const elegido = [...coincidencias].sort((a, b) => completitud(b) - completitud(a))[0]
-        cliente_id = elegido.id
-        const patch = {}
-        if (email && !elegido.email) patch.email = email
-        if (telefono && !elegido.telefono) patch.telefono = telefono
-        if (Object.keys(patch).length) await supabase.from('clientes').update(patch).eq('id', cliente_id)
-      } else {
-        const { data: nuevoC, error: cErr } = await supabase.from('clientes').insert({ nombre, telefono, email, origen: 'admin' }).select().single()
-        if (cErr) throw cErr
-        cliente_id = nuevoC.id
+          if (coincidencias?.length) {
+            const completitud = c =>
+              ['nombre','telefono','email','fecha_nacimiento','alergias','notas']
+                .filter(k => c[k] != null && String(c[k]).trim() !== '').length
+            const elegido = [...coincidencias].sort((a, b) => completitud(b) - completitud(a))[0]
+            cliente_id = elegido.id
+            const patch = {}
+            if (email && !elegido.email) patch.email = email
+            if (telefono && !elegido.telefono) patch.telefono = telefono
+            if (Object.keys(patch).length) await supabase.from('clientes').update(patch).eq('id', cliente_id)
+          } else {
+            const { data: nuevoC, error: cErr } = await supabase.from('clientes').insert({ nombre, telefono, email, origen: 'admin' }).select().single()
+            if (cErr) throw cErr
+            cliente_id = nuevoC.id
+          }
+
+          // Auto-asignar o usar selección manual
+          let empleado_id = document.getElementById('nres-empleada').value || null
+          if (!empleado_id) {
+            empleado_id = await autoAsignarEmpleada(supabase, svcId, fecha)
+          }
+
+          // buffer_min null = heredar el buffer global; 0 es un valor válido
+          const totalMin  = (svc.duracion_min || 60) + (svc.buffer_min ?? bufferGlobal)
+          const [h, m]    = hora.split(':').map(Number)
+          const finMin    = h * 60 + m + totalMin
+          const hora_fin  = `${String(Math.floor(finMin/60)).padStart(2,'0')}:${String(finMin%60).padStart(2,'0')}`
+
+          // Con empleada asignada la cita nace confirmada; sin empleada queda pendiente
+          const { error } = await supabase.from('citas').insert({
+            cliente_id, servicio_id: svcId, empleado_id,
+            fecha, hora_inicio: hora, hora_fin, duracion_total: totalMin,
+            estado: empleado_id ? 'confirmada' : 'pendiente', origen: 'admin', notas
+          })
+          if (error) throw error
+
+          toast('Reserva creada exitosamente', 'success')
+          closeModal('modal-nueva-reserva')
+          await cargarDatos()
+        } catch (err) {
+          toast(err.message || 'Error al crear la reserva', 'error')
+        } finally {
+          btn.disabled = false; btn.textContent = 'Crear reserva'
+        }
       }
-
-      // Auto-asignar o usar selección manual
-      let empleado_id = document.getElementById('nres-empleada').value || null
-      if (!empleado_id) {
-        empleado_id = await autoAsignarEmpleada(supabase, svcId, fecha)
-      }
-
-      // buffer_min null = heredar el buffer global; 0 es un valor válido
-      const totalMin  = (svc.duracion_min || 60) + (svc.buffer_min ?? bufferGlobal)
-      const [h, m]    = hora.split(':').map(Number)
-      const finMin    = h * 60 + m + totalMin
-      const hora_fin  = `${String(Math.floor(finMin/60)).padStart(2,'0')}:${String(finMin%60).padStart(2,'0')}`
-
-      // Con empleada asignada la cita nace confirmada; sin empleada queda pendiente
-      const { error } = await supabase.from('citas').insert({
-        cliente_id, servicio_id: svcId, empleado_id,
-        fecha, hora_inicio: hora, hora_fin, duracion_total: totalMin,
-        estado: empleado_id ? 'confirmada' : 'pendiente', origen: 'admin', notas
-      })
-      if (error) throw error
-
-      toast('Reserva creada exitosamente', 'success')
-      closeModal('modal-nueva-reserva')
-      await cargarDatos()
-    } catch (err) {
-      toast(err.message || 'Error al crear la reserva', 'error')
-    } finally {
-      btn.disabled = false; btn.textContent = 'Crear reserva'
-    }
+    })
   })
 
   // Cerrar modales

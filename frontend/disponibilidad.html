@@ -382,16 +382,24 @@
     })
     const slotDur = parseInt(document.getElementById('slot-duracion').value, 10)
 
-    const updates = { horario_semana: horario, slot_duracion_min: slotDur }
-    let error
-    if (configRow?.id) {
-      ({ error } = await supabase.from('configuracion').update(updates).eq('id', configRow.id))
-    } else {
-      ({ error } = await supabase.from('configuracion').insert(updates))
-    }
-    if (error) { toast('Error al guardar horario', 'error'); return }
-    toast('Horario guardado', 'success')
-    await cargarHorario()
+    confirmAction({
+      title: '¿Guardar cambios en el horario del spa?',
+      text: 'Esto afecta la disponibilidad de reservas para todas las clientas.',
+      btnLabel: 'Guardar cambios',
+      type: 'warning',
+      onConfirm: async () => {
+        const updates = { horario_semana: horario, slot_duracion_min: slotDur }
+        let error
+        if (configRow?.id) {
+          ({ error } = await supabase.from('configuracion').update(updates).eq('id', configRow.id))
+        } else {
+          ({ error } = await supabase.from('configuracion').insert(updates))
+        }
+        if (error) { toast('Error al guardar horario', 'error'); return }
+        toast('Horario guardado', 'success')
+        await cargarHorario()
+      }
+    })
   })
 
   // ─── BLOQUEOS SPA ─────────────────────────────────────────
@@ -454,17 +462,25 @@
     const motivo      = document.getElementById('bloq-motivo').value.trim()
     if (!fechaInicio) { toast('Fecha de inicio requerida', 'error'); return }
 
-    const payload = { fecha_inicio: fechaInicio, fecha_fin: fechaFin, motivo: motivo || null, empleado_id: null }
-    let error
-    if (id) {
-      ({ error } = await supabase.from('bloqueos').update(payload).eq('id', id))
-    } else {
-      ({ error } = await supabase.from('bloqueos').insert(payload))
-    }
-    if (error) { toast('Error al guardar bloqueo', 'error'); return }
-    toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')
-    closeModal('modal-bloqueo')
-    await cargarBloqueos()
+    confirmAction({
+      title: id ? '¿Guardar cambios del bloqueo?' : '¿Crear este bloqueo?',
+      text: 'Los horarios afectados dejarán de estar disponibles para reservas.',
+      btnLabel: id ? 'Guardar cambios' : 'Crear bloqueo',
+      type: id ? 'warning' : 'success',
+      onConfirm: async () => {
+        const payload = { fecha_inicio: fechaInicio, fecha_fin: fechaFin, motivo: motivo || null, empleado_id: null }
+        let error
+        if (id) {
+          ({ error } = await supabase.from('bloqueos').update(payload).eq('id', id))
+        } else {
+          ({ error } = await supabase.from('bloqueos').insert(payload))
+        }
+        if (error) { toast('Error al guardar bloqueo', 'error'); return }
+        toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')
+        closeModal('modal-bloqueo')
+        await cargarBloqueos()
+      }
+    })
   })
 
   document.getElementById('btn-eliminar-bloqueo').addEventListener('click', () => {
@@ -570,17 +586,25 @@
 
     if (!empleadaId || !fechaInicio) { toast('Empleada y fecha de inicio son requeridas', 'error'); return }
 
-    const payload = { empleado_id: empleadaId, fecha_inicio: fechaInicio, fecha_fin: fechaFin, hora_inicio: horaInicio, hora_fin: horaFin, motivo: motivo || null }
-    let error
-    if (id) {
-      ({ error } = await supabase.from('bloqueos').update(payload).eq('id', id))
-    } else {
-      ({ error } = await supabase.from('bloqueos').insert(payload))
-    }
-    if (error) { toast('Error al guardar', 'error'); return }
-    toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')
-    closeModal('modal-bloq-emp')
-    await cargarBloqueosEmp()
+    confirmAction({
+      title: id ? '¿Guardar cambios del bloqueo?' : '¿Crear este bloqueo de empleada?',
+      text: 'Los horarios afectados dejarán de estar disponibles para reservas con esta empleada.',
+      btnLabel: id ? 'Guardar cambios' : 'Crear bloqueo',
+      type: id ? 'warning' : 'success',
+      onConfirm: async () => {
+        const payload = { empleado_id: empleadaId, fecha_inicio: fechaInicio, fecha_fin: fechaFin, hora_inicio: horaInicio, hora_fin: horaFin, motivo: motivo || null }
+        let error
+        if (id) {
+          ({ error } = await supabase.from('bloqueos').update(payload).eq('id', id))
+        } else {
+          ({ error } = await supabase.from('bloqueos').insert(payload))
+        }
+        if (error) { toast('Error al guardar', 'error'); return }
+        toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')
+        closeModal('modal-bloq-emp')
+        await cargarBloqueosEmp()
+      }
+    })
   })
 
   document.getElementById('btn-eliminar-emp-bloqueo').addEventListener('click', () => {

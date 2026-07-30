@@ -288,11 +288,19 @@
 
   document.getElementById('btn-guardar-nota-cli').addEventListener('click', async () => {
     const nota = document.getElementById('cli-notas-input').value.trim()
-    const { error } = await supabase.from('clientes').update({ notas: nota }).eq('id', clienteActualId)
-    if (error) { toast('Error al guardar nota', 'error'); return }
-    const idx = clientesAll.findIndex(c => c.id === clienteActualId)
-    if (idx !== -1) clientesAll[idx].notas = nota
-    toast('Nota guardada', 'success')
+    confirmAction({
+      title: '¿Guardar nota de esta clienta?',
+      text: 'La nota quedará visible para el equipo administrativo.',
+      btnLabel: 'Guardar nota',
+      type: 'warning',
+      onConfirm: async () => {
+        const { error } = await supabase.from('clientes').update({ notas: nota }).eq('id', clienteActualId)
+        if (error) { toast('Error al guardar nota', 'error'); return }
+        const idx = clientesAll.findIndex(c => c.id === clienteActualId)
+        if (idx !== -1) clientesAll[idx].notas = nota
+        toast('Nota guardada', 'success')
+      }
+    })
   })
 
   ;['modal-cli-close','modal-cli-close2'].forEach(id => document.getElementById(id).addEventListener('click', () => closeModal('modal-cliente')))

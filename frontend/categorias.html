@@ -253,39 +253,49 @@
 
     const btnTxt  = document.getElementById('cat-btn-txt')
     const btnSpin = document.getElementById('cat-btn-spin')
-    btnTxt.textContent = 'Guardando…'; btnSpin.classList.remove('hidden')
+    btn.disabled = false
 
-    try {
-      const hexVal = document.getElementById('cat-color-hex').value.trim().toUpperCase()
-      const payload = {
-        nombre,
-        color:  /^#[0-9A-Fa-f]{6}$/.test(hexVal) ? hexVal : '#C9A961',
-        orden:  parseInt(document.getElementById('cat-orden').value, 10) || 0,
-        activo: catActivoState,
-      }
+    confirmAction({
+      title: editingId ? `¿Guardar cambios en "${nombre}"?` : `¿Crear la categoría "${nombre}"?`,
+      text: editingId ? 'Los cambios se aplicarán de inmediato.' : 'Quedará disponible para asignar servicios.',
+      btnLabel: editingId ? 'Guardar cambios' : 'Crear categoría',
+      type: editingId ? 'warning' : 'success',
+      onConfirm: async () => {
+        btn.disabled = true
+        btnTxt.textContent = 'Guardando…'; btnSpin.classList.remove('hidden')
+        try {
+          const hexVal = document.getElementById('cat-color-hex').value.trim().toUpperCase()
+          const payload = {
+            nombre,
+            color:  /^#[0-9A-Fa-f]{6}$/.test(hexVal) ? hexVal : '#C9A961',
+            orden:  parseInt(document.getElementById('cat-orden').value, 10) || 0,
+            activo: catActivoState,
+          }
 
-      if (editingId) {
-        const { error } = await supabase.from('categorias').update(payload).eq('id', editingId)
-        if (error) throw error
-        if (!payload.activo) {
-          await supabase.from('servicios').update({ categoria_id: null, categoria: null }).eq('categoria_id', editingId)
-        } else {
-          await supabase.from('servicios').update({ categoria: payload.nombre }).eq('categoria_id', editingId)
+          if (editingId) {
+            const { error } = await supabase.from('categorias').update(payload).eq('id', editingId)
+            if (error) throw error
+            if (!payload.activo) {
+              await supabase.from('servicios').update({ categoria_id: null, categoria: null }).eq('categoria_id', editingId)
+            } else {
+              await supabase.from('servicios').update({ categoria: payload.nombre }).eq('categoria_id', editingId)
+            }
+          } else {
+            const { error } = await supabase.from('categorias').insert(payload)
+            if (error) throw error
+          }
+
+          toast(editingId ? 'Categoría actualizada' : 'Categoría creada', 'success')
+          closeModal('modal-categoria')
+          await cargarDatos()
+        } catch (err) {
+          toast(err.message || 'Error al guardar', 'error')
+        } finally {
+          btnTxt.textContent = 'Guardar categoría'; btnSpin.classList.add('hidden')
+          btn.disabled = false
         }
-      } else {
-        const { error } = await supabase.from('categorias').insert(payload)
-        if (error) throw error
       }
-
-      toast(editingId ? 'Categoría actualizada' : 'Categoría creada', 'success')
-      closeModal('modal-categoria')
-      await cargarDatos()
-    } catch (err) {
-      toast(err.message || 'Error al guardar', 'error')
-    } finally {
-      btnTxt.textContent = 'Guardar categoría'; btnSpin.classList.add('hidden')
-      btn.disabled = false
-    }
+    })
   })
 
   // ── Eliminar ──────────────────────────────────────────────

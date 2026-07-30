@@ -152,7 +152,7 @@
   import { requireAdmin }    from '/js/auth.js'
   import { supabase }        from '/js/supabase-client.js'
   import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
-  import { toast, openModal, closeModal } from '/js/utils.js'
+  import { toast, openModal, closeModal, confirmAction } from '/js/utils.js'
 
   const EDGE_FN = 'https://whouejjrpjcvoueyajbu.supabase.co/functions/v1/smooth-function'
 
@@ -223,14 +223,20 @@
   }
 
   // ——— Eliminar admin ——————————————————————————————————————
-  window.eliminarAdmin = async (id, nombre) => {
-    if (!confirm(`¿Eliminar el acceso de admin a "${nombre}"?\n\nEsto revoca su acceso al panel pero NO elimina su cuenta de Supabase Auth.`)) return
+  window.eliminarAdmin = (id, nombre) => {
+    confirmAction({
+      title: `¿Eliminar el acceso de admin a "${nombre}"?`,
+      text: 'Esto revoca su acceso al panel pero NO elimina su cuenta de Supabase Auth.',
+      btnLabel: 'Eliminar',
+      type: 'danger',
+      onConfirm: async () => {
+        const { error } = await supabase.from('admin_users').delete().eq('id', id)
+        if (error) { toast(error.message, 'error'); return }
 
-    const { error } = await supabase.from('admin_users').delete().eq('id', id)
-    if (error) { toast(error.message, 'error'); return }
-
-    toast(`Acceso de "${nombre}" revocado`, 'success')
-    await cargarAdmins()
+        toast(`Acceso de "${nombre}" revocado`, 'success')
+        await cargarAdmins()
+      }
+    })
   }
 
   // ——— Edge Function ————————————————————————————————————————
@@ -312,32 +318,43 @@
 
     const btnTxt  = document.getElementById('adm-btn-txt')
     const btnSpin = document.getElementById('adm-btn-spin')
-    btnTxt.textContent = 'Creando…'
-    btnSpin.classList.remove('hidden')
-    document.getElementById('modal-admin-save').disabled = true
+    const saveBtn = document.getElementById('modal-admin-save')
+    saveBtn.disabled = false
 
-    try {
-      // 1. Crear usuario Auth
-      const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
+    confirmAction({
+      title: `¿Crear acceso de admin para "${nombre}"?`,
+      text: `Podrá iniciar sesión en el panel con ${email}.`,
+      btnLabel: 'Crear admin',
+      type: 'success',
+      onConfirm: async () => {
+        btnTxt.textContent = 'Creando…'
+        btnSpin.classList.remove('hidden')
+        saveBtn.disabled = true
 
-      // 2. Registrar en admin_users
-      const { error } = await supabase
-        .from('admin_users')
-        .insert({ user_id: uuid, nombre, email })
+        try {
+          // 1. Crear usuario Auth
+          const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
 
-      if (error) throw error
+          // 2. Registrar en admin_users
+          const { error } = await supabase
+            .from('admin_users')
+            .insert({ user_id: uuid, nombre, email })
 
-      toast(`Admin "${nombre}" creado exitosamente`, 'success')
-      closeModal('modal-admin')
-      await cargarAdmins()
+          if (error) throw error
 
-    } catch (err) {
-      toast(err.message || 'Error al crear admin', 'error')
-    } finally {
-      btnTxt.textContent = 'Crear admin'
-      btnSpin.classList.add('hidden')
-      document.getElementById('modal-admin-save').disabled = false
-    }
+          toast(`Admin "${nombre}" creado exitosamente`, 'success')
+          closeModal('modal-admin')
+          await cargarAdmins()
+
+        } catch (err) {
+          toast(err.message || 'Error al crear admin', 'error')
+        } finally {
+          btnTxt.textContent = 'Crear admin'
+          btnSpin.classList.add('hidden')
+          saveBtn.disabled = false
+        }
+      }
+    })
   })
 
   // ——— Init ————————————————————————————————————————————————

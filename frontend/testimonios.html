@@ -486,18 +486,26 @@
 
     if (!nombre || !texto) { toast('Nombre y reseña son requeridos', 'error'); return }
 
-    const payload = { nombre, cargo, texto, estado, rating, servicio_id: servId }
-    let error
-    if (id) {
-      ({ error } = await supabase.from('testimonios').update(payload).eq('id', id))
-    } else {
-      const maxOrden = testimonios.filter(t => t.estado === 'publicado').length
-      ;({ error } = await supabase.from('testimonios').insert({ ...payload, orden: maxOrden }))
-    }
-    if (error) { toast('Error al guardar', 'error'); return }
-    toast(id ? 'Testimonio actualizado' : 'Testimonio creado', 'success')
-    closeModal('modal-testimonio')
-    await recargar()
+    confirmAction({
+      title: id ? `¿Guardar cambios del testimonio de "${nombre}"?` : `¿Publicar testimonio de "${nombre}"?`,
+      text: id ? 'Los cambios se aplicarán de inmediato.' : 'Quedará visible según el estado seleccionado.',
+      btnLabel: id ? 'Guardar cambios' : 'Crear testimonio',
+      type: id ? 'warning' : 'success',
+      onConfirm: async () => {
+        const payload = { nombre, cargo, texto, estado, rating, servicio_id: servId }
+        let error
+        if (id) {
+          ({ error } = await supabase.from('testimonios').update(payload).eq('id', id))
+        } else {
+          const maxOrden = testimonios.filter(t => t.estado === 'publicado').length
+          ;({ error } = await supabase.from('testimonios').insert({ ...payload, orden: maxOrden }))
+        }
+        if (error) { toast('Error al guardar', 'error'); return }
+        toast(id ? 'Testimonio actualizado' : 'Testimonio creado', 'success')
+        closeModal('modal-testimonio')
+        await recargar()
+      }
+    })
   })
 
   document.getElementById('btn-eliminar-test').addEventListener('click', () => {

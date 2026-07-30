@@ -344,54 +344,64 @@
 
     const btnTxt  = document.getElementById('svc-btn-txt')
     const btnSpin = document.getElementById('svc-btn-spin')
-    btnTxt.textContent = 'Guardando…'; btnSpin.classList.remove('hidden')
+    btn.disabled = false
 
-    try {
-      const catId   = document.getElementById('svc-categoria').value || null
-      const catObj  = catId ? categoriasAll.find(c => c.id === catId) : null
-      const payload = {
-        nombre,
-        categoria_id: catId,
-        categoria:    catObj?.nombre ?? null,
-        descripcion:  document.getElementById('svc-descripcion').value.trim() || null,
-        duracion_min: duracion,
-        // Vacío = null (hereda el buffer global de configuración); 0 es un valor válido
-        buffer_min:   (() => {
-          const v = document.getElementById('svc-buffer').value.trim()
-          if (v === '') return null
-          const n = parseInt(v, 10)
-          return Number.isFinite(n) && n >= 0 ? n : null
-        })(),
-        precio:       parseFloat(document.getElementById('svc-precio').value) || null,
-        imagen_url:   document.getElementById('svc-imagen').value.trim() || null,
-        activo:       svcActivoState,
+    confirmAction({
+      title: editingId ? `¿Guardar cambios en "${nombre}"?` : `¿Crear el servicio "${nombre}"?`,
+      text: editingId ? 'Los cambios se aplicarán de inmediato.' : 'El servicio quedará disponible para reservas.',
+      btnLabel: editingId ? 'Guardar cambios' : 'Crear servicio',
+      type: editingId ? 'warning' : 'success',
+      onConfirm: async () => {
+        btn.disabled = true
+        btnTxt.textContent = 'Guardando…'; btnSpin.classList.remove('hidden')
+        try {
+          const catId   = document.getElementById('svc-categoria').value || null
+          const catObj  = catId ? categoriasAll.find(c => c.id === catId) : null
+          const payload = {
+            nombre,
+            categoria_id: catId,
+            categoria:    catObj?.nombre ?? null,
+            descripcion:  document.getElementById('svc-descripcion').value.trim() || null,
+            duracion_min: duracion,
+            // Vacío = null (hereda el buffer global de configuración); 0 es un valor válido
+            buffer_min:   (() => {
+              const v = document.getElementById('svc-buffer').value.trim()
+              if (v === '') return null
+              const n = parseInt(v, 10)
+              return Number.isFinite(n) && n >= 0 ? n : null
+            })(),
+            precio:       parseFloat(document.getElementById('svc-precio').value) || null,
+            imagen_url:   document.getElementById('svc-imagen').value.trim() || null,
+            activo:       svcActivoState,
+          }
+
+          let targetId = editingId
+          if (editingId) {
+            const { error } = await supabase.from('servicios').update(payload).eq('id', editingId)
+            if (error) throw error
+          } else {
+            const { data: nuevo, error } = await supabase.from('servicios').insert(payload).select().single()
+            if (error) throw error
+            targetId = nuevo.id
+          }
+
+          // Actualizar asignaciones empleadas
+          await supabase.from('empleado_servicios').delete().eq('servicio_id', targetId)
+          if (empSeleccionados.length) {
+            await supabase.from('empleado_servicios').insert(empSeleccionados.map(e => ({ servicio_id: targetId, empleado_id: e.id })))
+          }
+
+          toast(editingId ? 'Servicio actualizado' : 'Servicio creado', 'success')
+          closeModal('modal-servicio')
+          await cargarDatos()
+        } catch (err) {
+          toast(err.message || 'Error al guardar', 'error')
+        } finally {
+          btnTxt.textContent = 'Guardar servicio'; btnSpin.classList.add('hidden')
+          btn.disabled = false
+        }
       }
-
-      let targetId = editingId
-      if (editingId) {
-        const { error } = await supabase.from('servicios').update(payload).eq('id', editingId)
-        if (error) throw error
-      } else {
-        const { data: nuevo, error } = await supabase.from('servicios').insert(payload).select().single()
-        if (error) throw error
-        targetId = nuevo.id
-      }
-
-      // Actualizar asignaciones empleadas
-      await supabase.from('empleado_servicios').delete().eq('servicio_id', targetId)
-      if (empSeleccionados.length) {
-        await supabase.from('empleado_servicios').insert(empSeleccionados.map(e => ({ servicio_id: targetId, empleado_id: e.id })))
-      }
-
-      toast(editingId ? 'Servicio actualizado' : 'Servicio creado', 'success')
-      closeModal('modal-servicio')
-      await cargarDatos()
-    } catch (err) {
-      toast(err.message || 'Error al guardar', 'error')
-    } finally {
-      btnTxt.textContent = 'Guardar servicio'; btnSpin.classList.add('hidden')
-      document.getElementById('modal-svc-save').disabled = false
-    }
+    })
   })
 
   window.eliminarServicio = (id, nombre) => {

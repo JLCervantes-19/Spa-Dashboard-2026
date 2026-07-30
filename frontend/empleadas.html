@@ -587,63 +587,74 @@
 
     const btnTxt  = document.getElementById('emp-btn-txt')
     const btnSpin = document.getElementById('emp-btn-spin')
-    btnTxt.textContent = 'Guardando…'
-    btnSpin.classList.remove('hidden')
-    document.getElementById('modal-emp-save').disabled = true
+    const saveBtn = document.getElementById('modal-emp-save')
+    saveBtn.disabled = false
 
-    try {
-      const payload = { nombre, apellido, email, telefono, descripcion, foto_url, activo: empActivoState }
+    confirmAction({
+      title: editingId ? `¿Guardar cambios de "${nombre} ${apellido}"?` : `¿Crear a "${nombre} ${apellido}" como empleada?`,
+      text: editingId ? 'Los cambios (y credenciales, si aplica) se aplicarán de inmediato.' : 'Se creará su acceso al staff-app con las credenciales indicadas.',
+      btnLabel: editingId ? 'Guardar cambios' : 'Crear empleada',
+      type: editingId ? 'warning' : 'success',
+      onConfirm: async () => {
+        btnTxt.textContent = 'Guardando…'
+        btnSpin.classList.remove('hidden')
+        saveBtn.disabled = true
 
-      if (editingId) {
-        // ——— Editar ———
-        const { error } = await supabase.from('empleados').update(payload).eq('id', editingId)
-        if (error) throw error
+        try {
+          const payload = { nombre, apellido, email, telefono, descripcion, foto_url, activo: empActivoState }
 
-        await supabase.from('empleado_servicios').delete().eq('empleado_id', editingId)
-        if (serviciosSeleccionados.length) {
-          await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: editingId, servicio_id: s.id })))
-        }
+          if (editingId) {
+            // ——— Editar ———
+            const { error } = await supabase.from('empleados').update(payload).eq('id', editingId)
+            if (error) throw error
 
-        // Manejo de credenciales Auth
-        if (password) {
-          if (existingAuthId) {
-            // Actualizar contraseña
-            await llamarEdgeFn({ action: 'update_password', user_id: existingAuthId, password })
-            toast('Empleada actualizada y contraseña cambiada', 'success')
+            await supabase.from('empleado_servicios').delete().eq('empleado_id', editingId)
+            if (serviciosSeleccionados.length) {
+              await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: editingId, servicio_id: s.id })))
+            }
+
+            // Manejo de credenciales Auth
+            if (password) {
+              if (existingAuthId) {
+                // Actualizar contraseña
+                await llamarEdgeFn({ action: 'update_password', user_id: existingAuthId, password })
+                toast('Empleada actualizada y contraseña cambiada', 'success')
+              } else {
+                // Crear acceso por primera vez
+                const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
+                await supabase.from('empleados').update({ auth_user_id: uuid }).eq('id', editingId)
+                toast('Empleada actualizada y acceso creado', 'success')
+              }
+            } else {
+              toast('Empleada actualizada', 'success')
+            }
+
           } else {
-            // Crear acceso por primera vez
+            // ——— Nueva empleada ———
+            // Crear acceso Auth primero
             const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
-            await supabase.from('empleados').update({ auth_user_id: uuid }).eq('id', editingId)
-            toast('Empleada actualizada y acceso creado', 'success')
+            payload.auth_user_id = uuid
+
+            const { data: nueva, error } = await supabase.from('empleados').insert(payload).select().single()
+            if (error) throw error
+
+            if (serviciosSeleccionados.length) {
+              await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: nueva.id, servicio_id: s.id })))
+            }
+            toast(`Empleada creada. Credenciales: ${email} / contraseña asignada`, 'success')
           }
-        } else {
-          toast('Empleada actualizada', 'success')
+
+          closeModal('modal-empleada')
+          await cargarDatos()
+        } catch (err) {
+          toast(err.message || 'Error al guardar', 'error')
+        } finally {
+          btnTxt.textContent = 'Guardar empleada'
+          btnSpin.classList.add('hidden')
+          saveBtn.disabled = false
         }
-
-      } else {
-        // ——— Nueva empleada ———
-        // Crear acceso Auth primero
-        const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
-        payload.auth_user_id = uuid
-
-        const { data: nueva, error } = await supabase.from('empleados').insert(payload).select().single()
-        if (error) throw error
-
-        if (serviciosSeleccionados.length) {
-          await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: nueva.id, servicio_id: s.id })))
-        }
-        toast(`Empleada creada. Credenciales: ${email} / contraseña asignada`, 'success')
       }
-
-      closeModal('modal-empleada')
-      await cargarDatos()
-    } catch (err) {
-      toast(err.message || 'Error al guardar', 'error')
-    } finally {
-      btnTxt.textContent = 'Guardar empleada'
-      btnSpin.classList.add('hidden')
-      document.getElementById('modal-emp-save').disabled = false
-    }
+    })
   })
 
   // ——— Ver detalle ————————————————————————————————————

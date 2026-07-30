@@ -441,17 +441,25 @@
 
     if (!payload.nombre_spa) { toast('El nombre del spa es requerido', 'error'); return }
 
-    let error
-    if (configId) {
-      ({ error } = await supabase.from('configuracion').update(payload).eq('id', configId))
-    } else {
-      const { data, error: insErr } = await supabase.from('configuracion').insert(payload).select('id').single()
-      error = insErr
-      if (data) configId = data.id
-    }
+    confirmAction({
+      title: '¿Guardar cambios en la configuración del spa?',
+      text: 'Estos cambios se reflejan de inmediato en el sitio web público.',
+      btnLabel: 'Guardar cambios',
+      type: 'warning',
+      onConfirm: async () => {
+        let error
+        if (configId) {
+          ({ error } = await supabase.from('configuracion').update(payload).eq('id', configId))
+        } else {
+          const { data, error: insErr } = await supabase.from('configuracion').insert(payload).select('id').single()
+          error = insErr
+          if (data) configId = data.id
+        }
 
-    if (error) { toast('Error al guardar configuración: ' + error.message, 'error'); return }
-    toast('Configuración guardada. Los cambios se reflejan en el sitio web.', 'success')
+        if (error) { toast('Error al guardar configuración: ' + error.message, 'error'); return }
+        toast('Configuración guardada. Los cambios se reflejan en el sitio web.', 'success')
+      }
+    })
   })
 
   await cargarConfig()
