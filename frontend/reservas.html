@@ -189,6 +189,10 @@
         <textarea id="nres-notas" class="form-textarea" rows="2" placeholder="Notas adicionales…" maxlength="500"></textarea>
       </div>
       <div id="nres-sugerencia" style="display:none;padding:10px 12px;background:var(--lilac-pale);border-radius:var(--radius-sm);font-size:0.82rem;color:var(--text-secondary);margin-top:8px"></div>
+      <div id="nres-horas-wrap" style="display:none;margin-top:12px">
+        <label class="form-label" style="display:block;margin-bottom:6px">Horas disponibles ese día</label>
+        <div id="nres-horas-chips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" id="modal-nres-cancel">Cancelar</button>
@@ -234,7 +238,8 @@
   import {
     formatFecha, formatFechaCorta, formatHora, badgeCita, avatarHTML,
     toast, openModal, closeModal, confirmAction, renderSidebarUser,
-    debounce, autoAsignarEmpleada, truncate, todayISO } from '/js/utils.js'
+    debounce, autoAsignarEmpleada, getHorasDisponibles, getEmpleadasLibresEnSlot,
+    elegirMenorCarga, truncate, todayISO } from '/js/utils.js'
 
   const auth = await requireAdmin()
   if (!auth) throw new Error()
@@ -468,35 +473,104 @@
   }
 
   // ——— Nueva reserva ————————————————————————————————————
+  // Limpia el formulario por completo — evita que queden datos del
+  // cliente anterior si se cierra el modal (X / Cancelar) o tras crear
+  // una reserva y se vuelve a abrir para otra clienta.
+  function resetNuevaReservaForm() {
+    document.getElementById('nres-nombre').value    = ''
+    document.getElementById('nres-telefono').value  = ''
+    document.getElementById('nres-email').value     = ''
+    document.getElementById('nres-servicio').value  = ''
+    document.getElementById('nres-empleada').value  = ''
+    document.getElementById('nres-fecha').value     = todayISO()
+    document.getElementById('nres-hora').value      = ''
+    document.getElementById('nres-notas').value     = ''
+    document.getElementById('nres-sugerencia').style.display = 'none'
+    document.getElementById('nres-horas-wrap').style.display = 'none'
+    document.getElementById('nres-horas-chips').innerHTML = ''
+  }
+
   document.getElementById('btn-nueva-reserva').addEventListener('click', () => {
-    const hoy = todayISO()
-    document.getElementById('nres-fecha').value = hoy
+    resetNuevaReservaForm()
     openModal('modal-nueva-reserva')
   })
 
-  // Auto-sugerir empleada cuando cambia servicio
-  document.getElementById('nres-servicio').addEventListener('change', async () => {
+  // Sugerir empleada (auto-asignación) + horas disponibles reales para
+  // el servicio/fecha/empleada seleccionados. Se recalcula ante
+  // cualquier cambio relevante para evitar sugerir/aceptar horarios
+  // que en realidad ya están ocupados.
+  async function actualizarSugerenciaEmpleada() {
     const svcId  = document.getElementById('nres-servicio').value
     const fecha  = document.getElementById('nres-fecha').value
+    const empSel = document.getElementById('nres-empleada').value
     const sug    = document.getElementById('nres-sugerencia')
-    if (!svcId || !fecha) { sug.style.display = 'none'; return }
-    const empId = await autoAsignarEmpleada(supabase, svcId, fecha)
-    if (empId) {
-      const emp = empleadasAll.find(e => e.id === empId)
-      if (emp) {
-        sug.style.display = 'block'
-        sug.textContent = `✦ Se asignará automáticamente a ${[emp.nombre, emp.apellido].filter(Boolean).join(' ')} (menor carga del día)`
-        document.getElementById('nres-empleada').value = ''
-      }
-    } else {
-      sug.style.display = 'block'
-      sug.textContent = '⚠ No hay empleadas asignadas a este servicio. Se creará sin empleada asignada.'
-    }
-  })
 
+    if (!svcId || !fecha) { sug.style.display = 'none'; return }
+
+    if (empSel) {
+      // Empleada elegida manualmente: no auto-asignar
+      sug.style.display = 'none'
+    } else {
+      const empId = await autoAsignarEmpleada(supabase, svcId, fecha)
+      if (empId) {
+        const emp = empleadasAll.find(e => e.id === empId)
+        sug.style.display = 'block'
+        sug.textContent = emp
+          ? `✦ Se asignará automáticamente a ${[emp.nombre, emp.apellido].filter(Boolean).join(' ')} (menor carga del día). Verifica que el horario elegido esté disponible.`
+          : ''
+      } else {
+        sug.style.display = 'block'
+        sug.textContent = '⚠ No hay empleadas asignadas a este servicio. Se creará sin empleada asignada.'
+      }
+    }
+  }
+
+  async function actualizarHorasDisponibles() {
+    const svcId  = document.getElementById('nres-servicio').value
+    const fecha  = document.getElementById('nres-fecha').value
+    const empSel = document.getElementById('nres-empleada').value || null
+    const wrap   = document.getElementById('nres-horas-wrap')
+    const chips  = document.getElementById('nres-horas-chips')
+
+    if (!svcId || !fecha) { wrap.style.display = 'none'; chips.innerHTML = ''; return }
+
+    const horaInput = document.getElementById('nres-hora')
+    const slots = await getHorasDisponibles(supabase, { servicioId: svcId, fecha, empleadaId: empSel, bufferGlobal })
+
+    if (!slots.length) {
+      wrap.style.display = 'block'
+      chips.innerHTML = `<span style="font-size:0.8rem;color:var(--text-muted)">El spa no atiende ese día, o no hay horarios que alcancen a completar el servicio.</span>`
+      return
+    }
+
+    wrap.style.display = 'block'
+    chips.innerHTML = slots.map(s => `
+      <button type="button" class="hora-chip ${s.disponible ? '' : 'ocupada'} ${horaInput.value === s.hora ? 'selected' : ''}"
+        data-hora="${s.hora}" ${s.disponible ? '' : 'disabled title="No disponible: ya hay una cita o bloqueo en este horario"'}>
+        ${formatHora(s.hora)}
+      </button>
+    `).join('')
+
+    chips.querySelectorAll('.hora-chip:not(.ocupada)').forEach(btn => {
+      btn.addEventListener('click', () => {
+        horaInput.value = btn.dataset.hora
+        chips.querySelectorAll('.hora-chip').forEach(b => b.classList.remove('selected'))
+        btn.classList.add('selected')
+      })
+    })
+  }
+
+  document.getElementById('nres-servicio').addEventListener('change', () => {
+    actualizarSugerenciaEmpleada()
+    actualizarHorasDisponibles()
+  })
+  document.getElementById('nres-empleada').addEventListener('change', () => {
+    actualizarSugerenciaEmpleada()
+    actualizarHorasDisponibles()
+  })
   document.getElementById('nres-fecha').addEventListener('change', () => {
-    const svcId = document.getElementById('nres-servicio').value
-    if (svcId) document.getElementById('nres-servicio').dispatchEvent(new Event('change'))
+    actualizarSugerenciaEmpleada()
+    actualizarHorasDisponibles()
   })
 
   document.getElementById('modal-nres-save').addEventListener('click', async () => {
@@ -514,6 +588,22 @@
 
     const svc = serviciosAll.find(s => s.id === svcId)
     if (!svc) return
+
+    // buffer_min null = heredar el buffer global; 0 es un valor válido
+    const totalMin  = (svc.duracion_min || 60) + (svc.buffer_min ?? bufferGlobal)
+    const [h, m]    = hora.split(':').map(Number)
+    const finMin    = h * 60 + m + totalMin
+    const hora_fin  = `${String(Math.floor(finMin/60)).padStart(2,'0')}:${String(finMin%60).padStart(2,'0')}`
+    const empSel    = document.getElementById('nres-empleada').value || null
+
+    // Validar disponibilidad real ANTES de mostrar la confirmación —
+    // evita crear una cita encima de otra ya existente.
+    const libres = await getEmpleadasLibresEnSlot(supabase, { servicioId: svcId, fecha, hora, horaFin: hora_fin, empleadaId: empSel })
+    if (!libres.length) {
+      toast(empSel ? 'Esa empleada ya no está disponible en ese horario.' : 'Ninguna empleada está disponible en ese horario.', 'error')
+      actualizarHorasDisponibles()
+      return
+    }
 
     const btn = document.getElementById('modal-nres-save')
     btn.disabled = false
@@ -552,17 +642,14 @@
             cliente_id = nuevoC.id
           }
 
-          // Auto-asignar o usar selección manual
-          let empleado_id = document.getElementById('nres-empleada').value || null
-          if (!empleado_id) {
-            empleado_id = await autoAsignarEmpleada(supabase, svcId, fecha)
+          // Re-validar disponibilidad justo antes de insertar (pudo cambiar
+          // entre la validación previa y la confirmación del usuario) y
+          // resolver la empleada final entre las que sí están libres.
+          const librasFinal = await getEmpleadasLibresEnSlot(supabase, { servicioId: svcId, fecha, hora, horaFin: hora_fin, empleadaId: empSel })
+          if (!librasFinal.length) {
+            throw new Error(empSel ? 'Esa empleada ya no está disponible en ese horario.' : 'Ninguna empleada está disponible en ese horario.')
           }
-
-          // buffer_min null = heredar el buffer global; 0 es un valor válido
-          const totalMin  = (svc.duracion_min || 60) + (svc.buffer_min ?? bufferGlobal)
-          const [h, m]    = hora.split(':').map(Number)
-          const finMin    = h * 60 + m + totalMin
-          const hora_fin  = `${String(Math.floor(finMin/60)).padStart(2,'0')}:${String(finMin%60).padStart(2,'0')}`
+          const empleado_id = empSel || await elegirMenorCarga(supabase, svcId, librasFinal, fecha)
 
           // Con empleada asignada la cita nace confirmada; sin empleada queda pendiente
           const { error } = await supabase.from('citas').insert({

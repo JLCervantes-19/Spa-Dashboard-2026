@@ -301,3 +301,139 @@ export async function autoAsignarEmpleada(supabase, servicioId, fecha) {
   const empatadas = empleadaIds.filter(id => conteo[id] === minimo)
   return empatadas[Math.floor(Math.random() * empatadas.length)]
 }
+
+// ——— Disponibilidad horaria (Nueva reserva manual) ——————————
+// Misma lógica de solapamiento que el backend público (routes/bookings.js:
+// empleadaEstaLibre). Se usa para sugerir y validar horas al crear una
+// reserva manual desde el dashboard.
+const DIA_KEYS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
+const HORARIO_FALLBACK = {
+  lunes: { open: '09:00', close: '18:00', activo: true }, martes: { open: '09:00', close: '18:00', activo: true },
+  miercoles: { open: '09:00', close: '18:00', activo: true }, jueves: { open: '09:00', close: '18:00', activo: true },
+  viernes: { open: '09:00', close: '18:00', activo: true }, sabado: { open: '09:00', close: '16:00', activo: true },
+  domingo: { open: '09:00', close: '16:00', activo: false },
+}
+function timeToMin(t) { const [h, m] = t.slice(0, 5).split(':').map(Number); return h * 60 + m }
+function minToTime(m) { return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}` }
+function cruzanHorario(s1, e1, s2, e2) { return timeToMin(s1) < timeToMin(e2) && timeToMin(e1) > timeToMin(s2) }
+
+// Devuelve [{ hora, disponible }] para cada slot del día. Si se pasa
+// empleadaId, evalúa solo esa empleada; si no, cualquiera de las
+// asignadas al servicio (equivalente a "Auto-asignar").
+export async function getHorasDisponibles(supabase, { servicioId, fecha, empleadaId, bufferGlobal = 10 }) {
+  if (!servicioId || !fecha) return []
+
+  const [{ data: svc }, { data: config }] = await Promise.all([
+    supabase.from('servicios').select('duracion_min, buffer_min').eq('id', servicioId).single(),
+    supabase.from('configuracion').select('horario_semana, buffer_min').limit(1).single(),
+  ])
+  if (!svc) return []
+
+  const horario = config?.horario_semana || HORARIO_FALLBACK
+  const diaKey  = DIA_KEYS_SEMANA[new Date(fecha + 'T12:00:00').getDay()]
+  const diaConf = horario[diaKey]
+  if (!diaConf?.activo) return []
+
+  const totalMin = svc.duracion_min + (svc.buffer_min ?? config?.buffer_min ?? bufferGlobal)
+
+  let candidatas
+  if (empleadaId) {
+    candidatas = [empleadaId]
+  } else {
+    const { data: asignaciones } = await supabase.from('empleado_servicios').select('empleado_id').eq('servicio_id', servicioId)
+    candidatas = [...new Set((asignaciones || []).map(a => a.empleado_id))]
+  }
+  if (!candidatas.length) return []
+
+  const [{ data: citas }, { data: bloqueos }] = await Promise.all([
+    supabase.from('citas').select('empleado_id, hora_inicio, hora_fin')
+      .eq('fecha', fecha).not('estado', 'in', '(cancelada_cliente,cancelada_admin,no_asistio)').in('empleado_id', candidatas),
+    supabase.from('bloqueos').select('empleado_id, hora_inicio, hora_fin')
+      .lte('fecha_inicio', fecha).gte('fecha_fin', fecha),
+  ])
+
+  const citasPorEmp = {}
+  candidatas.forEach(id => { citasPorEmp[id] = [] })
+  ;(citas || []).forEach(c => { if (citasPorEmp[c.empleado_id]) citasPorEmp[c.empleado_id].push(c) })
+
+  const bloqueosPorEmp = {}
+  candidatas.forEach(id => { bloqueosPorEmp[id] = [] })
+  ;(bloqueos || []).forEach(b => {
+    if (b.empleado_id === null) candidatas.forEach(id => bloqueosPorEmp[id].push(b))
+    else if (bloqueosPorEmp[b.empleado_id]) bloqueosPorEmp[b.empleado_id].push(b)
+  })
+
+  const libre = (empId, s, e) => {
+    if (citasPorEmp[empId].some(c => cruzanHorario(s, e, c.hora_inicio, c.hora_fin))) return false
+    return !bloqueosPorEmp[empId].some(b => {
+      if (!b.hora_inicio) return true
+      return cruzanHorario(s, e, b.hora_inicio.slice(0, 5), (b.hora_fin || '23:59').slice(0, 5))
+    })
+  }
+
+  const slots = []
+  let cursor = timeToMin(diaConf.open)
+  const fin = timeToMin(diaConf.close)
+  while (cursor + totalMin <= fin) {
+    const s = minToTime(cursor)
+    const e = minToTime(cursor + totalMin)
+    slots.push({ hora: s, disponible: candidatas.some(id => libre(id, s, e)) })
+    cursor += totalMin
+  }
+  return slots
+}
+
+// Empleadas realmente libres en un horario exacto (hora–horaFin), sin
+// alinearse a la grilla de slots. Si se pasa empleadaId, evalúa solo
+// esa empleada; si no, todas las asignadas al servicio.
+export async function getEmpleadasLibresEnSlot(supabase, { servicioId, fecha, hora, horaFin, empleadaId }) {
+  let candidatas
+  if (empleadaId) {
+    candidatas = [empleadaId]
+  } else {
+    const { data: asignaciones } = await supabase.from('empleado_servicios').select('empleado_id').eq('servicio_id', servicioId)
+    candidatas = [...new Set((asignaciones || []).map(a => a.empleado_id))]
+  }
+  if (!candidatas.length) return []
+
+  const [{ data: citas }, { data: bloqueos }] = await Promise.all([
+    supabase.from('citas').select('empleado_id, hora_inicio, hora_fin')
+      .eq('fecha', fecha).not('estado', 'in', '(cancelada_cliente,cancelada_admin,no_asistio)').in('empleado_id', candidatas),
+    supabase.from('bloqueos').select('empleado_id, hora_inicio, hora_fin')
+      .lte('fecha_inicio', fecha).gte('fecha_fin', fecha),
+  ])
+
+  return candidatas.filter(id => {
+    const ocupada = (citas || []).some(c => c.empleado_id === id && cruzanHorario(hora, horaFin, c.hora_inicio, c.hora_fin))
+    if (ocupada) return false
+    return !(bloqueos || []).some(b => {
+      if (b.empleado_id !== null && b.empleado_id !== id) return false
+      if (!b.hora_inicio) return true
+      return cruzanHorario(hora, horaFin, b.hora_inicio.slice(0, 5), (b.hora_fin || '23:59').slice(0, 5))
+    })
+  })
+}
+
+// Igual que autoAsignarEmpleada pero restringido a una lista de
+// candidatas ya filtrada (p. ej. las que están libres en un slot dado).
+export async function elegirMenorCarga(supabase, servicioId, candidatasIds, fecha) {
+  if (!candidatasIds?.length) return null
+  const hace30 = hoyBogota()
+  hace30.setDate(hace30.getDate() - 30)
+  const { data: citasServicio } = await supabase
+    .from('citas')
+    .select('empleado_id')
+    .eq('servicio_id', servicioId)
+    .gte('fecha', toISODate(hace30))
+    .not('estado', 'in', '(cancelada_cliente,cancelada_admin,no_asistio)')
+    .in('empleado_id', candidatasIds)
+
+  const conteo = {}
+  candidatasIds.forEach(id => { conteo[id] = 0 })
+  ;(citasServicio || []).forEach(c => {
+    if (c.empleado_id) conteo[c.empleado_id] = (conteo[c.empleado_id] || 0) + 1
+  })
+  const minimo = Math.min(...candidatasIds.map(id => conteo[id]))
+  const empatadas = candidatasIds.filter(id => conteo[id] === minimo)
+  return empatadas[Math.floor(Math.random() * empatadas.length)]
+}

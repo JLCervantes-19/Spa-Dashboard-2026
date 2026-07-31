@@ -491,6 +491,29 @@ img { max-width: 100%; display: block; }
   border-radius: var(--radius-sm);
 }
 
+/* ——— HORA CHIPS (Nueva reserva manual) ————————————————————— */
+.hora-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  border: 1px solid var(--card-border);
+  background: #fff;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.hora-chip:hover { border-color: var(--lilac); background: var(--lilac-pale); }
+.hora-chip.selected { background: var(--purple-dark); border-color: var(--purple-dark); color: #fff; }
+.hora-chip.ocupada {
+  background: var(--danger-bg);
+  border-color: transparent;
+  color: var(--danger);
+  opacity: 0.6;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
 /* ——— BADGES / CHIPS ————————————————————————————————————————— */
 .badge {
   display: inline-flex;
