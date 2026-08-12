@@ -49,12 +49,31 @@ Guarda el `id` que te devuelve — es el que usas en el Paso 2.
 
 ### Paso 1 — Crear el usuario en Supabase Auth
 
+Importante: esto **no se puede hacer con un INSERT de SQL** — el usuario y la contraseña
+viven en el sistema de Auth de Supabase, no son una fila común. Dos formas de hacerlo:
+
+**Opción A — Dashboard (más simple, elegís vos la contraseña):**
+
 1. Ve a **supabase.com** → tu proyecto
 2. Menú izquierdo → **Authentication** → **Users**
 3. Haz clic en **"Add user"** → **"Create new user"**
 4. Ingresa el **email** y la **contraseña**
 5. Haz clic en **"Create user"**
 6. Copia el **UUID** que aparece en la columna `User UID` (formato: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+
+**Opción B — por API (útil si lo estás automatizando o pidiéndoselo a Claude):**
+
+```bash
+curl -s -X POST "https://whouejjrpjcvoueyajbu.supabase.co/auth/v1/admin/users" \
+  -H "apikey: $SUPABASE_SERVICE_KEY" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@empresa.com","password":"CONTRASEÑA-SEGURA","email_confirm":true}'
+```
+
+`$SUPABASE_SERVICE_KEY` es la misma variable que ya existe en el `.env` de este proyecto
+(clave `service_role` — nunca la compartas ni la pongas en el frontend). La respuesta trae
+el `id` (UUID) del usuario recién creado — es el que usás en el Paso 2.
 
 ### Paso 2 — Registrar como admin en la base de datos
 
