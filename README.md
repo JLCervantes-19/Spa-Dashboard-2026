@@ -6,6 +6,12 @@ Panel administrativo completo para el spa Oh Diosas by Tatiana Zuleta. Permite g
 
 ---
 
+## Multi-tenant
+
+Este panel sirve a **todas las empresas del sistema desde un único despliegue** — no se redespliega por cada empresa nueva. La empresa de cada admin la determina su propia fila en `admin_users` (columna `empresa_id`); RLS filtra el resto automáticamente. Al crear cualquier registro nuevo desde este panel (empleada, servicio, categoría, reserva manual, etc.) hay que incluir `empresa_id: auth.admin.empresa_id` — ya está hecho en el código actual, tenerlo en cuenta para features nuevas. Manual completo de cómo dar de alta una empresa nueva: `SpaOhDiosas/README.md`.
+
+---
+
 ## Estructura del proyecto
 
 ```
