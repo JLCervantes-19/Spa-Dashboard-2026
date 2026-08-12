@@ -498,7 +498,7 @@
           ({ error } = await supabase.from('testimonios').update(payload).eq('id', id))
         } else {
           const maxOrden = testimonios.filter(t => t.estado === 'publicado').length
-          ;({ error } = await supabase.from('testimonios').insert({ ...payload, orden: maxOrden }))
+          ;({ error } = await supabase.from('testimonios').insert({ ...payload, orden: maxOrden, empresa_id: auth.admin.empresa_id }))
         }
         if (error) { toast('Error al guardar', 'error'); return }
         toast(id ? 'Testimonio actualizado' : 'Testimonio creado', 'success')

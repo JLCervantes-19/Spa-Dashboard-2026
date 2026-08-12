@@ -380,6 +380,7 @@
             const { error } = await supabase.from('servicios').update(payload).eq('id', editingId)
             if (error) throw error
           } else {
+            payload.empresa_id = auth.admin.empresa_id
             const { data: nuevo, error } = await supabase.from('servicios').insert(payload).select().single()
             if (error) throw error
             targetId = nuevo.id
@@ -388,7 +389,7 @@
           // Actualizar asignaciones empleadas
           await supabase.from('empleado_servicios').delete().eq('servicio_id', targetId)
           if (empSeleccionados.length) {
-            await supabase.from('empleado_servicios').insert(empSeleccionados.map(e => ({ servicio_id: targetId, empleado_id: e.id })))
+            await supabase.from('empleado_servicios').insert(empSeleccionados.map(e => ({ servicio_id: targetId, empleado_id: e.id, empresa_id: auth.admin.empresa_id })))
           }
 
           toast(editingId ? 'Servicio actualizado' : 'Servicio creado', 'success')

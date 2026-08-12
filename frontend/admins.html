@@ -20,7 +20,7 @@
       transition: var(--transition);
     }
     .admin-card:hover { border-color: var(--lilac); }
-    .admin-card.me   { border-color: var(--purple-medium); background: rgba(82,37,102,0.04); }
+    .admin-card.me   { border-color: var(--purple-medium); background: rgba(33,27,20,0.04); }
     .admin-avatar {
       width: 46px; height: 46px;
       border-radius: 50%;
@@ -126,7 +126,7 @@
         <label class="form-label">Contraseña <span class="required-star">*</span></label>
         <div style="position:relative">
           <input type="password" id="adm-password" class="form-input"
-            placeholder="Mínimo 8 caracteres" autocomplete="new-password"
+            placeholder="Mínimo 8 caracteres, 1 mayúscula" autocomplete="new-password"
             style="padding-right:42px" />
           <button type="button" id="adm-pass-toggle" tabindex="-1"
             style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0;line-height:0">
@@ -135,7 +135,7 @@
           </button>
         </div>
         <p class="form-hint mt-4">El admin usará estas credenciales para ingresar al panel.</p>
-        <p class="form-error hidden" id="err-adm-password">Contraseña requerida (mínimo 8 caracteres).</p>
+        <p class="form-error hidden" id="err-adm-password">Contraseña requerida (mínimo 8 caracteres, 1 mayúscula).</p>
       </div>
     </div>
     <div class="modal-footer">
@@ -306,7 +306,7 @@
       document.getElementById('err-adm-email').classList.add('hidden')
       document.getElementById('adm-email').classList.remove('error')
     }
-    if (!password || password.length < 8) {
+    if (!password || password.length < 8 || !/[A-Z]/.test(password)) {
       document.getElementById('err-adm-password').classList.remove('hidden')
       document.getElementById('adm-password').classList.add('error')
       valid = false
@@ -338,7 +338,7 @@
           // 2. Registrar en admin_users
           const { error } = await supabase
             .from('admin_users')
-            .insert({ user_id: uuid, nombre, email })
+            .insert({ user_id: uuid, nombre, email, empresa_id: auth.admin.empresa_id })
 
           if (error) throw error
 

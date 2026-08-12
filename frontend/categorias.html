@@ -281,6 +281,7 @@
               await supabase.from('servicios').update({ categoria: payload.nombre }).eq('categoria_id', editingId)
             }
           } else {
+            payload.empresa_id = auth.admin.empresa_id
             const { error } = await supabase.from('categorias').insert(payload)
             if (error) throw error
           }

@@ -4,30 +4,34 @@
 
 /* ——— VARIABLES ——————————————————————————————————————————— */
 :root {
-  /* Paleta (heredada del proyecto principal, versión formal) */
-  --purple-dark:    #522566;
-  --purple-medium:  #7A3A8E;
-  --lilac:          #AD74C3;
-  --lilac-light:    #EADFF0;
-  --lilac-pale:     #F8EDFB;
+  /* Paleta admin — identidad propia (dorado + carbón cálido),
+     distinta de la paleta púrpura de la landing. Los NOMBRES de las
+     variables se mantienen (purple-dark, lilac, etc.) para no romper
+     ~90 referencias en este archivo y en otros HTML; lo que cambió
+     son los valores. Ver design-tokens.css para la nota. */
+  --purple-dark:    #5C4420;
+  --purple-medium:  #8A6A2E;
+  --lilac:          #C9A961;
+  --lilac-light:    #EDE1C8;
+  --lilac-pale:     #FAF5EA;
 
   /* Admin específico */
-  --sidebar-bg:     #1C0D25;
+  --sidebar-bg:     #211B12;
   --sidebar-item:   rgba(255,255,255,0.06);
-  --sidebar-active: rgba(173,116,195,0.20);
+  --sidebar-active: rgba(201,169,97,0.20);
   --sidebar-text:   rgba(255,255,255,0.70);
   --sidebar-text-active: #fff;
   --sidebar-border: rgba(255,255,255,0.06);
   --sidebar-width:  240px;
 
-  --content-bg:     #F4EEF9;
+  --content-bg:     #FAF8F5;
   --card-bg:        #FFFFFF;
-  --card-border:    rgba(82,37,102,0.08);
-  --divider:        rgba(82,37,102,0.08);
+  --card-border:    rgba(33,27,20,0.08);
+  --divider:        rgba(33,27,20,0.08);
 
-  --text-primary:   #1a0f1e;
-  --text-secondary: #522566;
-  --text-muted:     rgba(82,37,102,0.45);
+  --text-primary:   #211B14;
+  --text-secondary: #5C5347;
+  --text-muted:     rgba(33,27,20,0.45);
 
   /* Semánticos */
   --success:        #16a34a;
@@ -61,10 +65,10 @@
   --font-mono:    'SF Mono', 'Fira Code', monospace;
 
   /* Sombras */
-  --shadow-xs:  0 1px 2px rgba(82,37,102,0.06);
-  --shadow-sm:  0 2px 8px rgba(82,37,102,0.08);
-  --shadow-md:  0 4px 20px rgba(82,37,102,0.12);
-  --shadow-lg:  0 8px 40px rgba(82,37,102,0.16);
+  --shadow-xs:  0 1px 2px rgba(33,27,20,0.06);
+  --shadow-sm:  0 2px 8px rgba(33,27,20,0.08);
+  --shadow-md:  0 4px 20px rgba(33,27,20,0.12);
+  --shadow-lg:  0 8px 40px rgba(33,27,20,0.16);
 
   --radius-sm:  6px;
   --radius-md:  10px;
@@ -74,10 +78,10 @@
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Aliases de compatibilidad */
-  --border:      rgba(82,37,102,0.10);
-  --hover-bg:    rgba(82,37,102,0.04);
+  --border:      rgba(33,27,20,0.10);
+  --hover-bg:    rgba(33,27,20,0.04);
   --input-bg:    #ffffff;
-  --shadow-card: 0 4px 20px rgba(82,37,102,0.12);
+  --shadow-card: 0 4px 20px rgba(33,27,20,0.12);
 }
 
 /* ——— RESET ————————————————————————————————————————————————— */
@@ -296,7 +300,7 @@ img { max-width: 100%; display: block; }
 .card-footer {
   padding: 14px 24px;
   border-top: 1px solid var(--divider);
-  background: rgba(82,37,102,0.02);
+  background: rgba(33,27,20,0.02);
 }
 
 /* ——— KPI CARDS ————————————————————————————————————————————— */
@@ -382,7 +386,7 @@ img { max-width: 100%; display: block; }
   padding: 10px 16px;
   border-bottom: 1px solid var(--divider);
   white-space: nowrap;
-  background: rgba(82,37,102,0.02);
+  background: rgba(33,27,20,0.02);
 }
 .data-table td {
   padding: 12px 16px;
@@ -391,7 +395,7 @@ img { max-width: 100%; display: block; }
   vertical-align: middle;
 }
 .data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: rgba(82,37,102,0.02); }
+.data-table tr:hover td { background: rgba(33,27,20,0.02); }
 .data-table .td-muted { color: var(--text-muted); font-size: 0.78rem; }
 
 .table-actions {
@@ -608,7 +612,7 @@ img { max-width: 100%; display: block; }
 }
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   border-color: var(--lilac);
-  box-shadow: 0 0 0 3px rgba(173,116,195,0.12);
+  box-shadow: 0 0 0 3px rgba(201,169,97,0.12);
 }
 .form-input.error, .form-select.error, .form-textarea.error {
   border-color: var(--danger);
@@ -698,7 +702,7 @@ img { max-width: 100%; display: block; }
 }
 .multiselect-wrapper:focus-within {
   border-color: var(--lilac);
-  box-shadow: 0 0 0 3px rgba(173,116,195,0.12);
+  box-shadow: 0 0 0 3px rgba(201,169,97,0.12);
 }
 .ms-chip {
   display: inline-flex;
@@ -714,7 +718,7 @@ img { max-width: 100%; display: block; }
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: rgba(82,37,102,0.15);
+  background: rgba(33,27,20,0.15);
   color: var(--purple-dark);
   font-size: 0.6rem;
   display: flex;
@@ -856,7 +860,7 @@ img { max-width: 100%; display: block; }
   flex-wrap: wrap;
   padding: 16px 24px;
   border-bottom: 1px solid var(--divider);
-  background: rgba(82,37,102,0.01);
+  background: rgba(33,27,20,0.01);
 }
 .search-input-wrapper {
   position: relative;
@@ -1026,7 +1030,7 @@ img { max-width: 100%; display: block; }
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  border: 1px solid rgba(173,116,195,0.12);
+  border: 1px solid rgba(201,169,97,0.12);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -1037,14 +1041,14 @@ img { max-width: 100%; display: block; }
   width: 900px;
   height: 900px;
   border-radius: 50%;
-  border: 1px solid rgba(173,116,195,0.06);
+  border: 1px solid rgba(201,169,97,0.06);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 .login-card {
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(173,116,195,0.2);
+  border: 1px solid rgba(201,169,97,0.2);
   border-radius: var(--radius-lg);
   padding: 40px 36px;
   width: 100%;
@@ -1075,7 +1079,7 @@ img { max-width: 100%; display: block; }
 .login-form .form-label { color: rgba(255,255,255,0.5); }
 .login-form .form-input {
   background: rgba(255,255,255,0.06);
-  border-color: rgba(173,116,195,0.2);
+  border-color: rgba(201,169,97,0.2);
   color: #fff;
 }
 .login-form .form-input::placeholder { color: rgba(255,255,255,0.25); }

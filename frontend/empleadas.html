@@ -565,8 +565,22 @@
     if (!apellido){ document.getElementById('err-emp-apellido').classList.remove('hidden'); document.getElementById('emp-apellido').classList.add('error'); valid = false }
     else          { document.getElementById('err-emp-apellido').classList.add('hidden');    document.getElementById('emp-apellido').classList.remove('error') }
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      document.getElementById('err-emp-email').textContent = 'Email inválido'
       document.getElementById('err-emp-email').classList.remove('hidden'); document.getElementById('emp-email').classList.add('error'); valid = false
-    } else { document.getElementById('err-emp-email').classList.add('hidden'); document.getElementById('emp-email').classList.remove('error') }
+    } else {
+      document.getElementById('err-emp-email').classList.add('hidden'); document.getElementById('emp-email').classList.remove('error')
+
+      // Verificar que el correo no esté ya en uso por otra empleada
+      let dupQuery = supabase.from('empleados').select('id').ilike('email', email)
+      if (editingId) dupQuery = dupQuery.neq('id', editingId)
+      const { data: dup } = await dupQuery.maybeSingle()
+      if (dup) {
+        document.getElementById('err-emp-email').textContent = 'Ya existe una empleada registrada con este correo.'
+        document.getElementById('err-emp-email').classList.remove('hidden')
+        document.getElementById('emp-email').classList.add('error')
+        valid = false
+      }
+    }
     // Contraseña: requerida si es nueva empleada o si edita sin auth_user_id
     const passRequerida = !editingId || !existingAuthId
     if (passRequerida && !password) {
@@ -610,7 +624,7 @@
 
             await supabase.from('empleado_servicios').delete().eq('empleado_id', editingId)
             if (serviciosSeleccionados.length) {
-              await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: editingId, servicio_id: s.id })))
+              await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: editingId, servicio_id: s.id, empresa_id: auth.admin.empresa_id })))
             }
 
             // Manejo de credenciales Auth
@@ -634,12 +648,13 @@
             // Crear acceso Auth primero
             const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
             payload.auth_user_id = uuid
+            payload.empresa_id = auth.admin.empresa_id
 
             const { data: nueva, error } = await supabase.from('empleados').insert(payload).select().single()
             if (error) throw error
 
             if (serviciosSeleccionados.length) {
-              await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: nueva.id, servicio_id: s.id })))
+              await supabase.from('empleado_servicios').insert(serviciosSeleccionados.map(s => ({ empleado_id: nueva.id, servicio_id: s.id, empresa_id: auth.admin.empresa_id })))
             }
             toast(`Empleada creada. Credenciales: ${email} / contraseña asignada`, 'success')
           }

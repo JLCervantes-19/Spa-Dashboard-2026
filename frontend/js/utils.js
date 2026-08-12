@@ -64,12 +64,12 @@ export function todayISO() {
 }
 export function startOfWeekISO() {
   const d = hoyBogota()
-  d.setDate(d.getDate() - d.getDay())
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7))  // semana inicia en lunes
   return toISODate(d)
 }
 export function endOfWeekISO() {
   const d = hoyBogota()
-  d.setDate(d.getDate() - d.getDay() + 6)
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + 6)
   return toISODate(d)
 }
 export function startOfMonthISO() {

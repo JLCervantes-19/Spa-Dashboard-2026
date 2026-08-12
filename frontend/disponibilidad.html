@@ -393,7 +393,7 @@
         if (configRow?.id) {
           ({ error } = await supabase.from('configuracion').update(updates).eq('id', configRow.id))
         } else {
-          ({ error } = await supabase.from('configuracion').insert(updates))
+          ({ error } = await supabase.from('configuracion').insert({ ...updates, empresa_id: auth.admin.empresa_id }))
         }
         if (error) { toast('Error al guardar horario', 'error'); return }
         toast('Horario guardado', 'success')
@@ -473,7 +473,7 @@
         if (id) {
           ({ error } = await supabase.from('bloqueos').update(payload).eq('id', id))
         } else {
-          ({ error } = await supabase.from('bloqueos').insert(payload))
+          ({ error } = await supabase.from('bloqueos').insert({ ...payload, empresa_id: auth.admin.empresa_id }))
         }
         if (error) { toast('Error al guardar bloqueo', 'error'); return }
         toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')
@@ -597,7 +597,7 @@
         if (id) {
           ({ error } = await supabase.from('bloqueos').update(payload).eq('id', id))
         } else {
-          ({ error } = await supabase.from('bloqueos').insert(payload))
+          ({ error } = await supabase.from('bloqueos').insert({ ...payload, empresa_id: auth.admin.empresa_id }))
         }
         if (error) { toast('Error al guardar', 'error'); return }
         toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')

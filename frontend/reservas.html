@@ -260,8 +260,8 @@
     const [{ data: res }, { data: emps }, { data: svcs }, { data: cfg }] = await Promise.all([
       supabase.from('citas')
         .select('id,fecha,hora_inicio,hora_fin,duracion_total,estado,notas,origen,clientes(id,nombre,telefono,email),servicios(id,nombre,precio,duracion_min,buffer_min),empleados(id,nombre,apellido,foto_url)')
-        .order('fecha', { ascending: false })
-        .order('hora_inicio', { ascending: false })
+        .order('fecha', { ascending: true })
+        .order('hora_inicio', { ascending: true })
         .limit(500),
       supabase.from('empleados').select('id,nombre,apellido').eq('activo', true).order('nombre'),
       supabase.from('servicios').select('id,nombre,duracion_min,buffer_min').eq('activo', true).order('nombre'),
@@ -575,7 +575,7 @@
 
   document.getElementById('modal-nres-save').addEventListener('click', async () => {
     const nombre   = document.getElementById('nres-nombre').value.trim()
-    const telefono = document.getElementById('nres-telefono').value.trim()
+    const telefono = document.getElementById('nres-telefono').value.replace(/\D/g, '')
     const email    = document.getElementById('nres-email').value.trim().toLowerCase()
     const svcId    = document.getElementById('nres-servicio').value
     const fecha    = document.getElementById('nres-fecha').value
@@ -637,7 +637,7 @@
             if (telefono && !elegido.telefono) patch.telefono = telefono
             if (Object.keys(patch).length) await supabase.from('clientes').update(patch).eq('id', cliente_id)
           } else {
-            const { data: nuevoC, error: cErr } = await supabase.from('clientes').insert({ nombre, telefono, email, origen: 'admin' }).select().single()
+            const { data: nuevoC, error: cErr } = await supabase.from('clientes').insert({ nombre, telefono, email, origen: 'admin', empresa_id: auth.admin.empresa_id }).select().single()
             if (cErr) throw cErr
             cliente_id = nuevoC.id
           }
@@ -655,7 +655,8 @@
           const { error } = await supabase.from('citas').insert({
             cliente_id, servicio_id: svcId, empleado_id,
             fecha, hora_inicio: hora, hora_fin, duracion_total: totalMin,
-            estado: empleado_id ? 'confirmada' : 'pendiente', origen: 'admin', notas
+            estado: empleado_id ? 'confirmada' : 'pendiente', origen: 'admin', notas,
+            empresa_id: auth.admin.empresa_id
           })
           if (error) throw error
 

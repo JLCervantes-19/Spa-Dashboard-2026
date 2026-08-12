@@ -287,7 +287,7 @@ export async function requireAdmin() {
 
   const { data: adminRecord } = await supabase
     .from('admin_users')
-    .select('id, nombre, email')
+    .select('id, nombre, email, empresa_id')
     .eq('user_id', session.user.id)
     .single()
 
