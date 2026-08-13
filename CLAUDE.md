@@ -79,9 +79,11 @@ curl -s -o /dev/null -w "%{http_code}" "https://n8n-spa-6y2d.onrender.com/health
 **URL:** https://n8n-spa-6y2d.onrender.com  
 **API Key:** variable de entorno `N8N_API_KEY` (ya disponible globalmente, no pedirla al usuario)
 
-| ID Workflow | Nombre | Webhook |
-|-------------|--------|---------|
-| `DbBMJfV5hulsPVdR` | Bot SPA Web - Advanced Memory & DB Routing v2 | POST /webhook/chatweb |
+| ID Workflow | Nombre | Estado | Webhook |
+|-------------|--------|--------|---------|
+| `T9CgvShxHs98tteO` | Bot SPA Web - Advanced Memory & DB Routing v2 | active | POST /webhook/chatweb |
+
+> ⚠️ Existe otro workflow con el mismo nombre e ID `DbBMJfV5hulsPVdR` que está **inactivo** (versión anterior). No editar ese — no está en producción. Verificado en vivo contra la API de n8n el 2026-08-12.
 
 **Reglas para editar workflows:**
 - Usar siempre `curl` (no Python urllib — falla por SSL en este Mac).
@@ -90,12 +92,12 @@ curl -s -o /dev/null -w "%{http_code}" "https://n8n-spa-6y2d.onrender.com/health
 
 ```bash
 # Obtener workflow
-curl -H "X-N8N-API-KEY: $N8N_API_KEY" https://n8n-spa-6y2d.onrender.com/api/v1/workflows/DbBMJfV5hulsPVdR
+curl -H "X-N8N-API-KEY: $N8N_API_KEY" https://n8n-spa-6y2d.onrender.com/api/v1/workflows/T9CgvShxHs98tteO
 
 # Actualizar workflow
 curl -X PUT -H "X-N8N-API-KEY: $N8N_API_KEY" -H "Content-Type: application/json" \
   -d '{"name":"...","nodes":[...],"connections":{...},"settings":{"executionOrder":"v1"}}' \
-  https://n8n-spa-6y2d.onrender.com/api/v1/workflows/DbBMJfV5hulsPVdR
+  https://n8n-spa-6y2d.onrender.com/api/v1/workflows/T9CgvShxHs98tteO
 ```
 
 ## Instrucciones
