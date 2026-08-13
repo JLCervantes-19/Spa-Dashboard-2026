@@ -2,7 +2,29 @@
 
 Panel administrativo completo para el spa Oh Diosas by Tatiana Zuleta. Permite gestionar empleadas, citas, servicios, clientes, testimonios y configuracion del negocio. Comparte la base de datos Supabase con el sitio principal y la staff app.
 
-**Stack:** Node.js 24 · Express 4 (servidor estatico) · Supabase Auth + RLS · Chart.js 4 · Vanilla JS ES Modules · Vercel
+**Stack:** Node.js 24 · Express 4 (servidor estatico, sin API propia — todo pasa por Supabase client-side) · Supabase Auth + RLS · Chart.js 4 · Vanilla JS ES Modules · Vercel
+
+---
+
+## Identidad visual
+
+**Distinta a propósito de la paleta de la landing pública** (dorado + carbón cálido, en vez de púrpura) — pedido explícito para diferenciar la herramienta interna de la marca de cara al cliente. Los nombres de las variables CSS se mantuvieron iguales que en `SpaOhDiosas`/`staff-app` (`--purple-dark`, `--lilac`, etc.) por compatibilidad con ~90 referencias existentes; solo cambiaron los *valores*. Ver la nota completa en `SISTEMA WEB/design-tokens.css`.
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--purple-dark` | `#5C4420` | Botones primarios, texto fuerte (nombre heredado, ya no es púrpura) |
+| `--purple-medium` | `#8A6A2E` | Hover de botones |
+| `--lilac` | `#C9A961` | Acento principal (dorado) |
+| `--lilac-light` | `#EDE1C8` | Fondos suaves |
+| `--lilac-pale` | `#FAF5EA` | Fondos de página / badges |
+| `--sidebar-bg` | `#211B12` | Sidebar (carbón cálido) |
+| `--content-bg` | `#FAF8F5` | Fondo de página |
+| `--text-primary` | `#211B14` | Texto principal |
+| `--text-secondary` | `#5C5347` | Texto secundario (gris cálido, no el acento) |
+
+Los colores de **estado de cita** (`--estado-pendiente`, `--estado-confirmada`, etc.) son idénticos a las otras 2 apps — es un contrato compartido con `staff-app`, no se tocan.
+
+**Tipografía:** igual que las otras 2 apps — `Cormorant Garamond` (titulares), `Jost` (texto), `Cinzel` (detalles).
 
 ---
 
@@ -23,7 +45,12 @@ admin-dashboard/
 ├── frontend/
 │   ├── index.html            # Login de administradores
 │   ├── dashboard.html        # KPIs y graficas (Chart.js)
+│   ├── reservas.html         # Listado de citas + reserva manual
+│   ├── clientes.html         # Listado, historial de citas y notas por cliente
 │   ├── empleadas.html        # CRUD empleadas + acceso Auth
+│   ├── servicios.html        # CRUD de servicios
+│   ├── categorias.html       # CRUD de categorias de servicios
+│   ├── disponibilidad.html   # Horario semanal + bloqueos (generales y por empleada)
 │   ├── admins.html           # Gestion de administradores
 │   ├── testimonios.html      # Aprobar/rechazar resenas
 │   ├── configuracion.html    # Datos del negocio + imagenes (Supabase Storage)
@@ -88,25 +115,16 @@ supabase functions deploy smooth-function --project-ref whouejjrpjcvoueyajbu
 
 ### Paso 3 — Crear el primer administrador (una sola vez)
 
-Antes de que el login funcione, necesitas al menos un usuario en la tabla `admin_users`.
+Antes de que el login funcione, necesitas al menos un usuario en la tabla `admin_users`. Desde que el sistema es multi-tenant, esto requiere también el `empresa_id` de la empresa a la que pertenece — ver la guía completa y actualizada en **`INSTRUCCIONES-AGREGAR-ADMIN.md`** (incluye cómo obtener/crear el `empresa_id`, y la opción de crear el usuario por Dashboard o por API).
 
-1. Ve a **Supabase → Authentication → Users → Add user**
-2. Ingresa email y contrasena del administrador
-3. Copia el UUID que aparece en la columna `ID`
-4. En **SQL Editor** ejecuta:
+Resumen rápido:
+1. Buscar o crear la empresa en la tabla `empresas` (te devuelve el `empresa_id`)
+2. Crear el usuario en **Supabase → Authentication → Users → Add user** (o por API, ver la guía)
+3. En **SQL Editor**: `INSERT INTO admin_users (user_id, nombre, email, empresa_id) VALUES (...)`
 
-```sql
-INSERT INTO admin_users (user_id, nombre, email)
-VALUES (
-  'UUID-DEL-USUARIO-AQUI',
-  'Nombre Apellido',
-  'admin@correo.com'
-);
-```
+La contraseña debe tener mínimo 8 caracteres y al menos 1 mayúscula — se valida tanto en el formulario de `admins.html` como en la Edge Function que crea el usuario.
 
-Reemplaza los tres valores con los datos reales.
-
-> Para administradores adicionales, una vez que tengas acceso puedes crearlos desde `admins.html` en el dashboard.
+> Para administradores adicionales **de la misma empresa**, una vez que tengas acceso podés crearlos desde `admins.html` en el dashboard — hereda automáticamente la empresa del admin que los crea.
 
 ---
 
@@ -281,11 +299,14 @@ PORT=3000
 | `admin_users` | Validacion de rol + CRUD admins |
 | `empleados` | CRUD completo + vinculacion Auth |
 | `empleado_servicios` | Asignacion empleada a servicio |
-| `citas` | CRUD + cambio de estado |
-| `clientes` | Lectura + notas internas |
+| `citas` | CRUD + cambio de estado + reserva manual |
+| `clientes` | Lectura + historial de citas + notas internas |
 | `servicios` | CRUD completo |
+| `categorias` | CRUD de categorias de servicios |
+| `disponibilidad` / `bloqueos` | Horario semanal + bloqueos generales y por empleada |
 | `testimonios` | Aprobacion + orden |
 | `configuracion` | Datos del negocio + logo (Supabase Storage bucket: assets) |
+| `empresas` | Solo lectura (multi-tenant, ver seccion arriba) |
 
 ---
 
@@ -299,6 +320,8 @@ La autenticacion del admin tiene doble validacion:
 Si el usuario esta en Supabase Auth pero no en `admin_users`, el login falla aunque las credenciales sean correctas.
 
 La funcion `is_admin()` tiene `SECURITY DEFINER`, lo que significa que se ejecuta con privilegios elevados sin exponer la `service_role key` al cliente.
+
+Contraseñas (admins y empleadas, misma Edge Function `smooth-function`): mínimo 8 caracteres + 1 mayúscula, validado en frontend y en la función — no solo en el navegador.
 
 ---
 
