@@ -230,8 +230,12 @@
       btnLabel: 'Eliminar',
       type: 'danger',
       onConfirm: async () => {
-        const { error } = await supabase.from('admin_users').delete().eq('id', id)
-        if (error) { toast(error.message, 'error'); return }
+        try {
+          await llamarEdgeFn({ action: 'delete_admin', admin_id: id })
+        } catch (err) {
+          toast(err.message || 'Error al eliminar admin', 'error')
+          return
+        }
 
         toast(`Acceso de "${nombre}" revocado`, 'success')
         await cargarAdmins()
@@ -254,7 +258,7 @@
     let result = {}
     try { result = await res.json() } catch { /* no-JSON */ }
     if (!res.ok) throw new Error(result.error || result.msg || result.message || `Error HTTP ${res.status}`)
-    if (!result.uuid) throw new Error('La función no devolvió el UUID. Verifica el código en Supabase.')
+    if (body.action !== 'delete_admin' && !result.uuid) throw new Error('La función no devolvió el UUID. Verifica el código en Supabase.')
     return result
   }
 
@@ -332,15 +336,10 @@
         saveBtn.disabled = true
 
         try {
-          // 1. Crear usuario Auth
-          const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
-
-          // 2. Registrar en admin_users
-          const { error } = await supabase
-            .from('admin_users')
-            .insert({ user_id: uuid, nombre, email, empresa_id: auth.admin.empresa_id })
-
-          if (error) throw error
+          // Crear usuario Auth + registrar en admin_users (todo en la Edge
+          // Function, con service_role — admin_users no acepta INSERT vía
+          // RLS a propósito, ver smooth-function).
+          await llamarEdgeFn({ action: 'create', email, password, nombre })
 
           toast(`Admin "${nombre}" creado exitosamente`, 'success')
           closeModal('modal-admin')

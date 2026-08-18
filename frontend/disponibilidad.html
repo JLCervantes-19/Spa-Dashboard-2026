@@ -406,10 +406,11 @@
   let bloqueosSpa = []
 
   async function cargarBloqueos() {
-    const { data } = await supabase.from('bloqueos')
+    const { data, error } = await supabase.from('bloqueos')
       .select('*')
       .is('empleado_id', null)
       .order('fecha_inicio', { ascending: true })
+    if (error) { console.error('Error al cargar bloqueos:', error); toast('Error al cargar bloqueos', 'error') }
     bloqueosSpa = data || []
     renderBloqueos()
   }
@@ -521,7 +522,8 @@
     const filtro = document.getElementById('filtro-empleada-bloq').value
     let query = supabase.from('bloqueos').select('*,empleados(nombre,apellido)').not('empleado_id', 'is', null).order('fecha_inicio', { ascending: true })
     if (filtro) query = query.eq('empleado_id', filtro)
-    const { data } = await query
+    const { data, error } = await query
+    if (error) { console.error('Error al cargar bloqueos por empleada:', error); toast('Error al cargar bloqueos por empleada', 'error') }
     bloqueosEmp = data || []
     renderBloqueosEmp()
   }

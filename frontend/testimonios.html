@@ -205,15 +205,9 @@
     </div>
     <div class="modal-body">
       <input type="hidden" id="test-id" />
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Nombre *</label>
-          <input type="text" id="test-nombre" class="form-input" maxlength="100" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Cargo / descripción</label>
-          <input type="text" id="test-cargo" class="form-input" maxlength="100" placeholder="Ej: Cliente frecuente" />
-        </div>
+      <div class="form-group">
+        <label class="form-label">Nombre *</label>
+        <input type="text" id="test-nombre" class="form-input" maxlength="100" />
       </div>
       <div class="form-group">
         <label class="form-label">Servicio</label>
@@ -449,7 +443,6 @@
     document.getElementById('test-id').value = t.id
     document.getElementById('modal-test-titulo').textContent = 'Editar testimonio'
     document.getElementById('test-nombre').value = t.nombre
-    document.getElementById('test-cargo').value = t.cargo || ''
     document.getElementById('test-servicio').value = t.servicio_id || ''
     document.getElementById('test-texto').value = t.texto
     document.getElementById('test-estado').value = t.estado || 'pendiente'
@@ -464,7 +457,6 @@
     document.getElementById('test-id').value = ''
     document.getElementById('modal-test-titulo').textContent = 'Nuevo testimonio'
     document.getElementById('test-nombre').value = ''
-    document.getElementById('test-cargo').value = ''
     document.getElementById('test-servicio').value = ''
     document.getElementById('test-texto').value = ''
     document.getElementById('test-estado').value = 'publicado'
@@ -478,7 +470,6 @@
   document.getElementById('btn-guardar-test').addEventListener('click', async () => {
     const id       = document.getElementById('test-id').value
     const nombre   = document.getElementById('test-nombre').value.trim()
-    const cargo    = document.getElementById('test-cargo').value.trim() || null
     const texto    = document.getElementById('test-texto').value.trim()
     const estado   = document.getElementById('test-estado').value
     const rating   = parseInt(document.getElementById('test-rating').value, 10)
@@ -492,7 +483,7 @@
       btnLabel: id ? 'Guardar cambios' : 'Crear testimonio',
       type: id ? 'warning' : 'success',
       onConfirm: async () => {
-        const payload = { nombre, cargo, texto, estado, rating, servicio_id: servId }
+        const payload = { nombre, texto, estado, rating, servicio_id: servId }
         let error
         if (id) {
           ({ error } = await supabase.from('testimonios').update(payload).eq('id', id))
