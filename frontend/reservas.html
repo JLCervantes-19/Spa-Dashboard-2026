@@ -263,13 +263,13 @@
     const [{ data: res }, { data: emps }, { data: svcs }, { data: cfg }] = await Promise.all([
       supabase.from('citas')
         .select('id,fecha,hora_inicio,hora_fin,duracion_total,estado,notas,origen,clientes(id,nombre,telefono,email),servicios(id,nombre,precio,duracion_min,buffer_min),empleados(id,nombre,apellido,foto_url)')
-        .order('fecha', { ascending: true })
-        .order('hora_inicio', { ascending: true })
-        // Antes 500: con orden ascendente, un límite bajo puede llegar a
-        // recortar las citas más recientes/futuras cuando el histórico
-        // crezca (siempre trae las 500 MÁS ANTIGUAS). Se sube el techo
-        // como salvavidas inmediato; si el volumen sigue creciendo, esto
-        // debería pasar a paginación real en el servidor (.range()).
+        // Más reciente primero (fecha del servicio agendado, no de creación).
+        .order('fecha', { ascending: false })
+        .order('hora_inicio', { ascending: false })
+        // Antes 500: con orden ascendente, un límite bajo podía recortar las
+        // citas más recientes cuando el histórico crecía. Se mantiene el
+        // techo alto; si el volumen sigue creciendo, esto debería pasar a
+        // paginación real en el servidor (.range()).
         .limit(3000),
       supabase.from('empleados').select('id,nombre,apellido').eq('activo', true).order('nombre'),
       supabase.from('servicios').select('id,nombre,duracion_min,buffer_min').eq('activo', true).order('nombre'),
@@ -280,18 +280,7 @@
     serviciosAll = svcs || []
     bufferGlobal = cfg?.buffer_min ?? 10
     poblarSelectores()
-    aplicarFiltros(true)
-  }
-
-  // Página donde empiezan a aparecer las citas de hoy en adelante, dentro
-  // del array ya ordenado ascendente. Evita que reservas recién creadas
-  // para hoy/próximos días queden enterradas detrás de todo el histórico
-  // pasado en la página 1 (causa raíz de que "la reserva no aparecía").
-  function paginaDeHoy(arr) {
-    const hoy = todayISO()
-    const idx = arr.findIndex(r => r.fecha >= hoy)
-    if (idx === -1) return Math.max(1, Math.ceil(arr.length / PAGE_SIZE))
-    return Math.floor(idx / PAGE_SIZE) + 1
+    aplicarFiltros()
   }
 
   function poblarSelectores() {
@@ -316,7 +305,7 @@
   // ——— Filtros ————————————————————————————————————————
   let fFecha = '', fEmp = '', fSvc = '', fEst = '', fBuscar = ''
 
-  function aplicarFiltros(irAPaginaHoy = false) {
+  function aplicarFiltros() {
     let arr = reservasAll.filter(r => {
       if (fFecha  && r.fecha !== fFecha) return false
       if (fEmp    && r.empleados?.id !== fEmp) return false
@@ -325,7 +314,7 @@
       if (fBuscar && !(r.clientes?.nombre || '').toLowerCase().includes(fBuscar.toLowerCase())) return false
       return true
     })
-    currentPage = irAPaginaHoy ? paginaDeHoy(arr) : 1
+    currentPage = 1
     renderTabla(arr)
   }
 
