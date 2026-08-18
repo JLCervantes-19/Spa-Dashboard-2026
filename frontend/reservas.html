@@ -238,7 +238,7 @@
   import {
     formatFecha, formatFechaCorta, formatHora, badgeCita, avatarHTML,
     toast, openModal, closeModal, confirmAction, renderSidebarUser,
-    debounce, autoAsignarEmpleada, getHorasDisponibles, getEmpleadasLibresEnSlot,
+    debounce, autoAsignarEmpleada, getEmpleadasLibresEnSlot,
     elegirMenorCarga, truncate, todayISO } from '/js/utils.js'
 
   const auth = await requireAdmin()
@@ -254,6 +254,9 @@
   let currentPage = 1
   const PAGE_SIZE = 20
   let citaActualId = null
+  // Endpoint real de disponibilidad (misma fuente de verdad que la reserva
+  // pública) — vive en la app de clientes, dominio distinto al dashboard.
+  const SLOTS_API_BASE = 'https://spa-blush-theta.vercel.app/api'
 
   // ——— Cargar datos ————————————————————————————————————
   async function cargarDatos() {
@@ -262,7 +265,12 @@
         .select('id,fecha,hora_inicio,hora_fin,duracion_total,estado,notas,origen,clientes(id,nombre,telefono,email),servicios(id,nombre,precio,duracion_min,buffer_min),empleados(id,nombre,apellido,foto_url)')
         .order('fecha', { ascending: true })
         .order('hora_inicio', { ascending: true })
-        .limit(500),
+        // Antes 500: con orden ascendente, un límite bajo puede llegar a
+        // recortar las citas más recientes/futuras cuando el histórico
+        // crezca (siempre trae las 500 MÁS ANTIGUAS). Se sube el techo
+        // como salvavidas inmediato; si el volumen sigue creciendo, esto
+        // debería pasar a paginación real en el servidor (.range()).
+        .limit(3000),
       supabase.from('empleados').select('id,nombre,apellido').eq('activo', true).order('nombre'),
       supabase.from('servicios').select('id,nombre,duracion_min,buffer_min').eq('activo', true).order('nombre'),
       supabase.from('configuracion').select('buffer_min').limit(1).single(),
@@ -272,7 +280,18 @@
     serviciosAll = svcs || []
     bufferGlobal = cfg?.buffer_min ?? 10
     poblarSelectores()
-    aplicarFiltros()
+    aplicarFiltros(true)
+  }
+
+  // Página donde empiezan a aparecer las citas de hoy en adelante, dentro
+  // del array ya ordenado ascendente. Evita que reservas recién creadas
+  // para hoy/próximos días queden enterradas detrás de todo el histórico
+  // pasado en la página 1 (causa raíz de que "la reserva no aparecía").
+  function paginaDeHoy(arr) {
+    const hoy = todayISO()
+    const idx = arr.findIndex(r => r.fecha >= hoy)
+    if (idx === -1) return Math.max(1, Math.ceil(arr.length / PAGE_SIZE))
+    return Math.floor(idx / PAGE_SIZE) + 1
   }
 
   function poblarSelectores() {
@@ -297,7 +316,7 @@
   // ——— Filtros ————————————————————————————————————————
   let fFecha = '', fEmp = '', fSvc = '', fEst = '', fBuscar = ''
 
-  function aplicarFiltros() {
+  function aplicarFiltros(irAPaginaHoy = false) {
     let arr = reservasAll.filter(r => {
       if (fFecha  && r.fecha !== fFecha) return false
       if (fEmp    && r.empleados?.id !== fEmp) return false
@@ -306,7 +325,7 @@
       if (fBuscar && !(r.clientes?.nombre || '').toLowerCase().includes(fBuscar.toLowerCase())) return false
       return true
     })
-    currentPage = 1
+    currentPage = irAPaginaHoy ? paginaDeHoy(arr) : 1
     renderTabla(arr)
   }
 
@@ -525,6 +544,16 @@
     }
   }
 
+  // Consulta el endpoint real de disponibilidad (mismo que usa la reserva
+  // pública) en vez de reimplementar la regla de horario/buffer/anticipación
+  // en el dashboard — evita que ambos flujos terminen con reglas distintas.
+  async function fetchSlotsReales(svcId, fecha, empId) {
+    const url = `${SLOTS_API_BASE}/slots?servicio=${svcId}&fecha=${fecha}${empId ? `&empleadaId=${empId}` : ''}`
+    const res = await fetch(url)
+    if (!res.ok) return { cerrado: false, slots: [] }
+    return res.json()
+  }
+
   async function actualizarHorasDisponibles() {
     const svcId  = document.getElementById('nres-servicio').value
     const fecha  = document.getElementById('nres-fecha').value
@@ -535,11 +564,11 @@
     if (!svcId || !fecha) { wrap.style.display = 'none'; chips.innerHTML = ''; return }
 
     const horaInput = document.getElementById('nres-hora')
-    const slots = await getHorasDisponibles(supabase, { servicioId: svcId, fecha, empleadaId: empSel, bufferGlobal })
+    const { cerrado, slots } = await fetchSlotsReales(svcId, fecha, empSel)
 
-    if (!slots.length) {
+    if (cerrado || !slots.length) {
       wrap.style.display = 'block'
-      chips.innerHTML = `<span style="font-size:0.8rem;color:var(--text-muted)">El spa no atiende ese día, o no hay horarios que alcancen a completar el servicio.</span>`
+      chips.innerHTML = `<span style="font-size:0.8rem;color:var(--text-muted)">${cerrado ? 'El spa no atiende ese día.' : (empSel ? 'Esa empleada no tiene horarios disponibles ese día (agenda llena, bloqueo, o fuera de anticipación mínima).' : 'No hay horarios que alcancen a completar el servicio.')}</span>`
       return
     }
 
@@ -597,9 +626,11 @@
     const empSel    = document.getElementById('nres-empleada').value || null
 
     // Validar disponibilidad real ANTES de mostrar la confirmación —
-    // evita crear una cita encima de otra ya existente.
-    const libres = await getEmpleadasLibresEnSlot(supabase, { servicioId: svcId, fecha, hora, horaFin: hora_fin, empleadaId: empSel })
-    if (!libres.length) {
+    // reutiliza el mismo endpoint /api/slots (horario, buffer, anticipación
+    // mínima/máxima, bloqueos y citas) en vez de una regla propia, para
+    // evitar crear una cita en un horario que el motor público rechazaría.
+    const { slots: slotsCheck } = await fetchSlotsReales(svcId, fecha, empSel)
+    if (!slotsCheck.find(s => s.hora === hora && s.disponible)) {
       toast(empSel ? 'Esa empleada ya no está disponible en ese horario.' : 'Ninguna empleada está disponible en ese horario.', 'error')
       actualizarHorasDisponibles()
       return
@@ -643,12 +674,15 @@
           }
 
           // Re-validar disponibilidad justo antes de insertar (pudo cambiar
-          // entre la validación previa y la confirmación del usuario) y
-          // resolver la empleada final entre las que sí están libres.
-          const librasFinal = await getEmpleadasLibresEnSlot(supabase, { servicioId: svcId, fecha, hora, horaFin: hora_fin, empleadaId: empSel })
-          if (!librasFinal.length) {
+          // entre la validación previa y la confirmación del usuario) contra
+          // el mismo /api/slots, y resolver la empleada final entre las que
+          // sí están libres en ese horario exacto (solo overlap, sin reglas
+          // de negocio propias — esas ya las aplicó /api/slots arriba).
+          const { slots: slotsFinal } = await fetchSlotsReales(svcId, fecha, empSel)
+          if (!slotsFinal.find(s => s.hora === hora && s.disponible)) {
             throw new Error(empSel ? 'Esa empleada ya no está disponible en ese horario.' : 'Ninguna empleada está disponible en ese horario.')
           }
+          const librasFinal = await getEmpleadasLibresEnSlot(supabase, { servicioId: svcId, fecha, hora, horaFin: hora_fin, empleadaId: empSel })
           const empleado_id = empSel || await elegirMenorCarga(supabase, svcId, librasFinal, fecha)
 
           // Con empleada asignada la cita nace confirmada; sin empleada queda pendiente
@@ -681,8 +715,6 @@
   await cargarDatos()
 
   // ——— REAGENDAMIENTO ———
-  // Base del API de slots: la app pública de reservas (misma BD)
-  const SLOTS_API_BASE = 'https://spa-blush-theta.vercel.app/api'
   let reagendarCitaId = null
   let reagendarServicioId = null
 

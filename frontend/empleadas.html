@@ -256,7 +256,8 @@
   import {
     avatarHTML, badgeActivo, badgeCita, formatFechaCorta, formatHora,
     formatDateTime, toast, openModal, closeModal, confirmAction,
-    renderSidebarUser, debounce, truncate, todayISO, startOfWeekISO } from '/js/utils.js'
+    renderSidebarUser, debounce, truncate, todayISO, startOfWeekISO, endOfWeekISO,
+    ESTADOS_INACTIVOS } from '/js/utils.js'
 
   const auth = await requireAdmin()
   if (!auth) throw new Error()
@@ -269,19 +270,35 @@
   let serviciosSeleccionados = []
   let empActivoState = true
   let editingId = null
+  let citasHoyPorEmp = {}
+  let citasSemanaPorEmp = {}
 
   // ——— Cargar datos ————————————————————————————————————
   async function cargarDatos() {
-    const [{ data: emps }, { data: svcs }, { data: asigs }] = await Promise.all([
+    const hoy = todayISO()
+    const [{ data: emps }, { data: svcs }, { data: asigs }, { data: citasSemana }] = await Promise.all([
       supabase.from('empleados').select('*').order('nombre'),
       supabase.from('servicios').select('id,nombre').eq('activo', true).order('nombre'),
       supabase.from('empleado_servicios').select('empleado_id,servicio_id,servicios(nombre)'),
+      // Trae la semana completa de una sola vez (cubre "hoy" y "semana"
+      // con una sola query) — evita repetir la consulta por cada fila
+      // como hace el modal de detalle individual.
+      supabase.from('citas').select('empleado_id,fecha,estado')
+        .gte('fecha', startOfWeekISO()).lte('fecha', endOfWeekISO())
+        .not('empleado_id', 'is', null),
     ])
     serviciosAll = svcs || []
     empleadasAll = (emps || []).map(e => ({
       ...e,
       _servicios: (asigs || []).filter(a => a.empleado_id === e.id).map(a => ({ id: a.servicio_id, nombre: a.servicios?.nombre }))
     }))
+    citasHoyPorEmp = {}
+    citasSemanaPorEmp = {}
+    ;(citasSemana || []).forEach(c => {
+      if (ESTADOS_INACTIVOS.includes(c.estado)) return
+      citasSemanaPorEmp[c.empleado_id] = (citasSemanaPorEmp[c.empleado_id] || 0) + 1
+      if (c.fecha === hoy) citasHoyPorEmp[c.empleado_id] = (citasHoyPorEmp[c.empleado_id] || 0) + 1
+    })
     poblarFiltroServicio()
     renderTabla()
   }
@@ -345,8 +362,8 @@
           </td>
           <td class="td-muted truncate" style="max-width:160px">${e.email || '—'}</td>
           <td><div class="chips-row" id="chips-row-${e.id}">${chipsHTML}</div></td>
-          <td class="td-muted">—</td>
-          <td class="td-muted">—</td>
+          <td class="td-muted">${citasHoyPorEmp[e.id] || 0}</td>
+          <td class="td-muted">${citasSemanaPorEmp[e.id] || 0}</td>
           <td>${badgeActivo(e.activo)}</td>
           <td>
             <div class="table-actions">
