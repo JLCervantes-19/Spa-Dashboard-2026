@@ -253,6 +253,7 @@
   let reservasAll = []
   let empleadasAll = []
   let serviciosAll = []
+  let empleadoServiciosMap = new Map()   // empleado_id -> Set(servicio_id)
   let bufferGlobal = 10   // buffer por defecto de configuración (mismo fallback que el backend)
   let currentPage = 1
   const PAGE_SIZE = 20
@@ -263,7 +264,7 @@
 
   // ——— Cargar datos ————————————————————————————————————
   async function cargarDatos() {
-    const [{ data: res }, { data: emps }, { data: svcs }, { data: cfg }] = await Promise.all([
+    const [{ data: res }, { data: emps }, { data: svcs }, { data: cfg }, { data: es }] = await Promise.all([
       supabase.from('citas')
         .select('id,fecha,hora_inicio,hora_fin,duracion_total,estado,notas,origen,reasignacion_pendiente,bloqueo_origen_id,clientes(id,nombre,telefono,email),servicios(id,nombre,precio,duracion_min,buffer_min),empleados(id,nombre,apellido,foto_url)')
         // Más reciente primero (fecha del servicio agendado, no de creación).
@@ -277,11 +278,17 @@
       supabase.from('empleados').select('id,nombre,apellido').eq('activo', true).order('nombre'),
       supabase.from('servicios').select('id,nombre,duracion_min,buffer_min').eq('activo', true).order('nombre'),
       supabase.from('configuracion').select('buffer_min').limit(1).single(),
+      supabase.from('empleado_servicios').select('empleado_id,servicio_id'),
     ])
     reservasAll = res || []
     empleadasAll = emps || []
     serviciosAll = svcs || []
     bufferGlobal = cfg?.buffer_min ?? 10
+    empleadoServiciosMap = new Map()
+    ;(es || []).forEach(row => {
+      if (!empleadoServiciosMap.has(row.empleado_id)) empleadoServiciosMap.set(row.empleado_id, new Set())
+      empleadoServiciosMap.get(row.empleado_id).add(row.servicio_id)
+    })
     poblarSelectores()
     aplicarFiltros()
   }
@@ -303,6 +310,27 @@
         const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.nombre; sel.appendChild(opt)
       })
     })
+  }
+
+  // Limita el <select> de servicios del filtro a los que la empleada
+  // seleccionada puede realizar (según empleado_servicios). Sin empleada
+  // seleccionada, muestra todos los servicios (comportamiento general).
+  function filtrarServiciosPorEmpleada(empleadaId) {
+    const selSvc = document.getElementById('filtro-servicio')
+    const valorActual = selSvc.value
+    const permitidos = empleadaId ? empleadoServiciosMap.get(empleadaId) : null
+    selSvc.innerHTML = '<option value="">Todos los servicios</option>'
+    serviciosAll
+      .filter(s => !permitidos || permitidos.has(s.id))
+      .forEach(s => {
+        const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.nombre; selSvc.appendChild(opt)
+      })
+    if (valorActual && ![...selSvc.options].some(o => o.value === valorActual)) {
+      selSvc.value = ''
+      fSvc = ''
+    } else {
+      selSvc.value = valorActual
+    }
   }
 
   // ——— Filtros ————————————————————————————————————————
@@ -335,7 +363,11 @@
   }
 
   document.getElementById('filtro-fecha').addEventListener('change', e => { fFecha = e.target.value; aplicarFiltros() })
-  document.getElementById('filtro-empleada').addEventListener('change', e => { fEmp = e.target.value; aplicarFiltros() })
+  document.getElementById('filtro-empleada').addEventListener('change', e => {
+    fEmp = e.target.value
+    filtrarServiciosPorEmpleada(fEmp)
+    aplicarFiltros()
+  })
   document.getElementById('filtro-servicio').addEventListener('change', e => { fSvc = e.target.value; aplicarFiltros() })
   document.getElementById('filtro-estado').addEventListener('change', e => { fEst = e.target.value; aplicarFiltros() })
   document.getElementById('buscar-reserva').addEventListener('input', debounce(e => { fBuscar = e.target.value; aplicarFiltros() }))
@@ -344,6 +376,7 @@
     ;['filtro-fecha','filtro-empleada','filtro-servicio','filtro-estado','buscar-reserva'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value = ''
     })
+    filtrarServiciosPorEmpleada('')
     aplicarFiltros()
   })
 
