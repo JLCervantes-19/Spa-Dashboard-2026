@@ -90,7 +90,7 @@
         <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.8;margin-top:8px">
           <p>• Un <strong style="color:var(--text-secondary)">administrador</strong> tiene acceso completo a este panel: empleadas, reservas, servicios, clientes, configuración y testimonios.</p>
           <p>• Al crear un admin se genera una cuenta en Supabase Auth y se registra en la tabla <code style="background:var(--lilac-pale);padding:1px 6px;border-radius:4px">admin_users</code>.</p>
-          <p>• <strong style="color:#991b1b">No puedes eliminarte a ti mismo</strong> para evitar quedar sin acceso.</p>
+          <p>• Solo el <strong style="color:var(--text-secondary)">administrador maestro</strong> puede eliminar a otros administradores. <strong style="color:#991b1b">El maestro no se puede eliminar</strong> bajo ninguna circunstancia, para que el panel nunca se quede sin acceso.</p>
           <p>• Para agregar admins manualmente desde Supabase revisa el archivo <code style="background:var(--lilac-pale);padding:1px 6px;border-radius:4px">INSTRUCCIONES-AGREGAR-ADMIN.md</code> en la carpeta del proyecto.</p>
         </div>
       </div>
@@ -166,13 +166,15 @@
 
   await initSidebar(auth.admin)
 
+  document.getElementById('btn-nuevo-admin').style.display = auth.admin.es_maestro ? 'inline-flex' : 'none'
+
   // ——— Cargar admins ————————————————————————————————————————
   let adminsAll = []
 
   async function cargarAdmins() {
     const { data, error } = await supabase
       .from('admin_users')
-      .select('id, user_id, nombre, email, created_at')
+      .select('id, user_id, nombre, email, created_at, es_maestro')
       .order('created_at', { ascending: true })
 
     if (error) {
@@ -196,9 +198,27 @@
     }
 
     grid.innerHTML = adminsAll.map(a => {
-      const esYo    = a.user_id === miUid
-      const inicial = (a.nombre || a.email || 'A')[0].toUpperCase()
-      const fecha   = a.created_at ? new Date(a.created_at).toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }) : '—'
+      const esYo         = a.user_id === miUid
+      const inicial      = (a.nombre || a.email || 'A')[0].toUpperCase()
+      const fecha        = a.created_at ? new Date(a.created_at).toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }) : '—'
+      const puedeEliminar = auth.admin.es_maestro && !a.es_maestro
+
+      let acciones
+      if (a.es_maestro) {
+        acciones = `<span class="badge-yo" data-tooltip="Administrador maestro — no se puede eliminar">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.9-5 4.8 1.2 6.9L12 17.6l-6 3.3 1.2-6.9-5-4.8 6.9-.9z"/></svg>
+          Maestro${esYo ? ' · Tú' : ''}
+        </span>`
+      } else if (esYo) {
+        acciones = `<span class="badge-yo">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Tú
+        </span>`
+      } else if (puedeEliminar) {
+        acciones = `<button class="btn-danger-sm" onclick="eliminarAdmin('${a.id}','${a.nombre || a.email}')">Eliminar</button>`
+      } else {
+        acciones = ''
+      }
 
       return `
         <div class="admin-card${esYo ? ' me' : ''}">
@@ -208,15 +228,7 @@
             <div class="admin-email">${a.email || '—'}</div>
             <div class="admin-meta">Desde ${fecha}</div>
           </div>
-          <div class="admin-actions">
-            ${esYo
-              ? `<span class="badge-yo">
-                  <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  Tú
-                </span>`
-              : `<button class="btn-danger-sm" onclick="eliminarAdmin('${a.id}','${a.nombre || a.email}')">Eliminar</button>`
-            }
-          </div>
+          <div class="admin-actions">${acciones}</div>
         </div>
       `
     }).join('')
