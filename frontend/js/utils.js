@@ -200,7 +200,7 @@ export function toast(msg, type = 'default') {
   setTimeout(() => {
     el.classList.remove('show')
     setTimeout(() => el.remove(), 300)
-  }, 3500)
+  }, 5500)
 }
 
 // ——— Modal helper ————————————————————————————————————————————
