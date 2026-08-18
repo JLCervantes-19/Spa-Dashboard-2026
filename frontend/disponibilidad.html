@@ -294,7 +294,8 @@
   import { supabase }      from '/js/supabase-client.js'
   import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
   import {
-    toast, openModal, closeModal, renderSidebarUser, confirmAction, formatFechaCorta
+    toast, openModal, closeModal, renderSidebarUser, confirmAction, formatFechaCorta,
+    getCitasAfectadasPorBloqueo
   } from '/js/utils.js'
 
   const auth = await requireAdmin()
@@ -595,14 +596,38 @@
       type: id ? 'warning' : 'success',
       onConfirm: async () => {
         const payload = { empleado_id: empleadaId, fecha_inicio: fechaInicio, fecha_fin: fechaFin, hora_inicio: horaInicio, hora_fin: horaFin, motivo: motivo || null }
+        let bloqueoId = id
         let error
         if (id) {
           ({ error } = await supabase.from('bloqueos').update(payload).eq('id', id))
         } else {
-          ({ error } = await supabase.from('bloqueos').insert({ ...payload, empresa_id: auth.admin.empresa_id }))
+          const insertRes = await supabase.from('bloqueos').insert({ ...payload, empresa_id: auth.admin.empresa_id }).select('id').single()
+          error = insertRes.error
+          bloqueoId = insertRes.data?.id
         }
         if (error) { toast('Error al guardar', 'error'); return }
-        toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')
+
+        // El bloqueo se crea SIEMPRE, tenga o no citas activas. Si las tiene,
+        // se marcan para reasignación manual — nunca se reasignan solas.
+        let afectadas = []
+        try {
+          afectadas = await getCitasAfectadasPorBloqueo(supabase, empleadaId, fechaInicio, fechaFin)
+        } catch (e) { console.warn('No se pudo verificar citas afectadas por el bloqueo', e) }
+
+        if (afectadas.length) {
+          const { error: updErr } = await supabase
+            .from('citas')
+            .update({ estado: 'pendiente', reasignacion_pendiente: true, bloqueo_origen_id: bloqueoId })
+            .in('id', afectadas.map(c => c.id))
+          if (updErr) console.warn('Falló al marcar citas afectadas', updErr)
+
+          const dias = [...new Set(afectadas.map(c => formatFechaCorta(c.fecha)))].join(', ')
+          console.warn(`Bloqueo ${bloqueoId}: ${afectadas.length} cita(s) afectadas los días ${dias}`, afectadas)
+          toast(`Bloqueo ${id ? 'actualizado' : 'creado'}. ${afectadas.length} cita(s) los días ${dias} quedaron pendientes por reasignar (ver Reservas).`, 'warning')
+        } else {
+          toast(id ? 'Bloqueo actualizado' : 'Bloqueo creado', 'success')
+        }
+
         closeModal('modal-bloq-emp')
         await cargarBloqueosEmp()
       }

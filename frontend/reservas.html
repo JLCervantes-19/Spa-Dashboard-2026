@@ -28,6 +28,9 @@
     </header>
 
     <div class="page-body">
+      <div id="banner-reasignar" style="display:none; align-items:center; gap:8px; padding:12px 16px; margin-bottom:16px; border-radius:10px; background:var(--warning-bg); color:var(--warning); font-size:0.85rem; line-height:1.4;">
+        <strong>⚠ Pendientes por reasignar:</strong> <span id="banner-reasignar-texto"></span>
+      </div>
       <div class="card">
         <div class="filters-bar">
           <input type="date" id="filtro-fecha" class="form-input" style="width:160px;font-size:0.8rem" />
@@ -262,7 +265,7 @@
   async function cargarDatos() {
     const [{ data: res }, { data: emps }, { data: svcs }, { data: cfg }] = await Promise.all([
       supabase.from('citas')
-        .select('id,fecha,hora_inicio,hora_fin,duracion_total,estado,notas,origen,clientes(id,nombre,telefono,email),servicios(id,nombre,precio,duracion_min,buffer_min),empleados(id,nombre,apellido,foto_url)')
+        .select('id,fecha,hora_inicio,hora_fin,duracion_total,estado,notas,origen,reasignacion_pendiente,bloqueo_origen_id,clientes(id,nombre,telefono,email),servicios(id,nombre,precio,duracion_min,buffer_min),empleados(id,nombre,apellido,foto_url)')
         // Más reciente primero (fecha del servicio agendado, no de creación).
         .order('fecha', { ascending: false })
         .order('hora_inicio', { ascending: false })
@@ -316,6 +319,19 @@
     })
     currentPage = 1
     renderTabla(arr)
+    actualizarBannerReasignar()
+  }
+
+  function actualizarBannerReasignar() {
+    const pendientes = reservasAll.filter(r => r.reasignacion_pendiente)
+    const banner = document.getElementById('banner-reasignar')
+    if (!pendientes.length) { banner.style.display = 'none'; return }
+    const resumen = pendientes.slice(0, 5).map(r =>
+      `${formatFechaCorta(r.fecha)} — ${r.clientes?.nombre || 'cliente'} (${r.servicios?.nombre || 'servicio'})`
+    ).join(', ')
+    document.getElementById('banner-reasignar-texto').textContent =
+      `${pendientes.length} cita(s) sin empleada por un bloqueo: ${resumen}${pendientes.length > 5 ? '…' : ''}`
+    banner.style.display = 'flex'
   }
 
   document.getElementById('filtro-fecha').addEventListener('change', e => { fFecha = e.target.value; aplicarFiltros() })
@@ -362,7 +378,7 @@
             <span style="font-size:0.78rem">${r.empleados ? [r.empleados.nombre, r.empleados.apellido].filter(Boolean).join(' ') : '<span class="text-muted">Sin asignar</span>'}</span>
           </div>
         </td>
-        <td>${badgeCita(r.estado)}</td>
+        <td>${badgeCita(r.estado, r.reasignacion_pendiente)}</td>
         <td class="td-muted" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notas ? truncate(r.notas, 40) : '—'}</td>
         <td>
           <div class="table-actions">
@@ -453,7 +469,7 @@
       btnLabel: 'Guardar cambios',
       type: 'warning',
       onConfirm: async () => {
-        const upd = { estado }
+        const upd = { estado, reasignacion_pendiente: false, bloqueo_origen_id: null }
         if (empId) upd.empleado_id = empId
         if (nota)  upd.notas = nota
         const { error } = await supabase.from('citas').update(upd).eq('id', citaActualId)

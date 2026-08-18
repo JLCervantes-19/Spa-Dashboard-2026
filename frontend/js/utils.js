@@ -145,7 +145,10 @@ function _avatarIni(ini, bg, color, size) {
 }
 
 // ——— Badge de estado ————————————————————————————————————————
-export function badgeCita(estado) {
+export function badgeCita(estado, reasignacionPendiente = false) {
+  if (reasignacionPendiente && estado === 'pendiente') {
+    return `<span class="badge badge-yellow" data-tooltip="Cita afectada por un bloqueo de empleada">Reasignar</span>`
+  }
   const e = ESTADOS_CITA[estado] || { label: estado, badge: 'badge-gray' }
   return `<span class="badge ${e.badge}">${e.label}</span>`
 }
@@ -157,6 +160,22 @@ export function badgeActivo(activo) {
   return activo
     ? `<span class="badge badge-green"><span class="badge-dot"></span>Activa</span>`
     : `<span class="badge badge-gray"><span class="badge-dot"></span>Inactiva</span>`
+}
+
+// ——— Citas afectadas por un bloqueo de empleada ————————————————
+// Rango inclusivo [fechaInicio, fechaFin]. Solo cuentan citas que
+// realmente ocupan agenda (pendiente/confirmada).
+export async function getCitasAfectadasPorBloqueo(supabase, empleadaId, fechaInicio, fechaFin) {
+  const { data, error } = await supabase
+    .from('citas')
+    .select('id,fecha,hora_inicio,clientes(nombre),servicios(nombre)')
+    .eq('empleado_id', empleadaId)
+    .gte('fecha', fechaInicio)
+    .lte('fecha', fechaFin)
+    .in('estado', ['pendiente', 'confirmada'])
+    .order('fecha')
+  if (error) throw error
+  return data || []
 }
 
 // ——— Toast global ————————————————————————————————————————————
