@@ -65,7 +65,6 @@ admin-dashboard/
 │   └── migration_2.sql       # Tabla configuracion, RLS, funcion is_admin()
 ├── server.js                 # Express: sirve frontend/ como estatico
 ├── vercel.json               # Routing y headers CSP (permite Chart.js CDN)
-├── INSTRUCCIONES-AGREGAR-ADMIN.md
 └── package.json              # Node 24, "type": "module"
 ```
 
@@ -115,7 +114,7 @@ supabase functions deploy smooth-function --project-ref whouejjrpjcvoueyajbu
 
 ### Paso 3 — Crear el primer administrador (una sola vez)
 
-Antes de que el login funcione, necesitas al menos un usuario en la tabla `admin_users`. Desde que el sistema es multi-tenant, esto requiere también el `empresa_id` de la empresa a la que pertenece — ver la guía completa y actualizada en **`INSTRUCCIONES-AGREGAR-ADMIN.md`** (incluye cómo obtener/crear el `empresa_id`, y la opción de crear el usuario por Dashboard o por API).
+Antes de que el login funcione, necesitas al menos un usuario en la tabla `admin_users`. Desde que el sistema es multi-tenant, esto requiere también el `empresa_id` de la empresa a la que pertenece — este es un procedimiento interno del equipo de desarrollo, no documentado en este repositorio.
 
 Resumen rápido:
 1. Buscar o crear la empresa en la tabla `empresas` (te devuelve el `empresa_id`)
