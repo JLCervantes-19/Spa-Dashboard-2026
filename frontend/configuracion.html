@@ -273,7 +273,7 @@
   import { requireAdmin }  from '/js/auth.js'
   import { supabase }      from '/js/supabase-client.js'
   import { getSidebarHTML, initSidebar } from '/js/sidebar.js'
-  import { toast, renderSidebarUser }    from '/js/utils.js'
+  import { toast, renderSidebarUser, confirmAction } from '/js/utils.js'
 
   const auth = await requireAdmin()
   if (!auth) throw new Error()
@@ -388,6 +388,7 @@
 
   // ─── GUARDAR ─────────────────────────────────────────────
   document.getElementById('btn-guardar-config').addEventListener('click', async () => {
+   try {
     const payload = {
       nombre_spa:               document.getElementById('conf-nombre').value.trim(),
       slogan:                   document.getElementById('conf-slogan').value.trim() || null,
@@ -436,6 +437,10 @@
         }
       }
     })
+   } catch (e) {
+     console.error('Error inesperado al preparar el guardado:', e)
+     toast('Error inesperado: ' + (e?.message || e), 'error')
+   }
   })
 
   await cargarConfig()
