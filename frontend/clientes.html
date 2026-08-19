@@ -33,6 +33,7 @@
             <option value="recurrente">Recurrentes (2+ citas)</option>
             <option value="nuevo">Nuevas (1 cita)</option>
           </select>
+          <button class="btn btn-ghost btn-sm" id="limpiar-filtros">Limpiar</button>
           <span id="total-clientes" class="text-muted" style="font-size:0.78rem;margin-left:auto"></span>
         </div>
         <div class="table-wrapper">
@@ -174,6 +175,12 @@
 
   document.getElementById('buscar-cliente').addEventListener('input', debounce(e => { busqueda = e.target.value; aplicarFiltros() }))
   document.getElementById('filtro-tipo-cli').addEventListener('change', e => { filtroTipo = e.target.value; aplicarFiltros() })
+  document.getElementById('limpiar-filtros').addEventListener('click', () => {
+    busqueda = filtroTipo = ''
+    document.getElementById('buscar-cliente').value = ''
+    document.getElementById('filtro-tipo-cli').value = ''
+    aplicarFiltros()
+  })
 
   function renderTabla(arr) {
     const tbody = document.getElementById('clientes-tbody')

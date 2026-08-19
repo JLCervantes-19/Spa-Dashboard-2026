@@ -39,6 +39,7 @@
             <option value="true">Activos</option>
             <option value="false">Inactivos</option>
           </select>
+          <button class="btn btn-ghost btn-sm" id="limpiar-filtros">Limpiar</button>
         </div>
         <div class="table-wrapper">
           <table class="data-table">
@@ -243,6 +244,12 @@
 
   document.getElementById('buscar-servicio').addEventListener('input', debounce(e => { busqueda = e.target.value; renderTabla() }))
   document.getElementById('filtro-estado-svc').addEventListener('change', e => { filtroEstado = e.target.value; renderTabla() })
+  document.getElementById('limpiar-filtros').addEventListener('click', () => {
+    busqueda = filtroEstado = ''
+    document.getElementById('buscar-servicio').value = ''
+    document.getElementById('filtro-estado-svc').value = ''
+    renderTabla()
+  })
 
   // ——— Multiselect empleadas ————————————————————————
   function renderEmpMultiselect() {

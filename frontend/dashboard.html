@@ -156,6 +156,7 @@
               <option value="cancelada_cliente">Cancelada (cliente)</option>
               <option value="cancelada_admin">Cancelada (admin)</option>
             </select>
+            <button class="btn btn-ghost btn-sm" id="limpiar-filtros-hoy">Limpiar</button>
           </div>
         </div>
         <div class="table-wrapper">
@@ -496,6 +497,11 @@
 
   filtroEmp.addEventListener('change', renderCitasHoy)
   document.getElementById('filtro-estado-hoy').addEventListener('change', renderCitasHoy)
+  document.getElementById('limpiar-filtros-hoy').addEventListener('click', () => {
+    filtroEmp.value = ''
+    document.getElementById('filtro-estado-hoy').value = ''
+    renderCitasHoy()
+  })
 
   // ——— Tabla: próximas citas (hoy + 7 días) ————————————————
   async function cargarProximas() {

@@ -150,6 +150,7 @@
           <option value="publicado">Publicados</option>
           <option value="oculto">Ocultos</option>
         </select>
+        <button class="btn btn-ghost btn-sm" id="limpiar-filtros">Limpiar</button>
         <span id="total-test" class="text-muted" style="font-size:0.78rem;margin-left:auto"></span>
       </div>
 
@@ -284,6 +285,11 @@
   // ─── FILTRO ───────────────────────────────────────────────
   document.getElementById('filtro-estado-test').addEventListener('change', e => {
     filtroEstado = e.target.value
+    renderBoards()
+  })
+  document.getElementById('limpiar-filtros').addEventListener('click', () => {
+    filtroEstado = ''
+    document.getElementById('filtro-estado-test').value = ''
     renderBoards()
   })
 

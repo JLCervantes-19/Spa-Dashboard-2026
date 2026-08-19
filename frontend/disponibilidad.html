@@ -192,10 +192,11 @@
             <button class="btn btn-primary btn-sm" id="btn-nuevo-bloq-emp">+ Agregar bloqueo</button>
           </div>
 
-          <div style="margin-bottom:16px">
+          <div style="margin-bottom:16px;display:flex;gap:8px;align-items:center">
             <select id="filtro-empleada-bloq" class="filter-select">
               <option value="">Todas las empleadas</option>
             </select>
+            <button class="btn btn-ghost btn-sm" id="limpiar-filtro-bloq-emp">Limpiar</button>
           </div>
 
           <div class="bloqueos-grid" id="emp-bloqueos-list">
@@ -653,6 +654,10 @@
   ;['modal-emp-bloq-close','modal-emp-bloq-close2'].forEach(id => document.getElementById(id).addEventListener('click', () => closeModal('modal-bloq-emp')))
 
   document.getElementById('filtro-empleada-bloq').addEventListener('change', cargarBloqueosEmp)
+  document.getElementById('limpiar-filtro-bloq-emp').addEventListener('click', () => {
+    document.getElementById('filtro-empleada-bloq').value = ''
+    cargarBloqueosEmp()
+  })
 
   // ─── INIT ──────────────────────────────────────────────────
   await Promise.all([cargarHorario(), cargarBloqueos(), cargarEmpleadas()])

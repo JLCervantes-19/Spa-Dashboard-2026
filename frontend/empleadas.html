@@ -62,6 +62,7 @@
           <select id="filtro-servicio-emp" class="filter-select">
             <option value="">Todos los servicios</option>
           </select>
+          <button class="btn btn-ghost btn-sm" id="limpiar-filtros">Limpiar</button>
         </div>
 
         <!-- Tabla -->
@@ -405,6 +406,13 @@
   document.getElementById('buscar-empleada').addEventListener('input', debounce(e => { busqueda = e.target.value; renderTabla() }))
   document.getElementById('filtro-estado-emp').addEventListener('change', e => { filtroEstado = e.target.value; renderTabla() })
   document.getElementById('filtro-servicio-emp').addEventListener('change', e => { filtroServicio = e.target.value; renderTabla() })
+  document.getElementById('limpiar-filtros').addEventListener('click', () => {
+    busqueda = filtroEstado = filtroServicio = ''
+    document.getElementById('buscar-empleada').value = ''
+    document.getElementById('filtro-estado-emp').value = ''
+    document.getElementById('filtro-servicio-emp').value = ''
+    renderTabla()
+  })
 
   // ——— Multiselect servicios ————————————————————————
   function renderMultiselect() {
