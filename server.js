@@ -23,7 +23,12 @@ const ALLOWED_ORIGINS = [
   'https://dashboard-mocha-tau-10.vercel.app',
   'http://localhost:3000',
 ];
-app.use(cors({
+// Acotado a /api: este server sirve el panel admin como sitio estático (HTML/CSS/JS),
+// y esos archivos deben cargar sin importar por qué URL de Vercel entre el navegador
+// (producción, alias de equipo, o la URL de deploy con hash que cambia en cada push).
+// Antes esto se aplicaba a TODA la app y cualquier origin fuera de la whitelist tumbaba
+// la página completa con un error sin manejar — incluidos los propios .js del panel.
+app.use('/api', cors({
   origin: (origin, cb) => {
     if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
     cb(new Error('Origen no permitido'));
@@ -55,6 +60,13 @@ app.get('/api/health', (_, res) => {
 // SPA fallback — todas las rutas sirven la SPA del admin
 app.get('*', (_, res) => {
   res.sendFile(join(__dirname, 'frontend', 'index.html'));
+});
+
+// Maneja el error de origen no permitido del CORS de /api (y cualquier otro
+// error no capturado) con una respuesta JSON limpia en vez de un stack trace.
+app.use((err, _req, res, _next) => {
+  console.error(err);
+  res.status(err.message === 'Origen no permitido' ? 403 : 500).json({ error: err.message || 'Error interno' });
 });
 
 export default app;
