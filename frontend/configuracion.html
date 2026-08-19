@@ -343,7 +343,12 @@
 
   // ─── CARGAR CONFIGURACIÓN ─────────────────────────────────
   async function cargarConfig() {
-    const { data } = await supabase.from('configuracion').select('*').limit(1).single()
+    const { data, error } = await supabase.from('configuracion').select('*').limit(1).single()
+    if (error) {
+      console.error('Error cargando configuración:', error)
+      toast('No se pudo cargar la configuración: ' + error.message, 'error')
+      return
+    }
     if (!data) return
     configId = data.id
 
@@ -413,17 +418,22 @@
       btnLabel: 'Guardar cambios',
       type: 'warning',
       onConfirm: async () => {
-        let error
-        if (configId) {
-          ({ error } = await supabase.from('configuracion').update(payload).eq('id', configId))
-        } else {
-          const { data, error: insErr } = await supabase.from('configuracion').insert(payload).select('id').single()
-          error = insErr
-          if (data) configId = data.id
-        }
+        try {
+          let error
+          if (configId) {
+            ({ error } = await supabase.from('configuracion').update(payload).eq('id', configId))
+          } else {
+            const { data, error: insErr } = await supabase.from('configuracion').insert(payload).select('id').single()
+            error = insErr
+            if (data) configId = data.id
+          }
 
-        if (error) { toast('Error al guardar configuración: ' + error.message, 'error'); return }
-        toast('Configuración guardada. Los cambios se reflejan en el sitio web.', 'success')
+          if (error) { toast('Error al guardar configuración: ' + error.message, 'error'); return }
+          toast('Configuración guardada. Los cambios se reflejan en el sitio web.', 'success')
+        } catch (e) {
+          console.error('Error inesperado al guardar configuración:', e)
+          toast('Error inesperado al guardar: ' + (e?.message || e), 'error')
+        }
       }
     })
   })
