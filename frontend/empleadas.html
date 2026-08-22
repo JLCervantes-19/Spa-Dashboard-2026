@@ -660,7 +660,7 @@
                 toast('Empleada actualizada y contraseña cambiada', 'success')
               } else {
                 // Crear acceso por primera vez
-                const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
+                const { uuid } = await llamarEdgeFn({ action: 'create_staff', email, password })
                 await supabase.from('empleados').update({ auth_user_id: uuid }).eq('id', editingId)
                 toast('Empleada actualizada y acceso creado', 'success')
               }
@@ -671,7 +671,7 @@
           } else {
             // ——— Nueva empleada ———
             // Crear acceso Auth primero
-            const { uuid } = await llamarEdgeFn({ action: 'create', email, password })
+            const { uuid } = await llamarEdgeFn({ action: 'create_staff', email, password })
             payload.auth_user_id = uuid
             payload.empresa_id = auth.admin.empresa_id
 
